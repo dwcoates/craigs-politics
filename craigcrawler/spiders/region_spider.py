@@ -4,6 +4,10 @@ import scrapy
 from bs4 import BeautifulSoup
 import urlparse
 
+# Spider used to build database structure
+# Finds all regions and regions for a continent, so that the
+# Core spider can crawl those regions/subregions and get relevant data
+
 
 class RegionSpider(Spider):
     name = "region_spider"
@@ -17,12 +21,14 @@ class RegionSpider(Spider):
             yield scrapy.Request(url=url, callback=self.parse)
 
     def parse(self, response):
-        usa_regions = self._parse_territory_block(response)
-        for region in usa_regions:
-            post_time = Selector(text=region).xpath(
-                '//p/time/@datetime').extract()[0]
-            post_title = Selector(text=region).xpath(
-                '//p/a/text()').extract()[0]
+        # check in shell that this change works
+        usa_territories = self._parse_territory_block(response.xpath(
+            '/html/body/article/section//*[@class="colmask"][1]'))
+
+        for name, regions in usa_territories.iteritems():
+            for name, region_entry in regions.iteritems():
+                region_link = region_entry['link']
+                regions[name] = self._get_subregions()
 
             post_link = Selector(text=region).xpath('//p/a/@href').extract()[0]
             if post_link is not None:
@@ -44,27 +50,26 @@ class RegionSpider(Spider):
 
     def _parse_territory_block(self, territory_block):
         """
-        Parse a chunk of territories (i.e., a continent) on
-        http://www.craigslist.org/about/sites
+        Parse a chunk of territories (i.e., parse a continent) on
+        http://www.craigslist.org/about/sites, returning dict
+        containing name/region-list pairs.
 
         For now, parses only USA
         """
-        names = territory_block.xpath(
-            '/html/body/article/section//*[@class="colmask"][1]/div/h4')
-        region_blocks = territory_block.xpath(
-            '/html/body/article/section//*[@class="colmask"][1]/div/ul')
+        terr_names = territory_block.xpath('/div/h4')
+        territories = territory_block.xpath('/div/ul')
 
-        def grab_regions(region_block):
+        def grab_regions(territory):
             """
-            Return a dictionary consisting of name/link pairs from a chunk of
+            Return a dictionary consisting of name/link pairs from chunks of
             regions corresponding to a territory (state, washington DC, other
             US territory).
             """
-            links_selector = region_block.xpath('child::*/a')
-            links = map(lambda link: "http:" + str(link),
-                        (links_selector.xpath('@href').extract()))
-            names = map(str, links_selector.xpath('text()'))
+            regions_selector = territory.xpath('child::*/a')
+            region_links = map(lambda link: "http:" + str(link),
+                               regions_selector.xpath('@href').extract())
+            region_names = map(str, regions_selector.xpath('text()'))
 
-            return dict(zip(names, links))
+            return dict(zip(region_names, region_links))
 
-        return dict(zip(names, map(grab_regions, region_blocks)))
+        return dict(zip(terr_names, map(grab_regions, territories)))
