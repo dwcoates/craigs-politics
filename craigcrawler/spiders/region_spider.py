@@ -2,6 +2,7 @@ from scrapy import Spider
 from scrapy.selector import Selector
 import scrapy
 from bs4 import BeautifulSoup
+import requests
 import urlparse
 
 # Spider used to build database structure
@@ -26,25 +27,44 @@ class RegionSpider(Spider):
             '/html/body/article/section//*[@class="colmask"][1]'))
 
         for name, regions in usa_territories.iteritems():
-            for name, region_entry in regions.iteritems():
-                region_link = region_entry['link']
-                regions[name] = self._get_subregions()
+            for name, link in regions.iteritems():
+                yield self._get_posts(name, link, is_region=True)
 
-            post_link = Selector(text=region).xpath('//p/a/@href').extract()[0]
-            if post_link is not None:
-                post_link = str(urlparse.urljoin(
-                    response.url.replace("/search/pol", ""), post_link))
-
-            yield {
-                'post_time': post_time,
-                'post_title': post_title,
-                'post_link': post_link
-            }
-
-    def _get_subregions(self, region_selector):
+    def _get_posts(self, link, is_region=False):
         """
-        Return the a dictionary of name/link pairs for a subregion. If
-        Region has no subregions, return link.
+        Return the list of posts for the politics section for region at link.
+        If region has sublinks, return a list of results for those instead.
+        Because of the particulars of the layout of the (sub)region pages, this
+        function should only ever be recursively called for regions, and never
+        for subregions (subregions for a subregion are the other subregions of
+        the parent region, so infinite recursion).
+        """
+        def linkify(ps):
+            """
+            Get the absolute link for a subregion reference on the page
+            """
+            return link + "/search/" + str(ps.xpath('li/a/@href').extract() + "/pol")
+
+        # bit at the top of the page that says the name of the region,
+        # and contains links to subregions if they exists.
+        region_banner = Selector(text=requests.get(link).xpath(
+            '// *[@id="topban"] / div[1]/'))
+        subregions = region_banner.xpath('h2/text()')
+        name = region_banner.xpath('ul')
+
+        if subregions and is_region:
+            links = map(linkify, subregions)
+            return map(self._grab_posts, links)
+        else:
+            # there is a urljoin way to do this nicely, probably
+            posts = self._grab_posts(link + "")
+
+        return {name: posts}
+
+    def _grab_posts(self, link):
+        """
+        Grab all the posts on a given page. Paginate if necessary.
+        Returns a dict {region_name : list_of_posts}
         """
         pass
 
@@ -70,6 +90,6 @@ class RegionSpider(Spider):
                                regions_selector.xpath('@href').extract())
             region_names = map(str, regions_selector.xpath('text()'))
 
-            return dict(zip(region_names, region_links))
+            return zip(region_names, region_links)
 
         return dict(zip(terr_names, map(grab_regions, territories)))
