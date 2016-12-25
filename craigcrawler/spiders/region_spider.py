@@ -1,13 +1,10 @@
 from scrapy import Spider
 from scrapy.selector import Selector
-import scrapy
-from bs4 import BeautifulSoup
-import requests
-from urlparse import urlparse, urljoin
 
-# Spider used to build database structure
-# Finds all regions and regions for a continent, so that the
-# Core spider can crawl those regions/subregions and get relevant data
+import requests
+import time
+import random
+from urlparse import urlparse, urljoin
 
 
 class RegionSpider(Spider):
@@ -17,51 +14,53 @@ class RegionSpider(Spider):
 
     def parse(self, response):
         # check in shell that this change works
-        usa_territories = self._parse_territory_block(response.xpath(
-            '/html/body/article/section//*[@class="colmask"][1]'))
+        usa_territories = self._parse_continent(response)
 
-        for name, regions in usa_territories.iteritems():
-            for name, link in regions.iteritems():
-                yield self._get_posts(name, link)
+        for terr_name, terr_regions in usa_territories.iteritems():
+            for link in terr_regions.iteritems():
+                yield {"state": terr_name,
+                       "region": self._get_posts(link)}
 
     def _get_posts(self, link):
         """
         Return the list of posts for the politics section for region at link.
         If region has sublinks, return a list of results for those instead.
-        Because of the particulars of the layout of the (sub)region pages, this
-        function should only ever be recursively called for regions, and never
-        for subregions (subregions for a subregion are the other subregions of
-        the parent region, so infinite recursion).
         """
-        pol = link + "/search/pol"
+        link = urljoin(link, "/search/pol")
         # bit at the top of the page that says the name of the region,
         # and contains links to subregions if they exists.
         region_banner = Selector(text=self._get_content(link).xpath(
             '// *[@id="topban"] / div[1]/'))
-        subregions = region_banner.xpath('h2/text()')
         region_name = region_banner.xpath('ul')
 
+        def structure(n, p):
+            return {'name': n, 'posts': p}
+
+        subregions = region_banner.xpath('h2/text()')
         if subregions:
             def make_link(ps):
                 # does path have trailing /?
                 path = str(ps.xpath('li/a/@href').extract())
-                return pol.replace("/search/", "/" + path + "/search/")
-            links = map(make_link, subregions)
-            posts = map(self._grab_posts, links)
-        else:
-            # there is a urljoin way to do this nicely, probably
-            posts = self._grab_posts(link + "")
+                return link.replace("/search/", "/" + path + "/search/")
 
-        return {'name': region_name, 'posts': posts}
+            def get_name(ps):
+                return str(ps.xpath('ls/a/@title'))
+
+            names = map(get_name, subregions)
+            links = map(make_link, subregions)
+            postings = map(self._grab_posts, links)
+
+            posts = map(structure, zip(names, postings))
+        else:
+            posts = self._grab_posts(link)
+
+        return structure(region_name, posts)
 
     def _grab_posts(self, link):
         """
         Grab all the posts on a given page. Paginate if necessary.
         Returns a dict {region_name : list_of_posts}
         """
-        # /html/head/title
-        # i.e., new york politics
-        # i.e., new york
         # needs to be tested in shell
         content = self._get_content(link)
         post_times = Selector(text=content).xpath(
@@ -69,11 +68,11 @@ class RegionSpider(Spider):
         post_titles = Selector(text=content).xpath(
             '//p/a/text()').extract()[0]
 
-        posts = map(lambda (time, title): {"time": time, "title": title},
+        posts = map(lambda (tm, tt): {"time": tm, "title": tt},
                     zip(post_times, post_titles))
+
         next_page = Selector(text=content).xpath(
             '//*[@id="searchform"]/div[3]/div[3]/span[2]/a[3]/@href')
-
         if next_page:
             query = urlparse(str(next_page))[4]
             next_page_link = urljoin(link, "?" + query)
@@ -84,11 +83,16 @@ class RegionSpider(Spider):
     @staticmethod
     def _get_content(link):
         """
-        Politely request the content at link
+        Politely request the page content at link
         """
-        return requests.get(link)
+        r = requests.get(link)
 
-    def _parse_territory_block(self, territory_block):
+        x = 1 + 2 * random.random()
+        time.sleep(x)
+
+        return r
+
+    def _parse_continent(self, site_page_response):
         """
         Parse a chunk of territories (i.e., parse a continent) on
         http://www.craigslist.org/about/sites, returning dict
@@ -96,8 +100,10 @@ class RegionSpider(Spider):
 
         For now, parses only USA
         """
-        terr_names = territory_block.xpath('/div/h4')
-        territories = territory_block.xpath('/div/ul')
+        continent = site_page_response.xpath(
+            '/html/body/article/section//*[@class="colmask"][1]')
+        terr_names = continent.xpath('/div/h4')
+        territories = continent.xpath('/div/ul')
 
         def grab_regions(territory):
             """
