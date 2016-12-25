@@ -15,12 +15,6 @@ class RegionSpider(Spider):
     allowed_urls = ["http://craigslist.org"]
     start_url = ["http://www.craigslist.org/about/sites"]
 
-    def start_requests(self):
-        parse_urls = RegionSpider.cities()
-
-        for url in parse_urls:
-            yield scrapy.Request(url=url, callback=self.parse)
-
     def parse(self, response):
         # check in shell that this change works
         usa_territories = self._parse_territory_block(response.xpath(
@@ -45,7 +39,7 @@ class RegionSpider(Spider):
         region_banner = Selector(text=self._get_content(link).xpath(
             '// *[@id="topban"] / div[1]/'))
         subregions = region_banner.xpath('h2/text()')
-        page_name = region_banner.xpath('ul')
+        region_name = region_banner.xpath('ul')
 
         if subregions:
             def make_link(ps):
@@ -57,9 +51,8 @@ class RegionSpider(Spider):
         else:
             # there is a urljoin way to do this nicely, probably
             posts = self._grab_posts(link + "")
-        ret['posts'] = posts
 
-        return ret
+        return {'name': region_name, 'posts': posts}
 
     def _grab_posts(self, link):
         """
