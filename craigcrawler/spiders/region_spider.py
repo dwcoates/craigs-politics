@@ -22,9 +22,9 @@ class RegionSpider(Spider):
 
         for name, regions in usa_territories.iteritems():
             for name, link in regions.iteritems():
-                yield self._get_posts(name, link, is_region=True)
+                yield self._get_posts(name, link)
 
-    def _get_posts(self, link, is_region=False):
+    def _get_posts(self, link):
         """
         Return the list of posts for the politics section for region at link.
         If region has sublinks, return a list of results for those instead.
