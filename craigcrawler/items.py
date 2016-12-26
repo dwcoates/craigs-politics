@@ -9,6 +9,5 @@ from scrapy import Field, Item
 
 
 class CraigspoliticsItem(Item):
-    post_time = Field()
-    post_title = Field()
-    post_body = Field()
+    state = Field()
+    regions = Field()

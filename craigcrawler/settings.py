@@ -14,9 +14,17 @@ BOT_NAME = 'craigcrawler'
 SPIDER_MODULES = ['craigcrawler.spiders']
 NEWSPIDER_MODULE = 'craigcrawler.spiders'
 
+ITEM_PIPELINES = {'craigcrawler.pipelines.MongoDBPipeline': 200,
+                  'craigcrawler.pipelines.PicklePipeline': 100}
+
+MONGODB_SERVER = "localhost"
+MONGODB_PORT = 27017
+MONGODB_DB = "craigs-politics-database"
+MONGODB_COLLECTION = "us"
+
 
 # Crawl responsibly by identifying yourself (and your website) on the
-USER_AGENT = "craig-crawler/0.1 by Dodge Coates @ NYC Data Science Academy +http://blog.nycdatascience.com/student-works/"
+# USER_AGENT = "craig-crawler/0.1 by Dodge Coates @ NYC Data Science Academy +http://blog.nycdatascience.com/student-works/"
 
 # Obey robots.txt rules
 ROBOTSTXT_OBEY = True
