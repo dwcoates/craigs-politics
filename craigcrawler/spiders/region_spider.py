@@ -34,7 +34,7 @@ class RegionSpider(Spider):
         Return the list of posts for the politics section for region at link.
         If region has subregions, return a list of results for those instead.
         """
-        def structure(ps, sr_name):
+        def structure((ps, sr_name)):
             return map(lambda p: {'post': p, 'subregion': sr_name}, ps)
 
         region_banner = Selector(text=RegionSpider._get_content(link)).xpath(
@@ -57,9 +57,9 @@ class RegionSpider(Spider):
             postings = map(RegionSpider._grab_posts, pol_links)
 
             # flatten subregion postings
-            posts = sum(map(structure, *zip(postings, subregion_names)), [])
+            posts = sum(map(structure, zip(postings, subregion_names)), [])
         else:
-            posts = structure(RegionSpider._grab_posts(pol), None)
+            posts = structure((RegionSpider._grab_posts(pol), None))
 
         return {'region': region_name, 'posts': posts}
 
