@@ -5,12 +5,7 @@
 # Don't forget to add your pipeline to the ITEM_PIPELINES setting
 # See: http://doc.scrapy.org/en/latest/topics/item-pipeline.html
 
-import pymongo
 import pickle
-
-from scrapy.conf import settings
-from scrapy.exceptions import DropItem
-from scrapy import log
 
 
 class PicklePipeline(object):
@@ -26,10 +21,14 @@ class PicklePipeline(object):
 
     @staticmethod
     def save(usa):
-        with open(PicklePipeline.filename, 'wb') as f:
-            pickle.dump(usa, f, pickle.HIGHEST_PROTOCOL)
+        try:
+            with open(PicklePipeline.filename, 'wb') as f:
+                pickle.dump(usa, f, pickle.HIGHEST_PROTOCOL)
+        except:
+            # whatever
+            pass
 
-        with open("/home/dodge/usa_bak.pkl", 'wb') as f:
+        with open("usa_bak.pkl", 'wb') as f:
             pickle.dump(usa, f, pickle.HIGHEST_PROTOCOL)
 
     @staticmethod
@@ -37,11 +36,18 @@ class PicklePipeline(object):
         with open(PicklePipeline.filename, 'rb') as f:
             return pickle.load(f)
 
-    def process_item(self, item, spider):
-        state = item["state"]
-        region = item["region"]
+    def _add_to_hashtable(self, region_entry):
+        state = region_entry["state"]
+        region = region_entry["region"]
 
         self.usa[state] = self.usa.get(state, []) + [region]
+
+    def _add_to_database(self, region_entry):
+        pass
+
+    def process_item(self, item, spider):
+        self._add_to_hashtable(item)
+        self._add_to_database(item)
 
         return item
 
