@@ -35,7 +35,7 @@ class RegionSpider(Spider):
         If region has subregions, return a list of results for those instead.
         """
         def structure((ps, sr_name)):
-            return map(lambda p: {'post': p, 'subregion': sr_name}, ps)
+            return map(lambda p: {'entry': p, 'subregion': sr_name}, ps)
 
         region_banner = Selector(text=RegionSpider._get_content(link)).xpath(
             '//*[@id="topban"]/div[1]')
@@ -61,7 +61,7 @@ class RegionSpider(Spider):
         else:
             posts = structure((RegionSpider._grab_posts(pol), None))
 
-        return {'region': region_name, 'posts': posts}
+        return {'name': region_name, 'posts': posts}
 
     @staticmethod
     def _grab_posts(link):
