@@ -18,11 +18,16 @@ class RegionSpider(Spider):
     def parse(self, response):
         usa_territories = self._parse_continent(response)
         num_regions = sum(map(lambda t: len(t[1]), usa_territories))
-    
+
         for terr_name, region_links in usa_territories:
             for link in region_links:
-                yield {"state": terr_name,
-                       "region": self._get_posts(link)}
+                try:
+                    yield {"state": terr_name,
+                           "region": self._get_posts(link)}
+                except requests.ConnectionError:
+                    time.sleep(20)
+                    yield {"state": None,
+                           "region": {"name": None, "posts": []}}
                 self.regions_scraped += 1
                 print "region %f/%f scraped at '%s'" % (self.regions_scraped,
                                                         num_regions,
