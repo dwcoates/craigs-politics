@@ -14,7 +14,7 @@ BOT_NAME = 'craigcrawler'
 SPIDER_MODULES = ['craigcrawler.spiders']
 NEWSPIDER_MODULE = 'craigcrawler.spiders'
 
-ITEM_PIPELINES = {'craigcrawler.pipelines.PicklePipeline': 100}
+ITEM_PIPELINES = {'craigcrawler.pipelines.PickledPandaPipeline': 100}
 
 # Crawl responsibly by identifying yourself (and your website) on the
 # USER_AGENT = "craig-crawler/0.1 by Dodge Coates @ NYC Data Science Academy +http://blog.nycdatascience.com/student-works/"

@@ -15,18 +15,24 @@ class RegionSpider(Spider):
     def __init__(self):
         self.regions_scraped = 0
 
-    def parse(self, response):
-        usa_territories = self._parse_continent(response)
-        num_regions = sum(map(lambda t: len(t[1]), usa_territories))
+    # def parse(self, response):
+    #     usa_territories = self._parse_continent(response)
+    #     num_regions = sum(map(lambda t: len(t[1]), usa_territories))
 
-        for terr_name, region_links in usa_territories:
-            for link in region_links:
-                yield {"state": terr_name,
-                       "region": self._get_posts(link)}
-                self.regions_scraped += 1
-                print "region %f/%f scraped at '%s'" % (self.regions_scraped,
-                                                        num_regions,
-                                                        link)
+    #     for terr_name, region_links in usa_territories:
+    #         for link in region_links:
+    #             yield {"state": terr_name,
+    #                    "region": self._get_posts(link)}
+    #             self.regions_scraped += 1
+    #             print "region %f/%f scraped at '%s'" % (self.regions_scraped,
+    #                                                     num_regions,
+    #                                                     link)
+
+    def parse(self, response):
+        terr_name = "New York"
+        link = "http://losangeles.craigslist.org/"
+        yield {"state": terr_name,
+               "region": self._get_posts(link)}
 
     @staticmethod
     def _get_posts(link):
