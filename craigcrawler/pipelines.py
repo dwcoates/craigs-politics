@@ -6,48 +6,63 @@
 # See: http://doc.scrapy.org/en/latest/topics/item-pipeline.html
 
 import pickle
+import pandas as pd
+import numpy as np
 
 
-class PicklePipeline(object):
+class PickledPandaPipeline(object):
     """
     Backup pipeline because I'm getting tired of messing with pymongo, and I
     want this running in at the same time while I sleep.
     """
 
-    filename = "data/us.pkl"
+    pickle_filename = "data/us.pkl"
+    csv_filename = "data/us.csv"
 
     def __init__(self):
-        self.usa = dict()
+        self.usa_dict = dict()
 
     @staticmethod
-    def save(usa):
+    def save(usa_dict):
+        # save the dict as a pickle. This is a backup.
         try:
-            with open(PicklePipeline.filename, 'wb') as f:
-                pickle.dump(usa, f, pickle.HIGHEST_PROTOCOL)
+            with open(PickledPandaPipeline.pickle_filename, 'wb') as f:
+                pickle.dump(usa_dict, f, pickle.HIGHEST_PROTOCOL)
         except:
-            # whatever
             pass
+        with open("usa_dict_bak.pkl", 'wb') as f:
+            pickle.dump(usa_dict, f, pickle.HIGHEST_PROTOCOL)
 
-        with open("usa_bak.pkl", 'wb') as f:
-            pickle.dump(usa, f, pickle.HIGHEST_PROTOCOL)
+        # build the dataframe to be stored in csv file
+        usa_array = []
+        for state in usa_dict:
+            for region in usa_dict[state]:
+                posts = region["posts"]
+                for post in posts:
+                    usa_array += [[post["entry"]["title"],
+                                   post["entry"]["time"],
+                                   state,
+                                   region["name"],
+                                   post["subregion"]]]
+        usa_df = pd.DataFrame(np.array(usa_array),
+                              columns=["title", "date", "state", "region", "subregion"])
+
+        usa_df.to_csv(PickledPandaPipeline.csv_filename, encoding='utf-8')
+        usa_df.to_csv("usa_backup.csv", encoding='utf-8')
 
     @staticmethod
     def load():
-        with open(PicklePipeline.filename, 'rb') as f:
+        with open(PickledPandaPipeline.pickle_filename, 'rb') as f:
             return pickle.load(f)
 
-    def _add_to_hashtable(self, region_entry):
-        state = region_entry["state"]
-        region = region_entry["region"]
-
-        self.usa[state] = self.usa.get(state, []) + [region]
-
-    def _add_to_database(self, region_entry):
-        pass
-
     def process_item(self, item, spider):
-        self._add_to_hashtable(item)
-        self._add_to_database(item)
+        """
+        Build table in memory
+        """
+        state = item["state"]
+        region = item["region"]
+
+        self.usa_dict[state] = self.usa_dict.get(state, []) + [region]
 
         return item
 
@@ -55,7 +70,12 @@ class PicklePipeline(object):
         """
         Dont support loading.
         """
-        self.usa = dict()
+        self.usa_dict = dict()
+        self.usa_df = pd.DataFrame(
+            columns=["title", "date", "state", "region", "subregion"])
 
     def close_spider(self, spider):
-        PicklePipeline.save(self.usa)
+        """
+        Save table as pickle and as csv
+        """
+        PickledPandaPipeline.save(self.usa_dict)
