@@ -6,6 +6,9 @@ from urlparse import urlparse, urljoin
 import time
 import random
 
+import logging
+logger = logging.getLogger()
+
 
 class RegionSpider(Spider):
     name = "region_spider"
@@ -25,8 +28,11 @@ class RegionSpider(Spider):
                     yield {"state": terr_name,
                            "region": self._get_posts(link)}
                 except requests.ConnectionError:
+                    logger.warn(
+                        "Connection failure while requesting '%s'", link)
+                    print "Waiting in response to connection failure..."
                     time.sleep(20)
-                    yield {"state": None,
+                    yield {"state": terr_name,
                            "region": {"name": None, "posts": []}}
                 self.regions_scraped += 1
                 print "region %f/%f scraped at '%s'" % (self.regions_scraped,
