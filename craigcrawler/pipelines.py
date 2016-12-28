@@ -37,13 +37,22 @@ class PickledPandaPipeline(object):
         usa_array = []
         for state in usa_dict:
             for region in usa_dict[state]:
+                def build_post_item(title, time, subregion):
+                    return [[title,
+                             time,
+                             state,
+                             region["name"],
+                             subregion]]
+
                 posts = region["posts"]
-                for post in posts:
-                    usa_array += [[post["entry"]["title"],
-                                   post["entry"]["time"],
-                                   state,
-                                   region["name"],
-                                   post["subregion"]]]
+                if posts:
+                    for post in posts:
+                        usa_array += build_post_item(post["entry"]["title"],
+                                                     post["entry"]["time"],
+                                                     post["subregion"])
+                else:
+                    usa_array += build_post_item(None, None, None)
+
         usa_df = pd.DataFrame(np.array(usa_array),
                               columns=["title", "date", "state", "region", "subregion"])
 
