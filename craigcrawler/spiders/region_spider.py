@@ -33,19 +33,20 @@ class RegionSpider(Spider):
         regions_missed = 0
         for terr_name, region_links in usa_territories:
             for link in region_links:
+                region = {"name": None, "posts": []}
                 scraped = False
-                try:
-                    yield {"state": terr_name,
-                           "region": RegionSpider._get_posts(link)}
-                    scraped = True
-                except requests.ConnectionError:
-                    logger.warn(
-                        "Connection failure while requesting '%s'", link)
-                    print "Waiting in response to connection failure..."
-                    time.sleep(20)
-                    yield {"state": terr_name,
-                           "region": {"name": None, "posts": []}}
-
+                attempts = 0
+                # make three attempts to make scrape region
+                while(~scraped and attempts <= 3):
+                    try:
+                        region = RegionSpider._get_posts(link)
+                        scraped = True
+                    except requests.ConnectionError:
+                        logger.warn(
+                            "Connection failure while requesting '%s'", link)
+                        print "Waiting in response to connection failure..."
+                        time.sleep(20)
+                    attempts += 1
                 if scraped:
                     regions_scraped += 1
                 else:
@@ -55,6 +56,9 @@ class RegionSpider(Spider):
                                        num_regions,
                                        "scraped" if scraped else "missed",
                                        link)
+
+                yield {"state": terr_name, "region": region}
+
         print ("\n\n{0:,}/{1,:} regions successfully " +
                "extracted. See logs for " +
                "failures.\n\n").format(regions_scraped, num_regions)
