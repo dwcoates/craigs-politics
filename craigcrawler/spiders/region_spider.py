@@ -7,7 +7,11 @@ import time
 import random
 
 import logging
+
+# in case of a failed region name, the request for that region must have
+# failed. Consult log file link to region.
 logger = logging.getLogger()
+logging.basicConfig(filename='spider_log', level=logging.WARNING)
 
 
 class RegionSpider(Spider):
@@ -16,17 +20,24 @@ class RegionSpider(Spider):
     start_urls = ["http://craigslist.org/about/sites"]
 
     def __init__(self):
-        self.regions_scraped = 0
+        pass
 
     def parse(self, response):
         usa_territories = self._parse_continent(response)
-        num_regions = sum(map(lambda t: len(t[1]), usa_territories))
 
+        num_regions = sum(map(lambda t: len(t[1]), usa_territories))
+        print("Regions to scrape: {0:,}".format(num_regions))
+        time.sleep(3)
+
+        regions_scraped = 0
+        regions_missed = 0
         for terr_name, region_links in usa_territories:
             for link in region_links:
+                scraped = False
                 try:
                     yield {"state": terr_name,
-                           "region": self._get_posts(link)}
+                           "region": RegionSpider._get_posts(link)}
+                    scraped = True
                 except requests.ConnectionError:
                     logger.warn(
                         "Connection failure while requesting '%s'", link)
@@ -34,10 +45,19 @@ class RegionSpider(Spider):
                     time.sleep(20)
                     yield {"state": terr_name,
                            "region": {"name": None, "posts": []}}
-                self.regions_scraped += 1
-                print "region %f/%f scraped at '%s'" % (self.regions_scraped,
-                                                        num_regions,
-                                                        link)
+
+                if scraped:
+                    regions_scraped += 1
+                else:
+                    regions_missed += 1
+                print ("region {0:,}/{1:,} {2} at " +
+                       "'{3}'").format(regions_scraped,
+                                       num_regions,
+                                       "scraped" if scraped else "missed",
+                                       link)
+        print ("\n\n{0:,}/{1,:} regions successfully " +
+               "extracted. See logs for " +
+               "failures.\n\n").format(regions_scraped, num_regions)
 
     @staticmethod
     def _get_posts(link):
