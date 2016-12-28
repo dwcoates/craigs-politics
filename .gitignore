@@ -1,0 +1,5 @@
+*.pyc
+*~
+/usa_backup.csv
+/usa_dict_bak.pkl
+/USA_BACKUP.pkl
