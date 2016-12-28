@@ -118,7 +118,7 @@ class RegionSpider(Spider):
         """
         content = requests.get(link).text
 
-        x = 2 + 2 * random.random()
+        x = 3 + 2 * random.random()
         time.sleep(x)
 
         return content
