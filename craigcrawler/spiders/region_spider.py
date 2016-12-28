@@ -31,33 +31,36 @@ class RegionSpider(Spider):
 
         regions_scraped = 0
         regions_missed = 0
-        for terr_name, region_links in usa_territories:
-            for link in region_links:
-                region = {"name": None, "posts": []}
-                scraped = False
-                attempts = 0
-                # make three attempts to make scrape region
-                while(~scraped and attempts <= 3):
-                    try:
-                        region = RegionSpider._get_posts(link)
-                        scraped = True
-                    except requests.ConnectionError:
-                        logger.warn(
-                            "Connection failure while requesting '%s'", link)
-                        print "Waiting in response to connection failure..."
-                        time.sleep(20)
-                    attempts += 1
-                if scraped:
-                    regions_scraped += 1
-                else:
-                    regions_missed += 1
-                print ("region {0:,}/{1:,} {2} at " +
-                       "'{3}'").format(regions_scraped,
-                                       num_regions,
-                                       "scraped" if scraped else "missed",
-                                       link)
 
-                yield {"state": terr_name, "region": region}
+        terr_name = "Indiana"
+        region_links = usa_territories["Indiana"]
+
+        for link in region_links:
+            region = {"name": None, "posts": []}
+            scraped = False
+            attempts = 0
+            # make three attempts to make scrape region
+            while(~scraped and attempts <= 3):
+                try:
+                    region = RegionSpider._get_posts(link)
+                    scraped = True
+                except requests.ConnectionError:
+                    logger.warn(
+                        "Connection failure while requesting '%s'", link)
+                    print "Waiting in response to connection failure..."
+                    time.sleep(20)
+                attempts += 1
+            if scraped:
+                regions_scraped += 1
+            else:
+                regions_missed += 1
+            print ("region {0:,}/{1:,} {2} at " +
+                   "'{3}'").format(regions_scraped,
+                                   num_regions,
+                                   "scraped" if scraped else "missed",
+                                   link)
+
+            yield {"state": terr_name, "region": region}
 
         print ("\n\n{0:,}/{1,:} regions successfully " +
                "extracted. See logs for " +
