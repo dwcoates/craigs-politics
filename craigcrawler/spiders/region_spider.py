@@ -32,8 +32,14 @@ class RegionSpider(Spider):
         regions_scraped = 0
         regions_missed = 0
 
-        terr_name = "Indiana"
-        region_links = usa_territories["Indiana"]
+        def get_index(name):
+            for i in xrange(len(usa_territories)):
+                if usa_territories[i][0] == name:
+                    return i
+            return -1
+        indiana = get_index("Indiana")
+        terr_name = usa_territories[indiana][0]
+        region_links = usa_territories[indiana][1]
 
         for link in region_links:
             region = {"name": None, "posts": []}
