@@ -30,8 +30,6 @@ class PickledPandaPipeline(object):
                 pickle.dump(usa_dict, f, pickle.HIGHEST_PROTOCOL)
         except:
             pass
-        with open("usa_dict_bak.pkl", 'wb') as f:
-            pickle.dump(usa_dict, f, pickle.HIGHEST_PROTOCOL)
 
         # build the dataframe to be stored in csv file
         usa_array = []
@@ -52,12 +50,12 @@ class PickledPandaPipeline(object):
                                                      post["subregion"])
                 else:
                     usa_array += build_post_item(None, None, None)
+        usa_scraped = pd.DataFrame(np.array(usa_array),
+                                   columns=["title", "date", "state", "region", "subregion"])
+        usa_db = pd.read_csv("data/us.csv", index_col=0)
 
-        usa_df = pd.DataFrame(np.array(usa_array),
-                              columns=["title", "date", "state", "region", "subregion"])
-
-        usa_df.to_csv(PickledPandaPipeline.csv_filename, encoding='utf-8')
-        usa_df.to_csv("usa_backup.csv", encoding='utf-8')
+        usa = pd.merge(usa_db, usa_scraped, how="outer")
+        usa.to_csv(PickledPandaPipeline.csv_filename, encoding='utf-8')
 
     @staticmethod
     def load():
