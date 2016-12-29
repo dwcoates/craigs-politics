@@ -1,0 +1,149 @@
+* Imports
+#+BEGIN_SRC ipython :session :file  :exports both
+%matplotlib inline
+import matplotlib as mtl
+import numpy as np
+import scipy
+from scipy import stats
+import pandas as pd
+
+import pprint as pp
+import pickle
+import re
+
+pd.options.display.max_colwidth = 1000
+#+END_SRC
+* Data
+#+BEGIN_SRC ipython :session :file  :exports both
+# read us data collected by craigcrawler
+usa_raw = pd.read_csv("data/us.csv", index_col=0)
+post_count_total_raw = len(usa_raw)
+post_count_by_state_raw = usa_raw.groupby("state").count()["title"].sort_values(ascending=False)
+post_count_by_region_raw = usa_raw.groupby("region").count()["title"].sort_values(ascending=False)
+
+print ("\n{0:,} total posts exctracted from {3:,} regions over {4} "+ 
+       "state. The most popular\nstate was {1}, and the most " + 
+       "popular region was, surprisingly, {2}.").format(post_count_total_raw,
+                                                        post_count_by_state_raw.index[0],
+                                                        post_count_by_region_raw.index[0],
+                                                        len(post_count_by_region_raw),
+                                                        len(post_count_by_state_raw))
+
+#+END_SRC
+
+#+BEGIN_SRC ipython :session :file  :exports both
+# some preprocessing to check data corrupted files
+assert len(usa_raw["state"].unique()) == 52
+len(usa_raw["region"].unique()) == 416
+
+len(usa_raw["subregion"].unique()) + len(usa_raw["region"].unique())
+#+END_SRC
+** Census
+#+BEGIN_SRC ipython :session :file  :exports both
+#
+# US census data for 2010 from the census bureau
+#
+
+# Census data is not labelled exactly as my data is. Some states are named a little differently,
+# and regions are almost never named similarly. These have to be resolved.
+
+census = pd.read_csv("data/census/DEC_10_DP_DPDP1_with_ann.csv")[1:]
+# keys for the census data. Only really care about two of them (there are hundreds):
+TOT_NUM_ID = "HD01_S001" # total number key
+TOT_PER_ID = "HD02_S001" # total percent key
+
+# Keys for geography stuff. Table is an index table.
+# These keys are used as index for census table.
+census_keys = pd.read_csv("data/census/DEC_10_DP_G001_with_ann.csv")[1:]
+GEO_KEY = "GEO.display-label"
+GEO_ID = "GEO.id"
+# keys used to reference states in census
+census_states_keys = dict(zip(list(census_keys[GEO_KEY]), list(census_keys[GEO_ID][:52])))
+
+print "Sample of census keys, if curious:"
+zip(list(census_states_keys), list(census_states_keys.values()))[:5]
+
+census[:5]
+
+#+END_SRC
+#+BEGIN_SRC ipython :session :file  :exports both
+#
+# Standardizing census and cl data names This may have to be limited
+# to states names. Regions will be, at the very least, a huge pain.
+# Most likely will be unresolvable.
+#
+misnamed_states = []
+for name in census_states_keys:
+    if post_count_by_state_raw[name] < 0: misnamed_states.append(state)
+
+# Standarize top city names
+#+END_SRC
+** Unicode
+#+BEGIN_SRC ipython :session :file  :exports both
+#
+# ascii vs. unicode
+#
+
+def check_ascii(post):
+    """
+    Determines whether a title is properly encoded.
+    """
+    title = post["title"]
+    try:
+        title.encode('ascii')
+        return True
+    except UnicodeError:
+        return False
+
+ascii_titles_tv = usa_raw.apply(check_ascii, axis=1)
+nonascii_posts = usa_raw[~ascii_titles_tv]
+
+distinct_states = nonascii_posts["state"].unique()
+print ("\n{0:,} of {1:,} total posts were non-ascii ({2:.2f}%), confined to {3} "
+       + "states.").format(len(nonascii_posts),
+                       total_posts_raw,
+                       len(nonascii_posts)/float(total_posts_raw) * 100,
+                       len(distinct_states))
+
+#+END_SRC
+*** Pennsylvania
+#+BEGIN_SRC ipython :session :file  :exports both
+#
+# ascii vs. unicode
+#
+
+nonascii_states_count = nonascii_posts.groupby(
+    "state").title.nunique().sort_values(ascending=False)
+print "\nTop ten most popular unicode states:"
+print nonascii_states_count[:10]
+
+pennsylvania = nonascii_posts[nonascii_posts["state"] == "Pennsylvania"]
+print pennsylvania["title"].tolist()[0]
+
+print("\nA single Trump memester seems to be responsible for the chaos " +
+      "in Pennsylvania.\n" + "I suspect that these crazy unicode posts " +
+      "are mostly done by a very small\nset of people, though there is " +
+      "no way to tell.")
+print "\nRandom sample of 5 non-ascii Pennsylvania posts"
+print pennsylvania["title"][:5]
+
+#+END_SRC
+* State Popularity
+#+BEGIN_SRC ipython :session :file  :exports both
+state_patronage = usa.groupby('state').count()["title"].sort_values(ascending=False)
+region_patronage = usa.groupby('region').count()["title"].sort_values(ascending=False)
+
+#
+# INCLUDE NORMALIZED FIGURES (posts per capita)
+#
+
+print "\nTop ten most popular states"
+print state_patronage[:10]
+
+# Denver is about 10 times as populous as nyc, for example
+print "\nTop ten most popular regions"
+print region_patronage[:10]
+
+print "\n\n{0} regions in Colorado".format(usa[usa['state'] == "Colorado"]["region"].nunique())
+
+#+END_SRC 
