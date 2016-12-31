@@ -315,8 +315,6 @@ plt.plot(p2.x, p2.y)
 
 #+RESULTS:
 [[file:/home/dodge/workspace/craig-politics/py6320Yhv.png]]
-
-*** Normalized Patronage
 I expect population to relate to patronage linearly.
 #+BEGIN_SRC ipython :session :file /tmp/image.png  :exports both
 # Getting rid of California
@@ -327,11 +325,15 @@ plt.plot(p1["population"], p1["patronage"])
 #+RESULTS:
 [[file:/tmp/image.png]]
 #+BEGIN_SRC ipython ipython :session :file /tmp/population2.png  :exports both
-p2 = state_usage.filter(["population", "normalized"]).sort_values("population", ascending=False)[2:]
+states = pat.join(voting).sort_values("normalized")
 
-plt.plot(p2["population"], p2["normalized"])
+plt.plot(np.arange(len(states.index)), states.trumpism)
 #+END_SRC
 
 #+RESULTS:
 [[file:/tmp/population2.png]]
 
+#+BEGIN_SRC ipython :session :file  :exports both
+
+#+END_SRC
+* Post Qualities
