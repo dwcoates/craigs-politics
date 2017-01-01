@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
 <head>
 <title>politics</title>
-<!-- 2016-12-30 Fri 19:37 -->
+<!-- 2016-12-30 Fri 20:22 -->
 <meta  http-equiv="Content-Type" content="text/html;charset=utf-8" />
 <meta  name="generator" content="Org-mode" />
 <meta  name="author" content="Dodge Coates" />
@@ -93,11 +93,11 @@ for the JavaScript code in this tag.
 <li><a href="#sec-4-3">4.3. Analysis</a>
 <ul>
 <li><a href="#sec-4-3-1">4.3.1. Patronage</a></li>
-<li><a href="#sec-4-3-2">4.3.2. Normalized Patronage</a></li>
 </ul>
 </li>
 </ul>
 </li>
+<li><a href="#sec-5">5. Post Qualities</a></li>
 </ul>
 </div>
 </div>
@@ -448,15 +448,15 @@ Index: []
 <div class="org-src-container">
 
 <pre class="src src-ipython"><span style="color: #CFB980;">cl_by_state</span> = patronage.join(census, how=<span style="color: #84857E;">"inner"</span>)
-<span style="color: #CFB980;">normalized_usage</span> = cl_by_state.<span style="color: #B9A572;">apply</span>(
+<span style="color: #CFB980;">usage</span> = cl_by_state.<span style="color: #B9A572;">apply</span>(
     <span style="color: #9BA657;">lambda</span> df: df[<span style="color: #84857E;">"patronage"</span>] / <span style="color: #B9A572;">float</span>(df[<span style="color: #84857E;">"population"</span>]), axis=1)
 
 <span style="color: #6C6B59;"># </span><span style="color: #6C6B59;">Weight for mean usage = 1.000</span>
 <span style="color: #CFB980;">weight</span> = <span style="color: #B9A572;">float</span>(census.population.mean()/patronage.mean())/1.0605
-<span style="color: #CFB980;">weighted_normal_usage</span> = pd.DataFrame((normalized_usage * weight),
-                                columns=[<span style="color: #84857E;">"normalized"</span>])
+<span style="color: #CFB980;">weighted_usage</span> = pd.DataFrame((usage * weight),
+                               columns=[<span style="color: #84857E;">"popularity"</span>])
 
-<span style="color: #CFB980;">state_usage</span> = pd.concat([cl_by_state, weighted_normal_usage],
+<span style="color: #CFB980;">state_usage</span> = pd.concat([cl_by_state, weighted_usage],
                         axis=1).sort_values(<span style="color: #84857E;">"patronage"</span>,
                                             ascending=<span style="color: #B97E56;">False</span>)
 </pre>
@@ -488,7 +488,7 @@ plt.bar(x, p1)
 
 <div class="org-src-container">
 
-<pre class="src src-ipython"><span style="color: #CFB980;">p2</span> = pat.normalized
+<pre class="src src-ipython"><span style="color: #CFB980;">p2</span> = pat.popularity
 
 plt.bar(x, p2)
 </pre>
@@ -510,18 +510,8 @@ plt.plot(p2.x, p2.y)
 </pre>
 </div>
 
-
-<div class="figure">
-<p><img src="file:///home/dodge/workspace/craig-politics/py6320Yhv.png" alt="py6320Yhv.png" />
-</p>
-</div>
-</div>
-</div>
-
-<div id="outline-container-sec-4-3-2" class="outline-4">
-<h4 id="sec-4-3-2"><span class="section-number-4">4.3.2</span> Normalized Patronage</h4>
-<div class="outline-text-4" id="text-4-3-2">
 <p>
+<img src="file:///home/dodge/workspace/craig-politics/py6320Yhv.png" alt="py6320Yhv.png" />
 I expect population to relate to patronage linearly.
 </p>
 <div class="org-src-container">
@@ -539,9 +529,9 @@ plt.plot(p1[<span style="color: #84857E;">"population"</span>], p1[<span style="
 </div>
 <div class="org-src-container">
 
-<pre class="src src-ipython"><span style="color: #CFB980;">p2</span> = state_usage.<span style="color: #B9A572;">filter</span>([<span style="color: #84857E;">"population"</span>, <span style="color: #84857E;">"normalized"</span>]).sort_values(<span style="color: #84857E;">"population"</span>, ascending=<span style="color: #B97E56;">False</span>)[2:]
+<pre class="src src-ipython"><span style="color: #CFB980;">states</span> = pat.join(voting).sort_values(<span style="color: #84857E;">"popularity"</span>)
 
-plt.plot(p2[<span style="color: #84857E;">"population"</span>], p2[<span style="color: #84857E;">"normalized"</span>])
+plt.plot(np.arange(<span style="color: #B9A572;">len</span>(states.index)), states.trumpism)
 </pre>
 </div>
 
@@ -550,14 +540,23 @@ plt.plot(p2[<span style="color: #84857E;">"population"</span>], p2[<span style="
 <p><img src="file:///tmp/population2.png" alt="population2.png" />
 </p>
 </div>
+
+<div class="org-src-container">
+
+<pre class="src src-ipython"></pre>
 </div>
 </div>
 </div>
+</div>
+</div>
+
+<div id="outline-container-sec-5" class="outline-2">
+<h2 id="sec-5"><span class="section-number-2">5</span> Post Qualities</h2>
 </div>
 </div>
 <div id="postamble" class="status">
 <p class="author">Author: Dodge Coates</p>
-<p class="date">Created: 2016-12-30 Fri 19:37</p>
+<p class="date">Created: 2016-12-30 Fri 20:22</p>
 <p class="creator"><a href="http://www.gnu.org/software/emacs/">Emacs</a> 24.5.1 (<a href="http://orgmode.org">Org</a> mode 8.2.10)</p>
 <p class="validation"><a href="http://validator.w3.org/check?uri=referer">Validate</a></p>
 </div>
