@@ -18,7 +18,7 @@ pd.options.display.max_colwidth = 1000
 #+RESULTS:
 
 * Preparing Data
-** Grab Data
+** Grab CL Data
 #+BEGIN_SRC ipython :session :file  :exports both 
 # read us data collected by craigcrawler 
 usa_raw = pd.read_csv("data/us.csv", index_col=0)
@@ -33,7 +33,6 @@ print ("\n{0:,} total posts exctracted from {3:,} regions over {4} "+
                                                         post_count_by_region_raw.index[0],
                                                         len(post_count_by_region_raw),
                                                         len(post_count_by_state_raw))
-
 
 #+END_SRC
 #+RESULTS:
@@ -183,7 +182,159 @@ assert set(usa.state.unique()) == set(voting.index) and len(usa.state.unique() =
 print "Voting data complete"
 #+END_SRC
 #+RESULTS:
-* Unicode
+* State Popularity
+** Data
+*** Grab Data
+#+BEGIN_SRC ipython :session :file  :exports both
+patronage = pd.DataFrame(usa.groupby('state').size(), columns=["patronage"])
+
+print "\nTop ten most popular states"
+print usage_by_state[:10]
+#+END_SRC 
+#+RESULTS:
+
+*** Normalization
+#+BEGIN_SRC ipython :session :file  :exports both
+    cl_by_state = patronage.join(census, how="inner")
+    usage = cl_by_state.apply(
+        lambda df: df["patronage"] / float(df["population"]), axis=1)
+
+    # Weight for mean usage = 1.000
+    weight = float(census.population.mean()/patronage.mean())/1.0605
+    weighted_usage = pd.DataFrame((usage * weight),
+                                   columns=["popularity"])
+
+    state_usage = pd.concat([cl_by_state, weighted_usage],
+                            axis=1).sort_values("patronage",
+                                                ascending=False)
+#+END_SRC
+#+RESULTS:
+
+** Analysis
+*** Patronage
+#+BEGIN_SRC ipython :session :file /home/dodge/workspace/craig-politics/py6320LXp.png :exports both
+pat = state_usage.sort_values("patronage", ascending=True)
+x = np.arange(len(pat))
+p1 = pat.patronage
+
+plt.bar(x, p1)
+#+END_SRC
+
+#+RESULTS:
+[[file:/home/dodge/workspace/craig-politics/py6320LXp.png]]
+
+#+BEGIN_SRC ipython :session :file /home/dodge/workspace/craig-politics/py6320oYD.png :exports both
+pat = state_usage.sort_values("population", ascending=True)
+x = np.arange(len(pat))
+p2 = pat.population
+
+plt.bar(x, p2)
+#+END_SRC
+
+#+RESULTS:
+[[file:/home/dodge/workspace/craig-politics/py6320oYD.png]]
+
+*** Popularity
+#+BEGIN_SRC ipython :session :file /home/dodge/workspace/craig-politics/py6320lr1.png :exports both
+p2 = pat.popularity
+
+plt.bar(x, p2)
+#+END_SRC
+#+RESULTS:
+[[file:/home/dodge/workspace/craig-politics/py6320lr1.png]]
+
+
+
+
+
+
+#+BEGIN_SRC ipython :session :file /home/dodge/workspace/craig-politics/py6320Yhv.png :exports both
+p2 = state_usage.population.sort_values()
+p2.x = np.arange(len(p2))
+p2.y = p2.values
+
+plt.plot(p2.x, p2.y)
+#+END_SRC
+
+#+RESULTS:
+[[file:/home/dodge/workspace/craig-politics/py6320Yhv.png]]
+I expect population to relate to patronage linearly.
+#+BEGIN_SRC ipython :session :file /tmp/image.png  :exports both
+# Getting rid of California
+p1 = state_usage.filter(["population", "patronage"]).sort_values("population", ascending=False)[1:]
+
+plt.plot(p1["population"], p1["patronage"])
+#+END_SRC
+#+RESULTS:
+[[file:/tmp/image.png]]
+
+*** Politics
+#+BEGIN_SRC ipython ipython :session :file /tmp/population2.png  :exports both
+states = pat.join(voting).sort_values("popularity")[:50]
+plt.hist([states.popularity, states.trumpism], bins=10)
+#+END_SRC
+
+#+RESULTS:
+[[file:/tmp/population2.png]]
+
+Note the correlation between trumpism and popularity
+#+BEGIN_SRC ipython :session :file /home/dodge/workspace/craig-politics/py6320k_K.png :exports both
+print states.filter(["patronage", "popularity", "normalized", "trumpism"]).corr()
+#+END_SRC
+* Text Qualities
+** Data
+Find strings in posts
+#+BEGIN_SRC ipython :session :file /home/dodge/workspace/craig-politics/py6320WhL.png :exports both
+  def find_strs(substr, df=usa):
+      """
+      Get all titles from usa that have substr in their post title. Add some data on capitalization.
+      """
+      find = lambda sub, s: 1 if re.search(sub, s) else np.nan
+
+      # filter titles to only posts with substr in some form or another
+      select = df.title.map(str.lower).map(lambda s: find(substr.lower(), s)) == 1
+      findings = df.title[select]
+      findings.rename("*" + substr + "*", inplace=True)
+
+      proper = findings.apply(lambda x: find((substr[0].upper() + substr[1:].lower()), x))
+      cap = findings.apply(lambda x: find(substr.upper(), x))
+      low = findings.apply(lambda x: find(substr.lower(), x))
+
+      proper.rename("proper", inplace=True)
+      cap.rename("uppercase", inplace=True)
+      low.rename("lowercase", inplace=True)
+
+      return pd.concat([findings, proper, cap, low], axis=1)
+
+  words = ["president",
+           "hillary",
+           "clinton",
+           "donald",
+           "trump",
+           "muslims",
+           "mexicans",
+           "liberals",
+           "conservatives"]
+#+END_SRC
+*** *liberals*
+*** *conservatives*
+*** *clinton*
+*** *trump*
+** Analysis
+*** Population
+*** Politics
+The more pro-Trump your state, the less likely you are to use "Trump" over "TRUMP"
+#+BEGIN_SRC ipython :session :file /home/dodge/workspace/craig-politics/py6320cup.png :exports both
+cap = states.join(norm.rename("proper per cap"), how="outer")
+prop_over_cap = cap.filter(["trumpism", "proper per cap"]).sort_values("trumpism", ascending=True)[1:]
+
+plt.hist([prop_over_cap.trumpism, prop_over_cap["proper per cap"]], bins=30)
+#+END_SRC
+
+#+RESULTS:
+[[file:/home/dodge/workspace/craig-politics/py6320cup.png]]
+
+*** Unicode
 ascii vs. unicode usage. 
 #+BEGIN_SRC ipython :session :file  :exports both
 def check_ascii(post):
@@ -209,7 +360,7 @@ print ("{0:,} of {1:,} total posts were non-ascii ({2:.2f}%), confined to {3} "
 
 #+RESULTS:
 
-** Pennsylvania
+**** Pennsylvania
 Pennsylvania has was the preeminent outlier in non-ascii usage per-state
 #+BEGIN_SRC ipython :session :file  :exports both
 nonascii_states_count = nonascii_posts.groupby(
@@ -249,91 +400,15 @@ york, PA              11    11     11          0
 Columns: [title, date, state, region]
 Index: []
 =* 
-*** Colorado
+***** Colorado
 #+BEGIN_SRC ipython :session :file  :exports both
 print "\n\n{0} regions in Colorado".format(usa[usa['state'] == "Colorado"]["region"].nunique())
 #+END_SRC
 
 #+RESULTS:
 
-* State Popularity
-** Usage
-#+BEGIN_SRC ipython :session :file  :exports both
-patronage = pd.DataFrame(usa.groupby('state').size(), columns=["patronage"])
 
-print "\nTop ten most popular states"
-print usage_by_state[:10]
-#+END_SRC 
-#+RESULTS:
-
-** Normalization
-#+BEGIN_SRC ipython :session :file  :exports both
-    cl_by_state = patronage.join(census, how="inner")
-    normalized_usage = cl_by_state.apply(
-        lambda df: df["patronage"] / float(df["population"]), axis=1)
-
-    # Weight for mean usage = 1.000
-    weight = float(census.population.mean()/patronage.mean())/1.0605
-    weighted_normal_usage = pd.DataFrame((normalized_usage * weight),
-                                    columns=["normalized"])
-
-    state_usage = pd.concat([cl_by_state, weighted_normal_usage],
-                            axis=1).sort_values("patronage",
-                                                ascending=False)
-#+END_SRC
-#+RESULTS:
-
-** Analysis
-*** Patronage
-#+BEGIN_SRC ipython :session :file /home/dodge/workspace/craig-politics/py6320LXp.png :exports both
-pat = state_usage.sort_values("patronage", ascending=True)
-x = np.arange(len(pat))
-p1 = pat.patronage
-
-plt.bar(x, p1)
+#+BEGIN_SRC ipython :session :file /home/dodge/workspace/craigp-olitics/py6320XN2.png :exports both
+posts = usa.groupby("state")["title"].agg(sum)["Kansas"]
 #+END_SRC
 
-#+RESULTS:
-[[file:/home/dodge/workspace/craig-politics/py6320LXp.png]]
-
-#+BEGIN_SRC ipython :session :file /home/dodge/workspace/craig-politics/py6320lr1.png :exports both
-p2 = pat.normalized
-
-plt.bar(x, p2)
-#+END_SRC
-
-#+RESULTS:
-[[file:/home/dodge/workspace/craig-politics/py6320lr1.png]]
-
-#+BEGIN_SRC ipython :session :file /home/dodge/workspace/craig-politics/py6320Yhv.png :exports both
-p2 = state_usage.population.sort_values()
-p2.x = np.arange(len(p2))
-p2.y = p2.values
-
-plt.plot(p2.x, p2.y)
-#+END_SRC
-
-#+RESULTS:
-[[file:/home/dodge/workspace/craig-politics/py6320Yhv.png]]
-I expect population to relate to patronage linearly.
-#+BEGIN_SRC ipython :session :file /tmp/image.png  :exports both
-# Getting rid of California
-p1 = state_usage.filter(["population", "patronage"]).sort_values("population", ascending=False)[1:]
-
-plt.plot(p1["population"], p1["patronage"])
-#+END_SRC
-#+RESULTS:
-[[file:/tmp/image.png]]
-#+BEGIN_SRC ipython ipython :session :file /tmp/population2.png  :exports both
-states = pat.join(voting).sort_values("normalized")
-
-plt.plot(np.arange(len(states.index)), states.trumpism)
-#+END_SRC
-
-#+RESULTS:
-[[file:/tmp/population2.png]]
-
-#+BEGIN_SRC ipython :session :file  :exports both
-
-#+END_SRC
-* Post Qualities
