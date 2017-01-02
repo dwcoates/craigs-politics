@@ -16,6 +16,11 @@ pd.options.display.max_colwidth = 1000
 #+END_SRC
 
 #+RESULTS:
+** Text
+*** Introduction
+For my webscraping project, I've chosed to exract politics data from craigslist.org. My original ambition, though it proved difficult to affirm, was to prove a negative correlation to pro-trump chatter with conservatism. That is, I suspected that, somewhat counter-intuitively, the politics sections of more conservative states would be the less likely source of pro-trump posts. More generally, I sought to analyze the trends of politcs discussion of craiglist.
+*** Methodology
+To extract data from craigslist, I used the Python Scrapy package. I filed some 500 requests, spread over 5 hours,  to obtain roughly 40,000 posts titles. For each of these titles, there is a corresponding state and region. Some regions are additionally divided into subregions (the New York City region, for example, consists of Brooklyn, Queens, Manhattan, etc). Each post, its time, and its geographical origin are represented with a single row in a 40k row table. Additionally, I employed the 2010 U.S. census, which is available from http://www.census.gov, as well as 2016 election data, which was extracted from http://uselectionatlas.org/ using a more simple extraction script. 
 
 * Preparing Data
 ** Grab CL Data
@@ -285,55 +290,78 @@ print states.filter(["patronage", "popularity", "normalized", "trumpism"]).corr(
 ** Data
 Find strings in posts
 #+BEGIN_SRC ipython :session :file /home/dodge/workspace/craig-politics/py6320WhL.png :exports both
-  def find_strs(substr, df=usa):
-      """
-      Get all titles from usa that have substr in their post title. Add some data on capitalization.
-      """
-      find = lambda sub, s: 1 if re.search(sub, s) else np.nan
+    def find_strs(substr, df=usa):
+        """
+        Get all titles from usa that have substr in their post title. Add some data on capitalization.
+        """
+        find = lambda sub, s: 1 if re.search(sub, s) else np.nan
 
-      # filter titles to only posts with substr in some form or another
-      select = df.title.map(str.lower).map(lambda s: find(substr.lower(), s)) == 1
-      findings = df.title[select]
-      findings.rename("*" + substr + "*", inplace=True)
+        # filter titles to only posts with substr in some form or another
+        select = df.title.map(str.lower).map(lambda s: find(substr.lower(), s)) == 1
+        findings = df.title[select]
+        findings.rename("*" + substr + "*", inplace=True)
 
-      proper = findings.apply(lambda x: find((substr[0].upper() + substr[1:].lower()), x))
-      cap = findings.apply(lambda x: find(substr.upper(), x))
-      low = findings.apply(lambda x: find(substr.lower(), x))
+        proper = findings.apply(lambda x: find((substr[0].upper() + substr[1:].lower()), x))
+        cap = findings.apply(lambda x: find(substr.upper(), x))
+        low = findings.apply(lambda x: find(substr.lower(), x))
 
-      proper.rename("proper", inplace=True)
-      cap.rename("uppercase", inplace=True)
-      low.rename("lowercase", inplace=True)
+        proper.rename("proper", inplace=True)
+        cap.rename("uppercase", inplace=True)
+        low.rename("lowercase", inplace=True)
 
-      return pd.concat([findings, proper, cap, low], axis=1)
+        return pd.concat([findings, proper, cap, low], axis=1)
 
-  words = ["president",
-           "hillary",
-           "clinton",
-           "donald",
-           "trump",
-           "muslims",
-           "mexicans",
-           "liberals",
-           "conservatives"]
+    words = ["president",
+             "president trump"
+             "hillary",
+             "clinton",
+             "donald",
+             "trump",
+             "muslims",
+             "mexicans"] 
+
 #+END_SRC
 *** *liberals*
 *** *conservatives*
 *** *clinton*
 *** *trump*
 ** Analysis
-*** Population
-*** Politics
+*** General Language
+*** Trumps
+**** Patronage
+#+BEGIN_SRC ipython :session :file /home/dodge/workspace/craig-politics/py6320Qlq.png :exports both
+trumps = find_strs("trump").join(usa.state, how="outer")
+trumps_by_state = trumps.groupby("state").count().join(states).drop(["clinton", "trump"], axis=1)
+up_over_trumps = (trumps_by_state.uppercase/trumps_by_state["*trump*"]).rename("uppercase usage")
+prop_over_trumps = (trumps_by_state.proper/trumps_by_state["*trump*"]).rename("propercase usage")
+trumps_over_pat = (trumps_by_state["*trump*"]/trumps_by_state.patronage).rename("trumps usage")
+trumps_by_state = trumps_by_state.join([prop_over_trumps, up_over_trumps, trumps_over_pat], how="outer")
+#+END_SRC
+**** Politics
 The more pro-Trump your state, the less likely you are to use "Trump" over "TRUMP"
 #+BEGIN_SRC ipython :session :file /home/dodge/workspace/craig-politics/py6320cup.png :exports both
-cap = states.join(norm.rename("proper per cap"), how="outer")
-prop_over_cap = cap.filter(["trumpism", "proper per cap"]).sort_values("trumpism", ascending=True)[1:]
+trumps_vs_trumpism = trumps_by_state.filter(["trumpism", "propercase usage", "uppercase usage", "trumps usage"]).sort_values("trumps usage", ascending=True)[1:]
 
-plt.hist([prop_over_cap.trumpism, prop_over_cap["proper per cap"]], bins=30)
+pd.DataFrame.hist(trumps_vs_trumpism, bins=50)
+#plt.hist([prop_over_cap.trumpism, prop_over_cap[""]], bins=30)
 #+END_SRC
 
 #+RESULTS:
 [[file:/home/dodge/workspace/craig-politics/py6320cup.png]]
 
+**** Trump Language
+#+BEGIN_SRC ipython :session :file /home/dodge/workspace/craig-politics/py63202C2.png :exports both
+trump_words = ["liberals",
+               "conservatives",
+               "centipede",
+               "cuck",
+               "maga",
+               "regressive left",
+               "shillary",
+               "sjw",
+               "triggered"]
+
+#+END_SRC
 *** Unicode
 ascii vs. unicode usage. 
 #+BEGIN_SRC ipython :session :file  :exports both
@@ -348,6 +376,7 @@ def check_ascii(post):
         return False
 
 ascii_titles_tv = usa.title.apply(check_ascii)
+ascii_posts = usa[ascii_titles_tv]
 nonascii_posts = usa[~ascii_titles_tv]
 
 distinct_states = nonascii_posts["state"].unique()
@@ -412,3 +441,29 @@ print "\n\n{0} regions in Colorado".format(usa[usa['state'] == "Colorado"]["regi
 posts = usa.groupby("state")["title"].agg(sum)["Kansas"]
 #+END_SRC
 
+
+      
+*** Semantics
+#+BEGIN_SRC ipython :session :file /home/dodge/workspace/craig-politics/py63201WL.png :exports both
+  from textblob import TextBlob
+
+  def semants(text):
+      blob = TextBlob(text)
+      ss = 0
+      for sentence in blob.sentences:
+          ss += sentence.sentiment.polarity
+          #print(type(sentence.sentiment.polarity))
+
+      return float(ss)/len(blob.sentences)
+
+
+#+END_SRC
+#+BEGIN_SRC ipython :session :file /home/dodge/workspace/craig-politics/py63202Qe.png :exports both
+semantics = ascii_posts.title.map(lambda x: semants(x)).rename("semants")
+semant = find_strs("trump", df=ascii_posts).join(pd.DataFrame(semantics))
+sems_usa = semant.join(usa, how="inner")
+trumps_semantcs = sems_usa.groupby("state").mean().join(voting, how="inner").sort_values("semants").corr()
+#+END_SRC
+#+BEGIN_SRC ipython :session :file /home/dodge/workspace/craig-politics/py6320Dbk.png :exports both
+total_semants = usa.join(semantics, how="outer").groupby("state").mean().join(voting).sort_values("semants").corr()
+#+END_SRC
