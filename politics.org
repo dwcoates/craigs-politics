@@ -1,11 +1,11 @@
 * Introduction
-#+BEGIN_SRC ipython :session :file  :exports both
+#+BEGIN_SRC ipython :session :file  :exports both :tangle ./politics.py
 %matplotlib inline
 import numpy as np
 import pandas as pd
 import scipy
 from scipy import stats
-import matplotlib as mpl
+import matplotlib as mpln
 import matplotlib.pyplot as plt
 
 import pprint as pp
@@ -16,15 +16,9 @@ pd.options.display.max_colwidth = 1000
 #+END_SRC
 
 #+RESULTS:
-** Text
-*** Introduction
-For my webscraping project, I've chosed to exract politics data from craigslist.org. My original ambition, though it proved difficult to affirm, was to prove a negative correlation to pro-trump chatter with conservatism. That is, I suspected that, somewhat counter-intuitively, the politics sections of more conservative states would be the less likely source of pro-trump posts. More generally, I sought to analyze the trends of politcs discussion of craiglist.
-*** Methodology
-To extract data from craigslist, I used the Python Scrapy package. I filed some 500 requests, spread over 5 hours,  to obtain roughly 40,000 posts titles. For each of these titles, there is a corresponding state and region. Some regions are additionally divided into subregions (the New York City region, for example, consists of Brooklyn, Queens, Manhattan, etc). Each post, its time, and its geographical origin are represented with a single row in a 40k row table. Additionally, I employed the 2010 U.S. census, which is available from http://www.census.gov, as well as 2016 election data, which was extracted from http://uselectionatlas.org/ using a more simple extraction script. 
-
 * Preparing Data
 ** Grab CL Data
-#+BEGIN_SRC ipython :session :file  :exports both 
+#+BEGIN_SRC ipython :session :file  :exports both  :tangle ./politics.py
 # read us data collected by craigcrawler 
 usa_raw = pd.read_csv("data/us.csv", index_col=0)
 post_count_total_raw = len(usa_raw)
@@ -45,9 +39,8 @@ print ("\n{0:,} total posts exctracted from {3:,} regions over {4} "+
 - US census data for 2010 from the census bureau
 - Census data is not labelled exactly as my data is. Some states are named a little differently,
 and regions are almost never named similarly. These have to be resolved.
-
 *** Geo Keys
-#+BEGIN_SRC ipython :session :file  :exports both
+#+BEGIN_SRC ipython :session :file  :exports both :tangle ./politics.py
 # Keys for geography stuff. Table is an index table.
 # These keys are used as index for census table.
 GEO_NAME = "GEO.display-label"
@@ -61,7 +54,7 @@ state_keys = state_keys[state_keys[GEO_NAME]!= "Puerto Rico"]
 #+RESULTS:
 
 *** Census Data
-#+BEGIN_SRC ipython :session :file  :exports both
+#+BEGIN_SRC ipython :session :file  :exports both :tangle ./politics.py
   # keys for the census data. Only really care about two of them (there are hundreds):
   TOT_NUM_ID = "HD01_S001" # total number key
   TOT_PER_ID = "HD02_S001" # total percent key
@@ -90,7 +83,7 @@ state_keys = state_keys[state_keys[GEO_NAME]!= "Puerto Rico"]
 
 [5 rows x 375 columns]
 ** U.S. 2016 Election
-#+BEGIN_SRC ipython :session :file  :exports both
+#+BEGIN_SRC ipython :session :file  :exports both :tangle ./politics.py
   import requests
   from scrapy import Selector
 
@@ -116,7 +109,7 @@ state_keys = state_keys[state_keys[GEO_NAME]!= "Puerto Rico"]
 #+END_SRC
 
 #+RESULTS:
-#+begin_example
+#+begin_example :tangle ./politics.py
                       clinton    trump   trumpism
 Wyoming                 55973   174419   0.757053
 West Virginia          188794   489371   0.721611
@@ -134,7 +127,7 @@ Massachusetts         1995196  1090893   0.353487
 ** Preprocess Data
 
 Some preprocessing to check data corrupted files
-#+BEGIN_SRC ipython :session :file  :exports both
+#+BEGIN_SRC ipython :session :file  :exports both :tangle ./politics.py
   print "Data tests... \n\nAssertions Passed\n\n"
 
   # Confirm all expected regions and states present
@@ -160,7 +153,7 @@ Some preprocessing to check data corrupted files
 #+RESULTS:
 
 Drop unneeded data
-#+BEGIN_SRC ipython :session :file  :exports both
+#+BEGIN_SRC ipython :session :file  :exports both :tangle ./politics.py
 # Drop empty regions.
 usa = usa_raw.dropna(subset=["title", "date"], how="any", axis=0)
 assert len(postless_regions) == len(usa_raw)-len(usa)
@@ -172,7 +165,7 @@ usa = usa[usa["state"] != "Territories"]
 #+RESULTS:
 
 Confirm Census Data
-#+BEGIN_SRC ipython :session :file  :exports both
+#+BEGIN_SRC ipython :session :file  :exports both :tangle ./politics.py
 assert set(usa.state.unique()) == set(census.index) and len(usa.state.unique() == len(census.index))
 
 print "Census data complete"
@@ -181,7 +174,7 @@ print "Census data complete"
 #+RESULTS:
 
 Confirm Election Data
-#+BEGIN_SRC ipython :session :file  :exports both
+#+BEGIN_SRC ipython :session :file  :exports both :tangle ./politics.py
 assert set(usa.state.unique()) == set(voting.index) and len(usa.state.unique() == len(voting.index))
 
 print "Voting data complete"
@@ -190,7 +183,7 @@ print "Voting data complete"
 * State Popularity
 ** Data
 *** Grab Data
-#+BEGIN_SRC ipython :session :file  :exports both
+#+BEGIN_SRC ipython :session :file  :exports both :tangle ./politics.py
 patronage = pd.DataFrame(usa.groupby('state').size(), columns=["patronage"])
 
 print "\nTop ten most popular states"
@@ -199,7 +192,7 @@ print usage_by_state[:10]
 #+RESULTS:
 
 *** Normalization
-#+BEGIN_SRC ipython :session :file  :exports both
+#+BEGIN_SRC ipython :session :file  :exports both :tangle ./politics.py
     cl_by_state = patronage.join(census, how="inner")
     usage = cl_by_state.apply(
         lambda df: df["patronage"] / float(df["population"]), axis=1)
@@ -217,7 +210,7 @@ print usage_by_state[:10]
 
 ** Analysis
 *** Patronage
-#+BEGIN_SRC ipython :session :file /home/dodge/workspace/craig-politics/py6320LXp.png :exports both
+#+BEGIN_SRC ipython :session :file /home/dodge/workspace/craig-politics/img/py6320LXp.png :exports both :tangle ./politics.py
 pat = state_usage.sort_values("patronage", ascending=True)
 x = np.arange(len(pat))
 p1 = pat.patronage
@@ -226,9 +219,9 @@ plt.bar(x, p1)
 #+END_SRC
 
 #+RESULTS:
-[[file:/home/dodge/workspace/craig-politics/py6320LXp.png]]
+[[file:/home/dodge/workspace/craig-politics/img/py6320LXp.png]]
 
-#+BEGIN_SRC ipython :session :file /home/dodge/workspace/craig-politics/py6320oYD.png :exports both
+#+BEGIN_SRC ipython :session :file /home/dodge/workspace/craig-politics/img/py6320oYD.png :exports both :tangle ./politics.py
 pat = state_usage.sort_values("population", ascending=True)
 x = np.arange(len(pat))
 p2 = pat.population
@@ -237,23 +230,23 @@ plt.bar(x, p2)
 #+END_SRC
 
 #+RESULTS:
-[[file:/home/dodge/workspace/craig-politics/py6320oYD.png]]
+[[file:/home/dodge/workspace/craig-politics/img/py6320oYD.png]]
 
 *** Popularity
-#+BEGIN_SRC ipython :session :file /home/dodge/workspace/craig-politics/py6320lr1.png :exports both
+#+BEGIN_SRC ipython :session :file /home/dodge/workspace/craig-politics/img/py6320lr1.png :exports both :tangle ./politics.py
 p2 = pat.popularity
 
 plt.bar(x, p2)
 #+END_SRC
 #+RESULTS:
-[[file:/home/dodge/workspace/craig-politics/py6320lr1.png]]
+[[file:/home/dodge/workspace/craig-politics/img/py6320lr1.png]]
 
 
 
 
 
 
-#+BEGIN_SRC ipython :session :file /home/dodge/workspace/craig-politics/py6320Yhv.png :exports both
+#+BEGIN_SRC ipython :session :file /home/dodge/workspace/craig-politics/img/py6320Yhv.png :exports both :tangle ./politics.py
 p2 = state_usage.population.sort_values()
 p2.x = np.arange(len(p2))
 p2.y = p2.values
@@ -262,9 +255,9 @@ plt.plot(p2.x, p2.y)
 #+END_SRC
 
 #+RESULTS:
-[[file:/home/dodge/workspace/craig-politics/py6320Yhv.png]]
+[[file:/home/dodge/workspace/craig-politics/img/py6320Yhv.png]]
 I expect population to relate to patronage linearly.
-#+BEGIN_SRC ipython :session :file /tmp/image.png  :exports both
+#+BEGIN_SRC ipython :session :file /tmp/image.png  :exports both :tangle ./politics.py
 # Getting rid of California
 p1 = state_usage.filter(["population", "patronage"]).sort_values("population", ascending=False)[1:]
 
@@ -274,7 +267,7 @@ plt.plot(p1["population"], p1["patronage"])
 [[file:/tmp/image.png]]
 
 *** Politics
-#+BEGIN_SRC ipython ipython :session :file /tmp/population2.png  :exports both
+#+BEGIN_SRC ipython ipython :session :file /tmp/population2.png  :exports both :tangle ./politics.py
 states = pat.join(voting).sort_values("popularity")[:50]
 plt.hist([states.popularity, states.trumpism], bins=10)
 #+END_SRC
@@ -283,13 +276,13 @@ plt.hist([states.popularity, states.trumpism], bins=10)
 [[file:/tmp/population2.png]]
 
 Note the correlation between trumpism and popularity
-#+BEGIN_SRC ipython :session :file /home/dodge/workspace/craig-politics/py6320k_K.png :exports both
+#+BEGIN_SRC ipython :session :file /home/dodge/workspace/craig-politics/img/py6320k_K.png :exports both
 print states.filter(["patronage", "popularity", "normalized", "trumpism"]).corr()
-#+END_SRC
+#+END_SRC :tangle ./politics.py
 * Text Qualities
 ** Data
 Find strings in posts
-#+BEGIN_SRC ipython :session :file /home/dodge/workspace/craig-politics/py6320WhL.png :exports both
+#+BEGIN_SRC ipython :session :file /home/dodge/workspace/craig-politics/img/py6320WhL.png :exports both  :tangle ./politics.py
     def find_strs(substr, df=usa):
         """
         Get all titles from usa that have substr in their post title. Add some data on capitalization.
@@ -329,7 +322,7 @@ Find strings in posts
 *** General Language
 *** Trumps
 **** Patronage
-#+BEGIN_SRC ipython :session :file /home/dodge/workspace/craig-politics/py6320Qlq.png :exports both
+#+BEGIN_SRC ipython :session :file /home/dodge/workspace/craig-politics/img/py6320Qlq.png :exports both :tangle ./politics.py
 trumps = find_strs("trump").join(usa.state, how="outer")
 trumps_by_state = trumps.groupby("state").count().join(states).drop(["clinton", "trump"], axis=1)
 up_over_trumps = (trumps_by_state.uppercase/trumps_by_state["*trump*"]).rename("uppercase usage")
@@ -339,7 +332,7 @@ trumps_by_state = trumps_by_state.join([prop_over_trumps, up_over_trumps, trumps
 #+END_SRC
 **** Politics
 The more pro-Trump your state, the less likely you are to use "Trump" over "TRUMP"
-#+BEGIN_SRC ipython :session :file /home/dodge/workspace/craig-politics/py6320cup.png :exports both
+#+BEGIN_SRC ipython :session :file /home/dodge/workspace/craig-politics/img/py6320cup.png :exports both :tangle ./politics.py
 trumps_vs_trumpism = trumps_by_state.filter(["trumpism", "propercase usage", "uppercase usage", "trumps usage"]).sort_values("trumps usage", ascending=True)[1:]
 
 pd.DataFrame.hist(trumps_vs_trumpism, bins=50)
@@ -347,10 +340,10 @@ pd.DataFrame.hist(trumps_vs_trumpism, bins=50)
 #+END_SRC
 
 #+RESULTS:
-[[file:/home/dodge/workspace/craig-politics/py6320cup.png]]
+[[file:/home/dodge/workspace/craig-politics/img/py6320cup.png]]
 
 **** Trump Language
-#+BEGIN_SRC ipython :session :file /home/dodge/workspace/craig-politics/py63202C2.png :exports both
+#+BEGIN_SRC ipython :session :file /home/dodge/workspace/craig-politics/img/py63202C2.png :exports both :tangle ./politics.py
 trump_words = ["liberals",
                "conservatives",
                "centipede",
@@ -364,7 +357,7 @@ trump_words = ["liberals",
 #+END_SRC
 *** Unicode
 ascii vs. unicode usage. 
-#+BEGIN_SRC ipython :session :file  :exports both
+#+BEGIN_SRC ipython :session :file  :exports both :tangle ./politics.py
 def check_ascii(post):
     """
     Determines whether a title is encodable as ascii
@@ -391,7 +384,7 @@ print ("{0:,} of {1:,} total posts were non-ascii ({2:.2f}%), confined to {3} "
 
 **** Pennsylvania
 Pennsylvania has was the preeminent outlier in non-ascii usage per-state
-#+BEGIN_SRC ipython :session :file  :exports both
+#+BEGIN_SRC ipython :session :file  :exports both :tangle ./politics.py
 nonascii_states_count = nonascii_posts.groupby(
     "state").title.nunique().sort_values(ascending=False)
 print "\nTop ten most popular unicode states:"
@@ -430,21 +423,21 @@ Columns: [title, date, state, region]
 Index: []
 =* 
 ***** Colorado
-#+BEGIN_SRC ipython :session :file  :exports both
+#+BEGIN_SRC ipython :session :file  :exports both :tangle ./politics.py
 print "\n\n{0} regions in Colorado".format(usa[usa['state'] == "Colorado"]["region"].nunique())
 #+END_SRC
 
 #+RESULTS:
 
 
-#+BEGIN_SRC ipython :session :file /home/dodge/workspace/craigp-olitics/py6320XN2.png :exports both
+#+BEGIN_SRC ipython :session :file /home/dodge/workspace/craigp-olitics/img/py6320XN2.png :exports both :tangle ./politics.py
 posts = usa.groupby("state")["title"].agg(sum)["Kansas"]
 #+END_SRC
 
 
       
 *** Semantics
-#+BEGIN_SRC ipython :session :file /home/dodge/workspace/craig-politics/py63201WL.png :exports both
+#+BEGIN_SRC ipython :session :file /home/dodge/workspace/craig-politics/img/py63201WL.png :exports both :tangle ./politics.py
   from textblob import TextBlob
 
   def semants(text):
@@ -458,12 +451,12 @@ posts = usa.groupby("state")["title"].agg(sum)["Kansas"]
 
 
 #+END_SRC
-#+BEGIN_SRC ipython :session :file /home/dodge/workspace/craig-politics/py63202Qe.png :exports both
+#+BEGIN_SRC ipython :session :file /home/dodge/workspace/craig-politics/img/py63202Qe.png :exports both :tangle ./politics.py
 semantics = ascii_posts.title.map(lambda x: semants(x)).rename("semants")
 semant = find_strs("trump", df=ascii_posts).join(pd.DataFrame(semantics))
 sems_usa = semant.join(usa, how="inner")
 trumps_semantcs = sems_usa.groupby("state").mean().join(voting, how="inner").sort_values("semants").corr()
 #+END_SRC
-#+BEGIN_SRC ipython :session :file /home/dodge/workspace/craig-politics/py6320Dbk.png :exports both
+#+BEGIN_SRC ipython :session :file /home/dodge/workspace/craig-politics/img/py6320Dbk.png :exports both :tangle ./politics.py
 total_semants = usa.join(semantics, how="outer").groupby("state").mean().join(voting).sort_values("semants").corr()
 #+END_SRC
