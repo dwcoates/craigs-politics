@@ -1,0 +1,143 @@
+* TODO Stuff to add
+** word cloud
+** punchline intro
+** punchline conclusion
+** district of columbia
+
+
+* Introduction
+For my webscraping project, I've chosed to exract politics data from craigslist.org. My original ambition, though it proved difficult to affirm, was to prove a negative correlation to pro-trump chatter with conservatism. That is, I suspected that, somewhat counter-intuitively, the politics sections of more conservative states would be the less likely source of pro-trump posts. More generally, I sought to analyze the trends of politcs discussion of craiglist.
+* Methodology
+To extract data from craigslist, I used the Python Scrapy package. I filed some 500 requests, spread over 5 hours,  to obtain roughly 40,000 posts titles/times. For each of these titles, there is a corresponding state and region. Some regions are additionally divided into subregions (the New York City region, for example, consists of Brooklyn, Queens, Manhattan, etc). Each post, its time and its geographical origin are represented with a single row in a 40k row Pandas DataFrame. Data corruption was not an issue. Additionally, I employed the 2010 U.S. census, which is available from http://www.census.gov, as well as 2016 election results data, which was also extracted from http://uselectionatlas.org/ using a simple BeautifulSoup extraction script. 
+**
+* State Usage
+** most popular states
+** Colorodo is very popular
+** correlation between populartion and popularity -->
+** Correlation between trumpism and popularity
+* Text Qualities
+** Finding stings 
+#+BEGIN_SRC ipython :session :file  :exports both
+  def find_strs(substr, df=usa):
+      """
+      Get all titles from usa that have substr in their post title. Add some data on capitalization.
+      """
+      
+      find = lambda s: (1 if re.search(substr, s, re.IGNORECASE) else np.nan)
+
+      return df.title[df.title.map(find) == 1].rename("*" + substr + "*", inplace=True)
+
+  def categ_strs(findings):
+      """
+      Return a list of 
+      """
+      s = findings.name[1:-1]
+      find = lambda sub, string: (1 if re.search(sub, string) else np.nan)
+
+      proper = findings.apply(lambda x: find(s[0].upper() + s[1:].lower(), x)).rename("proper")
+      cap = findings.apply(lambda x: find(s.upper(), x)).rename("uppercase")
+      low = findings.apply(lambda x: find(s.lower(), x)).rename("lower")
+
+      return pd.concat([proper, cap, low], axis=1)
+#+END_SRC
+** number of distinct words
+- percentage
+- number
+** most popular words [0/0]
+*** Make bar graph
+#+BEGIN_SRC ipython :session :file  :exports both
+notable_post_words = word_counts[~word_counts.index.isin(pop_english_words)]
+
+notable_post_words[:10]
+
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+trump        5071
+obama        1757
+not           993
+news          841
+hillary       805
+america       784
+donald        725
+democrats     694
+election      691
+clinton       667
+Name: word counts, dtype: int64
+#+end_example
+
+** word cloud
+** "liberals" vs "conservatives"
+*** pluralization
+#+BEGIN_SRC ipython :session :file  :exports both
+  ("singular/plural:\n" +
+   "'conservative': {0:.3f}\n" +
+   "'liberal': {1:.3f}\n").format(word_counts["conservative"]/float(word_counts["conservatives"]),
+                                  word_counts["liberal"]/float(word_counts["liberals"]))
+
+#+END_SRC
+#+RESULTS:
+: singular/plural:
+: 'conservative': 0.628
+: 'liberal': 2.198
+
+*** How much more often is "liberal" mentioned than "conservative"?
+Best way to visualize this?
+#+BEGIN_SRC ipython :session :file  :exports both
+  liberal = float(word_counts["liberal"])
+  liberal_p = float(word_counts["liberals"])
+  conserv = float(word_counts["conservative"])
+  conserv_p = float(word_counts["conservatives"])
+
+
+  print ("liberal/conservative: {0:.2f}\n" +
+   "liberals/conservatives: {1:.2f}\n" +
+   "liberal(s)/conservative(s): {2:.2f}" +
+    "\n") .format(liberal/conserv,
+                  liberal_p/conserv_p,
+                  (liberal+liberal_p)/(conserv+conserv_p))
+
+#+END_SRC
+
+#+RESULTS:
+
+*** How much more often is "liberals" capitalized?
+*** How much more often is "liberals" mentioned in liberal states?
+** "trump" vs "clinton" vs "obama"
+*** "trump" usage / popularity
+#+BEGIN_SRC ipython :session :file  :exports both
+
+#+END_SRC
+*** "trump" usage / trumpism
+*** upcase usage / trumpism
+*** trumpism
+#+BEGIN_SRC ipython :session :file /home/dodge/workspace/craig-politics/py6320hB1.png :exports both
+trump_posts = usa.join(voting, on="state").join(find_strs("trump"), how="inner")
+
+print "Sampling posts from especially anti-trump states:\n{0}".format(t[t.trumpism < .4].title.sample(10))
+
+print "\nPolitically liberal states composing the above sampling:\n{0}".format(t[t.trumpism < .4].groupby("state").sum().index.tolist())
+#+END_SRC
+** Semantics
+#+BEGIN_SRC ipython :session :file /home/dodge/workspace/craig-politics/py6320TLE.png :exports both
+  from textblob import TextBlob
+
+  def semants(text):
+      blob = TextBlob(text)
+      ss = 0
+      for sentence in blob.sentences:
+          ss += sentence.sentiment.polarity
+
+      return float(ss)/len(blob.sentences)
+
+ semantics = ascii_posts.title.map(lambda x: semants(x)).rename("semants")
+ semant = eval_strs("trump", df=ascii_posts).join(pd.DataFrame(semantics))
+ sems_usa = semant.join(usa, how="inner")
+ trumps_semantics = sems_usa.groupby("state").mean().join(voting, how="inner").sort_values("semants").corr()
+
+trumps_semantics
+#+END_SRC
+** Unicode
+* Punchline
+** "liberals" more likely to be used in liberal states than conservative states
