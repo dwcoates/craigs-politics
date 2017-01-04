@@ -304,7 +304,7 @@ ax2.set_ylim(0, 2);
 
 #+END_SRC
 **** Normalized state usage distributions
-#+BEGIN_SRC ipython :session :file ./py6320jfT.png :exports both
+#+BEGIN_SRC ipython :session :file ./img/py6320jfT.png :exports both
 norm_usage = (state_usage - state_usage.min()) / (state_usage.max() - state_usage.min())
 norm_usage.plot(kind="density", title="Normalized PDF estimations", sharey=True)
 #+END_SRC
@@ -318,29 +318,26 @@ plt.plot(x, state_usage.population.sort_values().values)
 #+RESULTS:
 [[file:/home/dodge/workspace/craig-politics/img/py6320Yhv.png]]
 I expect population to relate to patronage linearly.
-#+BEGIN_SRC ipython :session :file . :tangle ./politics.py
+#+BEGIN_SRC ipython :session :file /home/dodge/workspace/craig-politics/py63201RB.png :exports both
 # Getting rid of California
 p1 = state_usage.sort_values("population", ascending=False)[5:]
 
 plt.bar(p1["population"], p1["usage"])
 #+END_SRC
  #+RESULTS:
-[[file:/tmp/image.png]]
+ [[file:/home/dodge/workspace/craig-politics/py63201RB.png]]
 
 *** Politics
 Assign to each post their expected value for political leaning
-#+BEGIN_SRC ipython :session :file  :exports both
+#+BEGIN_SRC ipython :session :file ./craig-politics/py6320CcH.png :exports both
 post_politics = usa.join(voting, on="state").join(find_strs("trump"), how="inner")
 #+END_SRC
-
-#+RESULTS:
-
-#+BEGIN_SRC ipython ipython :session :file . :tangle ./politics.py
+#+BEGIN_SRC ipython :session :file ./img/py6320PmN.png :exports both
 states = state_usage.join(voting, how="left").sort_values("usage")[:50]
 plt.hist([states.usage, states.trumpism], bins=30)
 #+END_SRC
 #+RESULTS:
-[[file:/tmp/population2.png]]
+[[file:./img/py6320PmN.png]]
 
 Note the correlation between trumpism and usage
 #+BEGIN_SRC ipython :session :file ./img/py6320k_K.png :exports both
@@ -356,7 +353,7 @@ pop_english_words = ["the", "re", "a", "s", "t", "i", "of", "to", "and", "and", 
 
 #+RESULTS:
 
-#+BEGIN_SRC ipython :session :file ./py63203mB.png :exports both
+#+BEGIN_SRC ipython :session :file ./img/py63203mB.png :exports both
   def post_words(df, no_pop=False):
       words = re.findall(r'\w+', df.title.apply(lambda x: x + " ").sum())
       if no_pop:
@@ -376,7 +373,7 @@ pop_english_words = ["the", "re", "a", "s", "t", "i", "of", "to", "and", "and", 
       return corpus.sort_values(ascending=False)
 #+END_SRC
 Probably don't care about stupid common words 
-#+BEGIN_SRC ipython :session :file ./py6320H0c.png :exports both
+#+BEGIN_SRC ipython :session :file ./img/py6320H0c.png :exports both
 posts_corpus = words(df=usa, no_pop=True)
 
 usa_words_full = post_words(df=usa)
@@ -456,7 +453,7 @@ appoints       37       1.083333
 president     654       1.075758
 #+end_example
 
-#+BEGIN_SRC ipython :session :file ./py6320I8X.png :exports both
+#+BEGIN_SRC ipython :session :file ./img/py6320I8X.png :exports both
 l
 #+END_SRC
 
@@ -484,7 +481,7 @@ pd.DataFrame.hist(trumps_vs_trumpism, bins=50)
 #+RESULTS:
 [[file:/home/dodge/workspace/craig-politics/img/py6320cup.png]]
 
-#+BEGIN_SRC ipython :session :file ./py6320U3u.png :exports both
+#+BEGIN_SRC ipython :session :file ./img/py6320U3u.png :exports both
 trump_posts = usa.join(voting, on="state").join(find_strs("trump"), how="outer")
 
 print "Selecting states that are espectially anti-trump:\n{0}".format(t[t.trumpism < .4].title.sample(10))
@@ -505,7 +502,7 @@ trump_words = ["liberals",
 
 #+END_SRC
 **** word cloud
-#+BEGIN_SRC ipython :session :file ./py6320RCC.png :exports both
+#+BEGIN_SRC ipython :session :file ./img/py6320RCC.png :exports both
 from os import path
 from PIL import Image
 
@@ -641,7 +638,7 @@ total_semants = usa.join(semantics, how="outer").groupby("state").mean().join(vo
 #+END_SRC
 
 * historgrams
-#+BEGIN_SRC ipython :session :file ./py6320JLH.png :exports both
+#+BEGIN_SRC ipython :session :file ./img/py6320JLH.png :exports both
   pat = state_usage.sort_values("patronage", ascending=True)
   x = np.arange(len(pat))
     
