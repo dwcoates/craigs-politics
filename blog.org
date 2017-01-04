@@ -5,6 +5,11 @@ For my web scraping project, I've chosen to extract politics data from craigslis
 - synopsis
 * Methodology
 To extract data from craigslist, I used the Python Scrapy package. I executed some 500 requests, spread over 5 hours, to obtain roughly 40,000 posts titles/times. For each of these titles, there is a corresponding state and region, with some regions are additionally divided into subregions (the New York City region, for example, consists of Brooklyn, Queens, Manhattan, etc). Each post, its time and its geographical origin are represented with a single row in a 40k row Pandas DataFrame. Data corruption was not an issue. Additionally, I employed the 2010 U.S. census, which is available from http://www.census.gov, as well as 2016 election results data, which was also extracted from http://uselectionatlas.org/ using a simple BeautifulSoup extraction script. 
+* Data
+[ ] check assertions
+** number of posts
+** data corruption
+
 * State Usage
 ** DONE Introduction
 *** intro
@@ -18,62 +23,119 @@ Usage is my measure for a states proportional interest in the politics board. It
 Trumpism is the name for a states republican vote percentage in the general election. It is used as a rough measure of how pro-Trump that state is.
 ** Population
 *** Sample
-#+BEGIN_SRC ipython :session :file  :exports both
-pd.concat([state_usage[:5], state_usage_space, state_usage[-5:].sort_values("popularity")])
+We can get a feel for the distribution by taking a look at the following sample from the state_usage table
+#+BEGIN_SRC ipython :session :results output raw drawer :noweb yes  :exports both
+print(pd.concat([state_usage[:5], state_usage_space, state_usage[-5:].sort_values("usage")]))
+#+END_SRC
+#+RESULTS:
+:RESULTS:
+             patronage population       usage
+Colorado          1982    5029196           1
+Hawaii             445    1360301     0.81696
+Montana            286     989415     0.71289
+Oregon            1094    3831074    0.703323
+Nevada             770    2700551    0.702141
+*SPACE*         ------     ------      ------
+North Dakota        19     672591           0
+Vermont             18     625741  0.00141296
+Kansas             106    2853118   0.0243361
+Wyoming             22     563626   0.0294766
+New Jersey         400    8791894   0.0471436
+:END:
+    
+Seemingly some correlation between low population and low usage is evident from this table. However, the states for which the politics board is most popular are also generally small. This correlation is explored more by some political investigation, however, first outliers musbt be removed from the data.
+
+*** Outliers
+There are two major outlying states in the dataset: Colorodo and District of Columbia. 
+**** Colorodo
+We can see from the following that Colorado is an extreme outlier, being the fifth most popular state, yet the 23rd most populous. 
+#+BEGIN_SRC ipython :session :file /home/dodge/workspace/craig-politics/py6320WCb.png :exports both
+top_five = state_usage.sort_values("patronage")[-5:][::-1]
+fig = plt.figure() # Create matplotlib figure
+
+ax = fig.add_subplot(111) # Create matplotlib axes
+ax2 = ax.twinx() # Create another axes that shares the same x-axis as ax.
+
+width = 0.2
+
+top_five.patronage.plot(kind='bar', color='#992255', ax=ax, width=width, position=1)
+top_five.population.plot(kind='bar', color='#CC7733', ax=ax2, width=width, position=0)
+
+ax.set_ylabel('Patronage')
+ax2.set_ylabel('Population')
+
+plt.show()
+#+END_SRC
+#+RESULTS:
+[[file:/home/dodge/workspace/craig-politics/py6320WCb.png]]
+Denver, for example, is especially large. Despite having a metropolitan area of less than 3 million people, Denver sees a patronage of 1187.
+#+BEGIN_SRC ipython :session :results output raw drawer :noweb yes  :exports both
+num_denver_posts = len(usa[usa.region == "denver, CO"])
 #+END_SRC
 
 #+RESULTS:
-#+begin_example
-             patronage population popularity
-Colorado          1982    5029196          1
-Hawaii             445    1360301    0.83008
-Montana            286     989415    0.73347
-Oregon            1094    3831074   0.724589
-Nevada             770    2700551   0.723491
-*SPACE*         ------     ------     ------
-North Dakota        19     672591  0.0716799
-Vermont             18     625741  0.0729916
-Kansas             106    2853118  0.0942716
-Wyoming             22     563626  0.0990436
-New Jersey         400    8791894   0.115444
-#+end_example
+:RESULTS:
+:END:
 
-    Correlation between low population and low popularity is evident from this table. However, the states for which the politics board is most popular are also generally small. This correlation is explored more by some political investigation.
+By comparison, the "new york city" region, which is expansive enough as to include subregions like "new jersey", "long island", "fairfield", etc, has fewer posts, at 1006. 
+#+BEGIN_SRC ipython :session :results output raw drawer :noweb yes :exports both
+nyc_subregions = usa.groupby("region").get_group("new york city").subregion.unique().tolist()
 
-*** Outliers
-**** colorodo
-***** popularity
-***** denver
-**** D.C.
-***** extremely high usage and extremely low trumpism
-***** So it was thrown out
+num_nyc_posts = len(usa[usa.region == "new york city"])
+#+END_SRC
+#+RESULTS:
+:RESULTS:
+1006
+:END:
 
-** politics
-** correlations
-*** distributions
-We can see that more popular regions are 
-#+BEGIN_SRC ipython :session :file /home/dodge/workspace/craig-politics/py6320wpZ.png :exports both
+**** District of Columbia
+While I found Colorado to be an inexplicable anamoly, it was also justifiably accurate. District of Columbia, having a Republican voting rate of ~4% and the strict usage rate similar to that of Colorado, coupled with it's nebulous geographic distinction, meant its results were too extreme to consider in analysis.
+** Correlations
+*** Distributions
+We can see the correlations between patronage, population, and usage, here. We of course expect correlation between patronage and population. Coolness represents lack of correlation.
+#+BEGIN_SRC ipython :session :file /home/dodge/workspace/craig-politics/img/py224159fd.png :exports both
+corr = state_usage.corr()
+fig, ax = plt.subplots(figsize=(4, 4))
+ax.matshow(corr)
+plt.xticks(range(len(corr.columns)), corr.columns);
+plt.yticks(range(len(corr.columns)), corr.columns);
+#+END_SRC
+
+#+RESULTS:
+[[file:/home/dodge/workspace/craig-politics/img/py224159fd.png]]
+We can see that usage and population correlate considerably. In more concrete numerical terms, using the pearson correlation coefficient:
+#+BEGIN_SRC ipython :session :results output raw drawer :noweb yes
 norm_usage = (state_usage - state_usage.min()) / (state_usage.max() - state_usage.min())
-
 stats = pd.DataFrame({"mean": norm_usage.mean(), "median": norm_usage.median()})
-print "Mean/median of normalized state usage metrics:\n{}".format(stats)
-
+print(("Mean/median of normalized state usage metrics:\n{0}").format(stats))
+#+end_src
+#+RESULTS:
+:RESULTS:
+Mean/median of normalized state usage metrics:
+                mean    median
+patronage   0.197488  0.091557
+population  0.152608  0.105552
+usage       0.264764  0.203740
+:END:
+#+BEGIN_SRC ipython :session :file /home/dodge/workspace/craig-politics/py6320cwT.png :exports both
 norm_usage.plot(kind="density", title="Normalized PDF estimations", sharey=True)
 #+END_SRC
 
 #+RESULTS:
-[[file:/home/dodge/workspace/craig-politics/py6320wpZ.png]]
+[[file:/home/dodge/workspace/craig-politics/py6320cwT.png]]
 
 **** posts over trumpism
-*** correlation between populartion and popularity
-*** correlation between trumpism and popularity
+*** plot of population and patronage
+- expect this to be linear, but it looks more exponential
+*** states/usage histogram
+*** correlation between trumpism and usage
 * Text Qualities
 ** introduction
 *** intro
 *** Words
 #+RESULTS:
 
-#+BEGIN_SRC ipython :session :file /home/dodge/workspace/craig-politics/py63203mB.png :exports both
+#+BEGIN_SRC ipython :session :file /home/dodge/workspace/craig-politics/py63203mB.png
   def post_words(df):
       return re.findall(r'\w+', df.title.apply(lambda x: x + " ").sum())
   def words(df=usa, no_pop=False):
@@ -164,7 +226,7 @@ Best way to visualize this?
 **** How much more often is "liberals" capitalized?
 **** How much more often is "liberals" mentioned in liberal states?
 *** "trump" vs "clinton" vs "obama"
-**** "trump" usage / popularity
+**** "trump" usage / total usage
 #+BEGIN_SRC ipython :session :file  :exports both
 
 #+END_SRC
