@@ -5,10 +5,9 @@ For my web scraping project, I've chosen to extract politics data from craigslis
 - synopsis
 * Methodology
 To extract data from craigslist, I used the Python Scrapy package. I executed some 500 requests, spread over 5 hours, to obtain roughly 40,000 posts titles/times. For each of these titles, there is a corresponding state and region, with some regions are additionally divided into subregions (the New York City region, for example, consists of Brooklyn, Queens, Manhattan, etc). Each post, its time and its geographical origin are represented with a single row in a 40k row Pandas DataFrame. Data corruption was not an issue. Additionally, I employed the 2010 U.S. census, which is available from http://www.census.gov, as well as 2016 election results data, which was also extracted from http://uselectionatlas.org/ using a simple BeautifulSoup extraction script. 
-* Data
-[ ] check assertions
-** number of posts
-** data corruption
+* TODO Data [0/2]
+** TODO number of posts
+** TODO data corruption
 
 * State Usage
 ** DONE Introduction
@@ -117,6 +116,7 @@ patronage   0.197488  0.091557
 population  0.152608  0.105552
 usage       0.264764  0.203740
 :END:
+We can see that usage has less variance than patronage and population, which we should expect. Perhaps it is somewhat more than expected, however. We expect (perhaps naively) for usage to coincide with population/patronage closely. 
 #+BEGIN_SRC ipython :session :file /home/dodge/workspace/craig-politics/py6320cwT.png :exports both
 norm_usage.plot(kind="density", title="Normalized PDF estimations", sharey=True)
 #+END_SRC
@@ -124,45 +124,47 @@ norm_usage.plot(kind="density", title="Normalized PDF estimations", sharey=True)
 #+RESULTS:
 [[file:/home/dodge/workspace/craig-politics/py6320cwT.png]]
 
-**** posts over trumpism
-*** plot of population and patronage
-- expect this to be linear, but it looks more exponential
-*** states/usage histogram
-*** correlation between trumpism and usage
-* Text Qualities
-** introduction
-*** intro
-*** Words
+*** Usage per state
+The distribution of usage among states seems reasonable.
+#+BEGIN_SRC ipython :session :file /home/dodge/workspace/craig-politics/img/py22415jSF.png :exports both
+ax = plt.subplot(111)  
+ax.spines["top"].set_visible(False)  
+ax.spines["right"].set_visible(False)  
+    
+ax.get_xaxis().tick_bottom()  
+ax.get_yaxis().tick_left()  
+
+plt.xlabel("Usage", fontsize=12)  
+plt.ylabel("States", fontsize=12)     
+
+plt.suptitle('State Usage Distribution', fontsize=14) 
+
+plt.hist(state_usage.usage,
+         color="#661111", bins=17)  
+#+END_SRC
+
 #+RESULTS:
+[[file:/home/dodge/workspace/craig-politics/img/py22415jSF.png]]
 
-#+BEGIN_SRC ipython :session :file /home/dodge/workspace/craig-politics/py63203mB.png
-  def post_words(df):
-      return re.findall(r'\w+', df.title.apply(lambda x: x + " ").sum())
-  def words(df=usa, no_pop=False):
-      # word counts across all posts
-      words = post_words(df)
-      word_counts = Counter([word.lower() for word in words])
-      wcs = zip(*[[word, count] for word, count in word_counts.iteritems()])
-
-      corpus = pd.Series(wcs[1], index=wcs[0]).rename("counts")
-      if no_pop:
-          # pop_english_words is a list of the most popular (and boring) English
-          # words. E.g., "and", "to", "the", etc.
-          corpus = corpus[~corpus.index.isin(pop_english_words)]
-      return corpus.sort_values(ascending=False)
 #+END_SRC
-Probably don't care about stupid common words 
-#+BEGIN_SRC ipython :session :file /home/dodge/workspace/craig-politics/py6320H0c.png :exports both
-posts_corpus = words(df=usa, no_pop=True)
+*** Politics
+#+BEGIN_SRC ipython :session :file /home/dodge/workspace/craig-politics/img/py22415k-v.png :exports both
+post_politics = usa.join(states.trumpism, how="outer", on="state")
 
-posts_sum = " ".join([word for word in post_words(usa) if word.lower() not in pop_english_words])
+post_politics.filter(["trumpism", "state"]).plot(kind="hist", bins=14, color=["#FF9911"], title="Trumpism frequency distribution")
 #+END_SRC
+
+#+RESULTS:
+[[file:/home/dodge/workspace/craig-politics/img/py22415k-v.png]]
+
+* Text Qualities
+** Introduction
+   Text usage is interesting to consider, but difficult to evaluate. While sampling provides surpritising intuitions about the data, demonstration of any following ideas is quite difficult. The follow demonstrates some efforts to support some of my intuitive ideas about the obtained dat
 ** General
-*** number of distinct words
+*** Vocabulary
 - percentage
 - number
-*** most popular words [0/0]
-**** Make bar graph
+**** Make bar graph of most popular words [0/0]
 *** word cloud
 *** semantics
 *** unicode
