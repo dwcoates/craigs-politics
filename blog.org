@@ -1,3 +1,9 @@
+let's do it
+* TODO Broken stuff [0/1]
+** TODO Corpus is broken. Including non-pop words
+
+** TODO Make thesis more clear
+
 * Introduction
 For my web scraping project, I've chosen to extract politics data from craigslist.org. My original ambition, though it proved difficult to affirm, was to prove a negative correlation to pro-trump chatter with conservatism. That is, I suspected that, somewhat counter-intuitively, the politics sections of more conservative states would be the less likely source of pro-trump posts. More generally, I sought to analyze the trends of politcs discussion of craiglist.
 
@@ -84,7 +90,6 @@ num_nyc_posts = len(usa[usa.region == "new york city"])
 #+END_SRC
 #+RESULTS:
 :RESULTS:
-1006
 :END:
 
 **** District of Columbia
@@ -161,72 +166,162 @@ post_politics.filter(["trumpism", "state"]).plot(kind="hist", bins=14, color=["#
 ** Introduction
    Text usage is interesting to consider, but difficult to evaluate. While sampling provides surpritising intuitions about the data, demonstration of any following ideas is quite difficult. The follow demonstrates some efforts to support some of my intuitive ideas about the obtained dat
 ** General
-*** Vocabulary
-- percentage
-- number
-**** Make bar graph of most popular words [0/0]
-*** word cloud
-*** semantics
-*** unicode
-** Politics
-*** what words are used most by democrats
-#+BEGIN_SRC ipython :session :file  :exports both
-  lib_words = words(df=post_politics[post_politics.trumpism < .45], no_pop=True).rename("libs")
-  conserv_words = words(df=post_politics[post_politics.trumpism > .55], no_pop=True).rename("conservs")
-   
-  rat = lambda df: df.libs/df.conservs
-  ratio = pd.DataFrame().join([lib_words[lib_words >= 10], conserv_words[conserv_words >= 10]],
-                                      how="outer").apply(rat, axis=1).dropna()
-  ratio = ratio.rename("dem/rep ratio")
-  lib_con_ratio = pd.DataFrame(posts_corpus).join(ratio.sort_values(ascending=False), how="inner")
-  lib_con_ratio.sort("dem/rep ratio", ascending=False, inplace=True)
-  lib_con_ratio[:10]
+*** Vocabulary [0/1]
+Investigating the discrepency between democrat/republican word usage, we find some discrepencies in the most used common words:
+#+BEGIN_SRC ipython :session :results output raw drawer :noweb yes :exports both
+lib_con_ratio = pd.DataFrame(posts_corpus).join(ratio.sort_values(ascending=False), how="inner")
+
+print(lib_con_ratio[:5])
+#+END_SRC
+#+RESULTS:
+:RESULTS:
+       counts  dem/rep ratio
+of        665       5.803922
+news      841       5.394366
+is        668       5.215686
+us        544       4.678571
+obama    1757       4.254545
+:END:
+We find that "against", "how", and "won" have extreme preference for "liberal" states. The reasons are in fact not obvious. Some random sampling of such posts reveals possibly surprisingly pro-Trump sentiment: 
+#+BEGIN_SRC ipython :session :results output raw drawer :noweb yes  :exports both
+  print(pd.concat([find_strs("against"),
+                   find_strs("how"),
+                   find_strs("won")]).sample(10))
+#+END_SRC
+#+RESULTS:
+:RESULTS:
+17955                                How to vote No to Nuclear Weapons
+21075            Trump is a sniveling pussy. Why won't the idiot admit
+25295                     re:Wrong Again - Trump WON the popular vote!
+20896                                      How To Spot A Stupid Person
+17811                             RE:  4 Dumb ass who against TRUMP ..
+2822                                     part of our wonderful society
+16175    This is "how" peaceful Allah muslims thank us "providers"....
+36715                                Lightworkers united against Greed
+23798            re,  Pigfest, How Government Hogs & Wastes Your Money
+18887                                          How can you comprehend?
+dtype: object
+:END:
+Looking at the general word sentiment:
+#+BEGIN_SRC ipython :session :file /home/dodge/workspace/craig-politics/py31406ImT.png :exports both
+p = posts_corpus[:50].sort_values(ascending=True)
+ax.spines["top"].set_visible(False)  
+ax.spines["right"].set_visible(False)  
+    
+ax.get_xaxis().tick_bottom()  
+ax.get_yaxis().tick_left()  
+
+p.plot(kind="bar", title="Distinct word distribution")
+#+END_SRC
+
+#+RESULTS:
+[[file:/home/dodge/workspace/craig-politics/py31406ImT.png]]
+
+**** TODO Fix distinct word distribution including non-pop words, for some reason 
+*** word cloud [0/1]
+**** TODO Show cloud png here
+#+BEGIN_SRC ipython :session :file /home/dodge/workspace/craig-politics/py31406VwZ.png :exports both
 
 #+END_SRC
-**** "against"
-**** "won"
-***** sample of when being used by liberals
-***** semantics
-*** diversity of words vs trumpism
+*** TODO Semantics 
+*** TODO Unicode
+** Politics [0/1]
+*** What words are used most by Democrats?
+#+BEGIN_SRC ipython :session :file  :exports both :results output raw drawer :noweb yes
+  lib_words = words(df=post_politics[post_politics.trumpism < .45],
+                    no_pop=True).rename("libs")
+  conserv_words = words(df=post_politics[post_politics.trumpism > .55],
+                        no_pop=True).rename("conservs")
+   
+  rat = lambda df: df.libs/df.conservs
+  ratio = pd.DataFrame().join([lib_words[lib_words >= 50],
+                               conserv_words[conserv_words >= 50]],
+                              how="outer").apply(rat, axis=1).dropna()
+  ratio = ratio.rename("dem/rep ratio")
+  lib_con_ratio = pd.DataFrame(posts_corpus).join(ratio.sort_values(ascending=False),
+                                                  how="inner")
+  lib_con_ratio.sort("dem/rep ratio", ascending=False, inplace=True)
+  print(lib_con_ratio[:10])
+#+END_SRC
+#+RESULTS:
+:RESULTS:
+         counts  dem/rep ratio
+of          665       5.803922
+news        841       5.394366
+is          668       5.215686
+us          544       4.678571
+obama      1757       4.254545
+in          548       4.113208
+again       614       4.000000
+clinton     667       3.985075
+to         1017       3.840000
+not         993       3.371681
+:END:
+*** TODO Diversity of words vs trumpism
 #+BEGIN_SRC ipython :session :file  :exports both
 
 #+END_SRC
 *** "liberals" vs "conservatives"
-**** pluralization
-#+BEGIN_SRC ipython :session :file  :exports both
-  ("singular/plural:\n" +
-   "'conservative': {0:.3f}\n" +
-   "'liberal': {1:.3f}\n").format(word_counts["conservative"]/float(word_counts["conservatives"]),
-                                  word_counts["liberal"]/float(word_counts["liberals"]))
+**** Pluralization
+The singular version of "conservative" is used a bit more than half as much as the pluralization. By contrast, the singular version of "liberal" is used more than twice as much as the pluralization. I suspect this is because "liberal" is a perjorative in common nomenclature, while "conservative" doesn't really hold the same weight as an insult.
+#+BEGIN_SRC ipython :session :file  :exports both :results output raw drawer :noweb yes
+print(" singular/plural:\n" +
+      "'conservative': {0:.3f}\n" +
+      "'liberal': " +
+      "{1:.3f}\n").format(posts_corpus["conservative"]/float(posts_corpus["conservatives"]),
+                          posts_corpus["liberal"]/float(posts_corpus["liberals"]))
 
 #+END_SRC
 #+RESULTS:
-: singular/plural:
-: 'conservative': 0.628
-: 'liberal': 2.198
+:RESULTS:
+ singular/plural:
+'conservative': 0.628
+'liberal': 2.198
 
-**** How much more often is "liberal" mentioned than "conservative"?
-Best way to visualize this?
-#+BEGIN_SRC ipython :session :file  :exports both
-  liberal = float(word_counts["liberal"])
-  liberal_p = float(word_counts["liberals"])
-  conserv = float(word_counts["conservative"])
-  conserv_p = float(word_counts["conservatives"])
+:END:
+
+**** Usage
+"liberal" is used far more often than "conservative". The pluralizations, respectively, are comparitively not quite as distinguished. This is expected, for previously mentioned reasons; pluralizations may still be used as a means to negatively generalize.
+#+BEGIN_SRC ipython :session :file  :exports both :results output raw drawer :noweb yes
+  liberal = float(posts_corpus["liberal"])
+  liberal_p = float(posts_corpus["liberals"])
+  conserv = float(posts_corpus["conservative"])
+  conserv_p = float(posts_corpus["conservatives"])
 
 
   print ("liberal/conservative: {0:.2f}\n" +
    "liberals/conservatives: {1:.2f}\n" +
    "liberal(s)/conservative(s): {2:.2f}" +
-    "\n") .format(liberal/conserv,
+    "") .format(liberal/conserv,
                   liberal_p/conserv_p,
                   (liberal+liberal_p)/(conserv+conserv_p))
 
 #+END_SRC
 
 #+RESULTS:
+:RESULTS:
+liberal/conservative: 18.07
+liberals/conservatives: 5.16
+liberal(s)/conservative(s): 10.14
+:END:
+**** Capitalization
+We see that "liberal" is capitalized at a rate 13x greater than the rate of capitalization of "conservative". 
+#+BEGIN_SRC ipython :session :results output raw drawer :noweb yes :exports both
+lib_cap = eval_strs("trump").sum(numeric_only=True)
+conserv_cap = eval_strs("liberal").sum(numeric_only=True)
 
-**** How much more often is "liberals" capitalized?
-**** How much more often is "liberals" mentioned in liberal states?
+lib_con_cap_rat = lib_cap/conserv_cap
+
+print(lib_con_cap_rat)
+#+END_SRC
+
+#+RESULTS:
+:RESULTS:
+proper       10.595062
+uppercase    13.428571
+lower         1.077206
+dtype: float64
+:END:
 *** "trump" vs "clinton" vs "obama"
 **** "trump" usage / total usage
 #+BEGIN_SRC ipython :session :file  :exports both
@@ -263,5 +358,47 @@ trumps_semantics
 #+END_SRC
 
 *** Unicode
-* conclusion
-** "liberals" more likely to be used in liberal states than conservative states
+The number of posts containing non-ascii characters was surprisingly small:
+#+BEGIN_SRC ipython :session   :exports both :results output raw drawer :noweb yes
+print ("{0:,} of {1:,} total posts were non-ascii ({2:.2f}%), confined to {3} "
+       + "states.").format(len(nonascii_posts),
+                       len(usa),
+                       len(nonascii_posts)/float(len(usa)) * 100,
+                       len(distinct_states))
+#+END_SRC
+However, influence for these posts can be seen by looking at the main outlier, Pennsylvania:
+#+BEGIN_SRC ipython :session  :exports both :tangle ./politics.py :results output raw drawer :noweb yes 
+pennsylvania = nonascii_posts[nonascii_posts["state"] == "Pennsylvania"]
+
+print("\nA single Trump memester seems to be responsible for the chaos " +
+      "in Pennsylvania.\n" + "I suspect that these crazy unicode posts " +
+      "are mostly done by a very small\nset of people, though there is " +
+      "no way to tell.")
+print "\nRandom sample of 5 non-ascii Pennsylvania posts"
+print pennsylvania["title"][:5]
+
+pennsylvania.groupby("region").count()
+
+post_uniqueness = pennsylvania.title.nunique()/float(len(pennsylvania.title))
+
+post_uniqueness
+#+END_SRC
+
+#+RESULTS:
+:RESULTS:
+
+A single Trump memester seems to be responsible for the chaos in Pennsylvania.
+I suspect that these crazy unicode posts are mostly done by a very small
+set of people, though there is no way to tell.
+
+Random sample of 5 non-ascii Pennsylvania posts
+18398           ðŸ™ŠðŸ™‰The ZOMBIES Are ComingðŸ™‰ðŸ™Š
+18410    ðŸ’¥DONALD J. TRUMPðŸ’¥[Need a Tissue Anyone]
+18418           ðŸ�µðŸ™‰The Zombies Are ComingðŸ�µðŸ™‰
+18426       ðŸ‘‘HAPPY NEW YEARSðŸ‘‘DONALD J. TRUMPðŸ‘‘
+18430           ðŸ™ŠðŸ™‰The ZOMBIES Are ComingðŸ™‰ðŸ™Š
+Name: title, dtype: object
+:END:
+
+* Conclusion
+The distribution posts and the favor of those posts across the politics sections is somewhat surprising. I suspect that this is evidence of cultural normalization in the face of resistance+anonimity: faceless, nameless interaction coupled with outspokenness against relatively strict local social norms. This has proven more difficult to prove than I initially suspected. While any amount of ransom sampling of the posts allows me to be confident in this theory, convincing proof would most likely involve a tedious, exhausive effort.

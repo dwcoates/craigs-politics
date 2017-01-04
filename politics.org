@@ -424,6 +424,8 @@ pop_english_words = ["the", "re", "a", "s", "t", "i", "of", "to", "and", "and", 
 #+RESULTS:
 
 #+BEGIN_SRC ipython :session :file ./img/py63203mB.png :exports both :tangle ./politics.py
+  from collections import Counter 
+
   def post_words(df, no_pop=False):
       words = re.findall(r'\w+', df.title.apply(lambda x: x + " ").sum())
       if no_pop:
@@ -437,15 +439,12 @@ pop_english_words = ["the", "re", "a", "s", "t", "i", "of", "to", "and", "and", 
       words = post_words(df, no_pop)
       word_counts = Counter([word.lower() for word in words])
       wcs = zip(*[[word, count] for word, count in word_counts.iteritems()])
-
       corpus = pd.Series(wcs[1], index=wcs[0]).rename("counts")
 
       return corpus.sort_values(ascending=False)
 #+END_SRC
 Probably don't care about stupid common words 
 #+BEGIN_SRC ipython :session :file ./img/py6320H0c.png :exports both :tangle ./politics.py
-from collections import Counter 
-
 posts_corpus = words(df=usa, no_pop=True)
 
 usa_words_full = post_words(df=usa)
@@ -484,6 +483,22 @@ Find substrings in posts
 #+END_SRC
 ** Analysis
 *** General Language
+General distribution of words:
+#+BEGIN_SRC ipython :session :file /home/dodge/workspace/craig-politics/img/py22415kMY.png :exports both
+p = posts_corpus[:50].sort_values(ascending=True)
+ax.spines["top"].set_visible(False)  
+ax.spines["right"].set_visible(False)  
+    
+ax.get_xaxis().tick_bottom()  
+ax.get_yaxis().tick_left()  
+
+
+p.plot(kind="bar", title="Distinct word distribution")
+#+END_SRC
+
+#+RESULTS:
+[[file:/home/dodge/workspace/craig-politics/img/py22415kMY.png]]
+
 Assign to each post their expected value for political leaning
 #+BEGIN_SRC ipython :session :file ./img/py6320CcH.png :exports both :tangle ./politics.py
   post_politics = usa.join(voting, on="state").join(
@@ -497,7 +512,6 @@ Assign to each post their expected value for political leaning
 #+RESULTS:
 Ratio
 #+BEGIN_SRC ipython :session :results output raw drawer :noweb yes :exports both :tangle ./politics.py
-
   rat = lambda df: df.libs/df.conservs
   ratio = pd.DataFrame().join([lib_words[lib_words >= 10], conserv_words[conserv_words >= 10]],
                                       how="outer").apply(rat, axis=1).dropna()
@@ -507,7 +521,6 @@ Ratio
   print(lib_con_ratio[:10])
   #lib_con_ratio = posts_corpus.join(lib_con_ratio.sort_values(ascending=False), on="words")
 #+END_SRC
-
 #+RESULTS:
 :RESULTS:
            counts  dem/rep ratio
@@ -522,7 +535,10 @@ america       784       1.363636
 appoints       37       1.083333
 president     654       1.075758
 :END:
+**** Capitalization
+#+BEGIN_SRC ipython :session :file /home/dodge/workspace/craig-politics/py31406i6f.png :exports both
 
+#+END_SRC
 *** Trumps
 **** Patronage
 #+BEGIN_SRC ipython :session :file ./img/py6320Qlq.png :exports both :tangle ./politics.py
@@ -720,7 +736,6 @@ print(len(usa.groupby("state")["title"].agg(sum)["Kansas"]))
 :RESULTS:
 3112
 :END:
-
       
 *** Semantics
 #+BEGIN_SRC ipython :session :file ./img/py63201WL.png :exports both :tangle ./politics.py
