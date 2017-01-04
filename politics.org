@@ -246,18 +246,18 @@ New Jersey         400    8791894   0.115444
 #+RESULTS:
 [[file:/home/dodge/workspace/craig-politics/img/py6320LXp.png]]
 
-#+BEGIN_SRC ipython :session :file /home/dodge/workspace/craig-politics/img/py6320oYD.png :exports both :tangle ./politics.py
+#+BEGIN_SRC ipython :session :file ./img/py6320oYD.png :exports both :tangle ./politics.py
 x = np.arange(len(pat))
 
 plt.bar(x, pat.population)
 #+END_SRC
 
 #+RESULTS:
-[[file:/home/dodge/workspace/craig-politics/img/py6320oYD.png]]
+[[file:./img/py6320oYD.png]]
 
 *** Usage
 **** Distribution
-#+BEGIN_SRC ipython :session :file /home/dodge/workspace/craig-politics/img/py6320LXp.png :exports both :tangle ./politics.py
+#+BEGIN_SRC ipython :session :file ./img/py6320LXp.png :exports both :tangle ./politics.py
 pat = state_usage.sort_values("patronage", ascending=True)
 x = np.arange(len(pat))
 
@@ -278,7 +278,7 @@ plt.hist(states.usage
 #+RESULTS:
 [[file:/home/dodge/workspace/craig-politics/img/py6320LXp.png]]
 
-#+BEGIN_SRC ipython :session :file /home/dodge/workspace/craig-politics/img/py6320lr1.png :exports both :tangle ./politics.py
+#+BEGIN_SRC ipython :session :file ./img/py6320lr1.png :exports both :tangle ./politics.py
 plt.bar(x, pat.sort_values("population").usage)
 
 fig = plt.figure() # Create matplotlib figure
@@ -304,7 +304,7 @@ ax2.set_ylim(0, 2);
 
 #+END_SRC
 **** Normalized state usage distributions
-#+BEGIN_SRC ipython :session :file /home/dodge/workspace/craig-politics/py6320jfT.png :exports both
+#+BEGIN_SRC ipython :session :file ./py6320jfT.png :exports both
 norm_usage = (state_usage - state_usage.min()) / (state_usage.max() - state_usage.min())
 norm_usage.plot(kind="density", title="Normalized PDF estimations", sharey=True)
 #+END_SRC
@@ -312,13 +312,13 @@ norm_usage.plot(kind="density", title="Normalized PDF estimations", sharey=True)
 #+RESULTS:
 [[file:/home/dodge/workspace/craig-politics/py6320jfT.png]]
 
-#+BEGIN_SRC ipython :session :file /home/dodge/workspace/craig-politics/img/py6320Yhv.png :exports both :tangle ./politics.py
+#+BEGIN_SRC ipython :session :file ./img/py6320Yhv.png :exports both :tangle ./politics.py
 plt.plot(x, state_usage.population.sort_values().values)
 #+END_SRC
 #+RESULTS:
 [[file:/home/dodge/workspace/craig-politics/img/py6320Yhv.png]]
 I expect population to relate to patronage linearly.
-#+BEGIN_SRC ipython :session :file /tmp/image.png  :exports both :tangle ./politics.py
+#+BEGIN_SRC ipython :session :file . :tangle ./politics.py
 # Getting rid of California
 p1 = state_usage.sort_values("population", ascending=False)[5:]
 
@@ -335,7 +335,7 @@ post_politics = usa.join(voting, on="state").join(find_strs("trump"), how="inner
 
 #+RESULTS:
 
-#+BEGIN_SRC ipython ipython :session :file /tmp/population2.png  :exports both :tangle ./politics.py
+#+BEGIN_SRC ipython ipython :session :file . :tangle ./politics.py
 states = state_usage.join(voting, how="left").sort_values("usage")[:50]
 plt.hist([states.usage, states.trumpism], bins=30)
 #+END_SRC
@@ -343,7 +343,7 @@ plt.hist([states.usage, states.trumpism], bins=30)
 [[file:/tmp/population2.png]]
 
 Note the correlation between trumpism and usage
-#+BEGIN_SRC ipython :session :file /home/dodge/workspace/craig-politics/img/py6320k_K.png :exports both
+#+BEGIN_SRC ipython :session :file ./img/py6320k_K.png :exports both
 print states.filter(["patronage", "usage", "normalized", "trumpism"]).corr()
 #+END_SRC :tangle ./politics.py
 * Text Qualities
@@ -356,7 +356,7 @@ pop_english_words = ["the", "re", "a", "s", "t", "i", "of", "to", "and", "and", 
 
 #+RESULTS:
 
-#+BEGIN_SRC ipython :session :file /home/dodge/workspace/craig-politics/py63203mB.png :exports both
+#+BEGIN_SRC ipython :session :file ./py63203mB.png :exports both
   def post_words(df, no_pop=False):
       words = re.findall(r'\w+', df.title.apply(lambda x: x + " ").sum())
       if no_pop:
@@ -376,7 +376,7 @@ pop_english_words = ["the", "re", "a", "s", "t", "i", "of", "to", "and", "and", 
       return corpus.sort_values(ascending=False)
 #+END_SRC
 Probably don't care about stupid common words 
-#+BEGIN_SRC ipython :session :file /home/dodge/workspace/craig-politics/py6320H0c.png :exports both
+#+BEGIN_SRC ipython :session :file ./py6320H0c.png :exports both
 posts_corpus = words(df=usa, no_pop=True)
 
 usa_words_full = post_words(df=usa)
@@ -386,7 +386,7 @@ posts_sum = " ".join([word for word in usa_words_full if word.lower() not in pop
 #+END_SRC
 *** Substrings
 Find substrings in posts
-#+BEGIN_SRC ipython :session :file /home/dodge/workspace/craig-politics/img/py6320WhL.png :exports both  :tangle ./politics.py
+#+BEGIN_SRC ipython :session :file ./img/py6320WhL.png :exports both  :tangle ./politics.py
   def find_strs(substr, df=usa):
       """
       Get all titles from usa that have substr in their post title. Add some data on capitalization.
@@ -456,7 +456,7 @@ appoints       37       1.083333
 president     654       1.075758
 #+end_example
 
-#+BEGIN_SRC ipython :session :file /home/dodge/workspace/craig-politics/py6320I8X.png :exports both
+#+BEGIN_SRC ipython :session :file ./py6320I8X.png :exports both
 l
 #+END_SRC
 
@@ -464,7 +464,7 @@ l
 
 *** Trumps
 **** Patronage
-#+BEGIN_SRC ipython :session :file /home/dodge/workspace/craig-politics/img/py6320Qlq.png :exports both :tangle ./politics.py
+#+BEGIN_SRC ipython :session :file ./img/py6320Qlq.png :exports both :tangle ./politics.py
 trumps = eval_strs("trump").join(usa.state, how="inner")
 trumps_by_state = trumps.groupby("state").count().join(states).drop(["clinton", "trump"], axis=1)
 up_over_trumps = (trumps_by_state.uppercase/trumps_by_state["*trump*"]).rename("uppercase usage")
@@ -474,7 +474,7 @@ trumps_by_state = trumps_by_state.join([prop_over_trumps, up_over_trumps, trumps
 #+END_SRC
 **** Politics
 The more pro-Trump your state, the less likely you are to use "Trump" over "TRUMP"
-#+BEGIN_SRC ipython :session :file /home/dodge/workspace/craig-politics/img/py6320cup.png :exports both :tangle ./politics.py
+#+BEGIN_SRC ipython :session :file ./img/py6320cup.png :exports both :tangle ./politics.py
 trumps_vs_trumpism = trumps_by_state.filter(["trumpism", "propercase usage", "uppercase usage", "trumps usage"]).sort_values("trumps usage", ascending=True)[1:]
 
 pd.DataFrame.hist(trumps_vs_trumpism, bins=50)
@@ -484,7 +484,7 @@ pd.DataFrame.hist(trumps_vs_trumpism, bins=50)
 #+RESULTS:
 [[file:/home/dodge/workspace/craig-politics/img/py6320cup.png]]
 
-#+BEGIN_SRC ipython :session :file /home/dodge/workspace/craig-politics/py6320U3u.png :exports both
+#+BEGIN_SRC ipython :session :file ./py6320U3u.png :exports both
 trump_posts = usa.join(voting, on="state").join(find_strs("trump"), how="outer")
 
 print "Selecting states that are espectially anti-trump:\n{0}".format(t[t.trumpism < .4].title.sample(10))
@@ -492,7 +492,7 @@ print "Selecting states that are espectially anti-trump:\n{0}".format(t[t.trumpi
 print "\nPolitically liberal states composing the above sampling:\n{0}".format(t[t.trumpism < .4].groupby("state").sum().index.tolist())
 #+END_SRC
 **** Trump Language
-#+BEGIN_SRC ipython :session :file /home/dodge/workspace/craig-politics/img/py63202C2.png :exports both :tangle ./politics.py
+#+BEGIN_SRC ipython :session :file ./img/py63202C2.png :exports both :tangle ./politics.py
 trump_words = ["liberals",
                "conservatives",
                "centipede",
@@ -505,7 +505,7 @@ trump_words = ["liberals",
 
 #+END_SRC
 **** word cloud
-#+BEGIN_SRC ipython :session :file /home/dodge/workspace/craig-politics/py6320RCC.png :exports both
+#+BEGIN_SRC ipython :session :file ./py6320RCC.png :exports both
 from os import path
 from PIL import Image
 
@@ -614,12 +614,12 @@ print "\n\n{0} regions in Colorado".format(usa[usa['state'] == "Colorado"]["regi
 #+RESULTS:
 
 
-#+BEGIN_SRC ipython :session :file /home/dodge/workspace/craigp-olitics/img/py6320XN2.png :exports both :tangle ./politics.py
+#+BEGIN_SRC ipython :session :file ./img/py6320XN2.png :exports both :tangle ./politics.py
 posts = usa.groupby("state")["title"].agg(sum)["Kansas"]
 #+END_SRC
       
 *** Semantics
-#+BEGIN_SRC ipython :session :file /home/dodge/workspace/craig-politics/img/py63201WL.png :exports both :tangle ./politics.py
+#+BEGIN_SRC ipython :session :file ./img/py63201WL.png :exports both :tangle ./politics.py
   from textblob import TextBlob
 
   def semants(text):
@@ -630,18 +630,18 @@ posts = usa.groupby("state")["title"].agg(sum)["Kansas"]
 
       return float(ss)/len(blob.sentences)
 #+END_SRC
-#+BEGIN_SRC ipython :session :file /home/dodge/workspace/craig-politics/img/py63202Qe.png :exports both :tangle ./politics.py
+#+BEGIN_SRC ipython :session :file ./img/py63202Qe.png :exports both :tangle ./politics.py
 semantics = ascii_posts.title.map(lambda x: semants(x)).rename("semants")
 semant = eval_strs("trump", df=ascii_posts).join(pd.DataFrame(semantics))
 sems_usa = semant.join(usa, how="inner")
 trumps_semantics = sems_usa.groupby("state").mean().join(voting, how="inner").sort_values("semants").corr()
 #+END_SRC
-#+BEGIN_SRC ipython :session :file /home/dodge/workspace/craig-politics/img/py6320Dbk.png :exports both :tangle ./politics.py
+#+BEGIN_SRC ipython :session :file ./img/py6320Dbk.png :exports both :tangle ./politics.py
 total_semants = usa.join(semantics, how="outer").groupby("state").mean().join(voting).sort_values("semants").corr()
 #+END_SRC
 
 * historgrams
-#+BEGIN_SRC ipython :session :file /home/dodge/workspace/craig-politics/py6320JLH.png :exports both
+#+BEGIN_SRC ipython :session :file ./py6320JLH.png :exports both
   pat = state_usage.sort_values("patronage", ascending=True)
   x = np.arange(len(pat))
     
