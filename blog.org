@@ -1,75 +1,134 @@
-* TODO Stuff to add
-** word cloud
-** punchline intro
-** punchline conclusion
-** district of columbia
-
-
 * Introduction
-For my webscraping project, I've chosed to exract politics data from craigslist.org. My original ambition, though it proved difficult to affirm, was to prove a negative correlation to pro-trump chatter with conservatism. That is, I suspected that, somewhat counter-intuitively, the politics sections of more conservative states would be the less likely source of pro-trump posts. More generally, I sought to analyze the trends of politcs discussion of craiglist.
+For my web scraping project, I've chosen to extract politics data from craigslist.org. My original ambition, though it proved difficult to affirm, was to prove a negative correlation to pro-trump chatter with conservatism. That is, I suspected that, somewhat counter-intuitively, the politics sections of more conservative states would be the less likely source of pro-trump posts. More generally, I sought to analyze the trends of politcs discussion of craiglist.
+
+** notes
+- synopsis
 * Methodology
-To extract data from craigslist, I used the Python Scrapy package. I filed some 500 requests, spread over 5 hours,  to obtain roughly 40,000 posts titles/times. For each of these titles, there is a corresponding state and region. Some regions are additionally divided into subregions (the New York City region, for example, consists of Brooklyn, Queens, Manhattan, etc). Each post, its time and its geographical origin are represented with a single row in a 40k row Pandas DataFrame. Data corruption was not an issue. Additionally, I employed the 2010 U.S. census, which is available from http://www.census.gov, as well as 2016 election results data, which was also extracted from http://uselectionatlas.org/ using a simple BeautifulSoup extraction script. 
-**
+To extract data from craigslist, I used the Python Scrapy package. I executed some 500 requests, spread over 5 hours, to obtain roughly 40,000 posts titles/times. For each of these titles, there is a corresponding state and region, with some regions are additionally divided into subregions (the New York City region, for example, consists of Brooklyn, Queens, Manhattan, etc). Each post, its time and its geographical origin are represented with a single row in a 40k row Pandas DataFrame. Data corruption was not an issue. Additionally, I employed the 2010 U.S. census, which is available from http://www.census.gov, as well as 2016 election results data, which was also extracted from http://uselectionatlas.org/ using a simple BeautifulSoup extraction script. 
 * State Usage
-** most popular states
-** Colorodo is very popular
-** correlation between populartion and popularity -->
-** Correlation between trumpism and popularity
-* Text Qualities
-** Finding stings 
+** DONE Introduction
+*** intro
+Although the post data has attached a fairly fine-grain geographical description, I found the CL regions in general to not line up well with any census bureau categories, and even in the event of such naming correspondence, the division of regions was at least questionable. One of the datasets most prominent outliers, District of Columbia, for example, has a census population of about 600k, yet a practical metropolitan area population in the several millions, grossly skewing its contributions to state-wide statistics. Therefore, regions and subregions were largely found to be unmanageably tedious to consider seriously in any analysis. States, however, having relatively little variation between practical occupancy and census population, and have indisputable borders, are ideal for inspection. 
+*** terms
+**** patronage
+Patronage is the raw number of posts on the politics board. 
+**** usage
+Usage is my measure for a states proportional interest in the politics board. It is simply the normalized ratio of patronage and state population. 
+**** trumpism
+Trumpism is the name for a states republican vote percentage in the general election. It is used as a rough measure of how pro-Trump that state is.
+** Population
+*** Sample
 #+BEGIN_SRC ipython :session :file  :exports both
-  def find_strs(substr, df=usa):
-      """
-      Get all titles from usa that have substr in their post title. Add some data on capitalization.
-      """
-      
-      find = lambda s: (1 if re.search(substr, s, re.IGNORECASE) else np.nan)
-
-      return df.title[df.title.map(find) == 1].rename("*" + substr + "*", inplace=True)
-
-  def categ_strs(findings):
-      """
-      Return a list of 
-      """
-      s = findings.name[1:-1]
-      find = lambda sub, string: (1 if re.search(sub, string) else np.nan)
-
-      proper = findings.apply(lambda x: find(s[0].upper() + s[1:].lower(), x)).rename("proper")
-      cap = findings.apply(lambda x: find(s.upper(), x)).rename("uppercase")
-      low = findings.apply(lambda x: find(s.lower(), x)).rename("lower")
-
-      return pd.concat([proper, cap, low], axis=1)
-#+END_SRC
-** number of distinct words
-- percentage
-- number
-** most popular words [0/0]
-*** Make bar graph
-#+BEGIN_SRC ipython :session :file  :exports both
-notable_post_words = word_counts[~word_counts.index.isin(pop_english_words)]
-
-notable_post_words[:10]
-
+pd.concat([state_usage[:5], state_usage_space, state_usage[-5:].sort_values("popularity")])
 #+END_SRC
 
 #+RESULTS:
 #+begin_example
-trump        5071
-obama        1757
-not           993
-news          841
-hillary       805
-america       784
-donald        725
-democrats     694
-election      691
-clinton       667
-Name: word counts, dtype: int64
+             patronage population popularity
+Colorado          1982    5029196          1
+Hawaii             445    1360301    0.83008
+Montana            286     989415    0.73347
+Oregon            1094    3831074   0.724589
+Nevada             770    2700551   0.723491
+*SPACE*         ------     ------     ------
+North Dakota        19     672591  0.0716799
+Vermont             18     625741  0.0729916
+Kansas             106    2853118  0.0942716
+Wyoming             22     563626  0.0990436
+New Jersey         400    8791894   0.115444
 #+end_example
 
-** word cloud
-** "liberals" vs "conservatives"
-*** pluralization
+    Correlation between low population and low popularity is evident from this table. However, the states for which the politics board is most popular are also generally small. This correlation is explored more by some political investigation.
+
+*** Outliers
+**** colorodo
+***** popularity
+***** denver
+**** D.C.
+***** extremely high usage and extremely low trumpism
+***** So it was thrown out
+
+** politics
+** correlations
+*** distributions
+We can see that more popular regions are 
+#+BEGIN_SRC ipython :session :file /home/dodge/workspace/craig-politics/py6320wpZ.png :exports both
+norm_usage = (state_usage - state_usage.min()) / (state_usage.max() - state_usage.min())
+
+stats = pd.DataFrame({"mean": norm_usage.mean(), "median": norm_usage.median()})
+print "Mean/median of normalized state usage metrics:\n{}".format(stats)
+
+norm_usage.plot(kind="density", title="Normalized PDF estimations", sharey=True)
+#+END_SRC
+
+#+RESULTS:
+[[file:/home/dodge/workspace/craig-politics/py6320wpZ.png]]
+
+**** posts over trumpism
+*** correlation between populartion and popularity
+*** correlation between trumpism and popularity
+* Text Qualities
+** introduction
+*** intro
+*** Words
+#+RESULTS:
+
+#+BEGIN_SRC ipython :session :file /home/dodge/workspace/craig-politics/py63203mB.png :exports both
+  def post_words(df):
+      return re.findall(r'\w+', df.title.apply(lambda x: x + " ").sum())
+  def words(df=usa, no_pop=False):
+      # word counts across all posts
+      words = post_words(df)
+      word_counts = Counter([word.lower() for word in words])
+      wcs = zip(*[[word, count] for word, count in word_counts.iteritems()])
+
+      corpus = pd.Series(wcs[1], index=wcs[0]).rename("counts")
+      if no_pop:
+          # pop_english_words is a list of the most popular (and boring) English
+          # words. E.g., "and", "to", "the", etc.
+          corpus = corpus[~corpus.index.isin(pop_english_words)]
+      return corpus.sort_values(ascending=False)
+#+END_SRC
+Probably don't care about stupid common words 
+#+BEGIN_SRC ipython :session :file /home/dodge/workspace/craig-politics/py6320H0c.png :exports both
+posts_corpus = words(df=usa, no_pop=True)
+
+posts_sum = " ".join([word for word in post_words(usa) if word.lower() not in pop_english_words])
+#+END_SRC
+** General
+*** number of distinct words
+- percentage
+- number
+*** most popular words [0/0]
+**** Make bar graph
+*** word cloud
+*** semantics
+*** unicode
+** Politics
+*** what words are used most by democrats
+#+BEGIN_SRC ipython :session :file  :exports both
+  lib_words = words(df=post_politics[post_politics.trumpism < .45], no_pop=True).rename("libs")
+  conserv_words = words(df=post_politics[post_politics.trumpism > .55], no_pop=True).rename("conservs")
+   
+  rat = lambda df: df.libs/df.conservs
+  ratio = pd.DataFrame().join([lib_words[lib_words >= 10], conserv_words[conserv_words >= 10]],
+                                      how="outer").apply(rat, axis=1).dropna()
+  ratio = ratio.rename("dem/rep ratio")
+  lib_con_ratio = pd.DataFrame(posts_corpus).join(ratio.sort_values(ascending=False), how="inner")
+  lib_con_ratio.sort("dem/rep ratio", ascending=False, inplace=True)
+  lib_con_ratio[:10]
+
+#+END_SRC
+**** "against"
+**** "won"
+***** sample of when being used by liberals
+***** semantics
+*** diversity of words vs trumpism
+#+BEGIN_SRC ipython :session :file  :exports both
+
+#+END_SRC
+*** "liberals" vs "conservatives"
+**** pluralization
 #+BEGIN_SRC ipython :session :file  :exports both
   ("singular/plural:\n" +
    "'conservative': {0:.3f}\n" +
@@ -82,7 +141,7 @@ Name: word counts, dtype: int64
 : 'conservative': 0.628
 : 'liberal': 2.198
 
-*** How much more often is "liberal" mentioned than "conservative"?
+**** How much more often is "liberal" mentioned than "conservative"?
 Best way to visualize this?
 #+BEGIN_SRC ipython :session :file  :exports both
   liberal = float(word_counts["liberal"])
@@ -102,16 +161,16 @@ Best way to visualize this?
 
 #+RESULTS:
 
-*** How much more often is "liberals" capitalized?
-*** How much more often is "liberals" mentioned in liberal states?
-** "trump" vs "clinton" vs "obama"
-*** "trump" usage / popularity
+**** How much more often is "liberals" capitalized?
+**** How much more often is "liberals" mentioned in liberal states?
+*** "trump" vs "clinton" vs "obama"
+**** "trump" usage / popularity
 #+BEGIN_SRC ipython :session :file  :exports both
 
 #+END_SRC
-*** "trump" usage / trumpism
-*** upcase usage / trumpism
-*** trumpism
+**** "trump" usage / trumpism
+**** upcase usage / trumpism
+**** trumpism
 #+BEGIN_SRC ipython :session :file /home/dodge/workspace/craig-politics/py6320hB1.png :exports both
 trump_posts = usa.join(voting, on="state").join(find_strs("trump"), how="inner")
 
@@ -119,7 +178,7 @@ print "Sampling posts from especially anti-trump states:\n{0}".format(t[t.trumpi
 
 print "\nPolitically liberal states composing the above sampling:\n{0}".format(t[t.trumpism < .4].groupby("state").sum().index.tolist())
 #+END_SRC
-** Semantics
+*** Semantics
 #+BEGIN_SRC ipython :session :file /home/dodge/workspace/craig-politics/py6320TLE.png :exports both
   from textblob import TextBlob
 
@@ -138,6 +197,7 @@ print "\nPolitically liberal states composing the above sampling:\n{0}".format(t
 
 trumps_semantics
 #+END_SRC
-** Unicode
-* Punchline
+
+*** Unicode
+* conclusion
 ** "liberals" more likely to be used in liberal states than conservative states
