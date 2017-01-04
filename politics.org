@@ -242,10 +242,6 @@ New Jersey         400    8791894   0.115444
 
 ** Analysis
 *** Patronage
-
-#+RESULTS:
-[[file:/home/dodge/workspace/craig-politics/img/py6320LXp.png]]
-
 #+BEGIN_SRC ipython :session :file ./img/py6320oYD.png :exports both :tangle ./politics.py
 x = np.arange(len(pat))
 
@@ -308,10 +304,6 @@ ax2.set_ylim(0, 2);
 norm_usage = (state_usage - state_usage.min()) / (state_usage.max() - state_usage.min())
 norm_usage.plot(kind="density", title="Normalized PDF estimations", sharey=True)
 #+END_SRC
-
-#+RESULTS:
-[[file:/home/dodge/workspace/craig-politics/py6320jfT.png]]
-
 #+BEGIN_SRC ipython :session :file ./img/py6320Yhv.png :exports both :tangle ./politics.py
 plt.plot(x, state_usage.population.sort_values().values)
 #+END_SRC
@@ -325,7 +317,7 @@ p1 = state_usage.sort_values("population", ascending=False)[5:]
 plt.bar(p1["population"], p1["usage"])
 #+END_SRC
  #+RESULTS:
- [[file:/home/dodge/workspace/craig-politics/py63201RB.png]]
+ [[file:./img/py63201RB.png]]
 
 *** Politics
 Assign to each post their expected value for political leaning
@@ -479,7 +471,7 @@ pd.DataFrame.hist(trumps_vs_trumpism, bins=50)
 #+END_SRC
 
 #+RESULTS:
-[[file:/home/dodge/workspace/craig-politics/img/py6320cup.png]]
+[[file:./img/py6320cup.png]]
 
 #+BEGIN_SRC ipython :session :file ./img/py6320U3u.png :exports both
 trump_posts = usa.join(voting, on="state").join(find_strs("trump"), how="outer")
@@ -508,9 +500,9 @@ from PIL import Image
 
 from wordcloud import WordCloud, STOPWORDS
 
-d = path.dirname("/home/dodge/workspace/craig-politics/")
+d = path.dirname(".")
 
-trump_mask = np.array(Image.open(path.join(d, "Trump_silhouette.png")))
+trump_mask = np.array(Image.open(path.join(d, "img/Trump_silhouette.png")))
 
 stopwords = set(STOPWORDS)
 
@@ -522,7 +514,7 @@ wc = WordCloud(background_color="white", max_words=2000, mask=alice_mask,
 wc.generate(posts_sum)
 
 # save to file
-wc.to_file(path.join(d, "Trump_test.png"))
+wc.to_file(path.join(d, "img/Trump_test.png"))
 
 # show
 plt.imshow(wc)
@@ -534,7 +526,7 @@ plt.show()
 #+END_SRC
 
 #+RESULTS:
-[[file:/home/dodge/workspace/craig-politics/py6320RCC.png]]
+[[file:./img/py6320RCC.png]]
 
 *** Unicode
 ascii vs. unicode usage. 
