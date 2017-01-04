@@ -25,7 +25,7 @@ pd.options.display.max_colwidth = 1000
 #+RESULTS:
 * Preparing Data
 ** Grab CL Data
-#+BEGIN_SRC ipython :session :file  :exports both  :tangle ./politics.py
+#+BEGIN_SRC ipython :session :file  :results output raw drawer :noweb yes :exports both  :tangle ./politics.py
 # read us data collected by craigcrawler 
 usa_raw = pd.read_csv("data/us.csv", index_col=0)
 post_count_total_raw = len(usa_raw)
@@ -42,6 +42,10 @@ print ("\n{0:,} total posts exctracted from {3:,} regions over {4} "+
 
 #+END_SRC
 #+RESULTS:
+:RESULTS:
+38,692 total posts exctracted from 416 regions over 52 state. The most popular
+state was Alabama, and the most popular region was, surprisingly, SF bay area.
+:END:
 ** U.S. Census 2010
 - US census data for 2010 from the census bureau
 - Census data is not labelled exactly as my data is. Some states are named a little differently,
@@ -90,7 +94,7 @@ state_keys = state_keys[state_keys[GEO_NAME]!= "Puerto Rico"]
 
 [5 rows x 375 columns]
 ** U.S. 2016 Election
-#+BEGIN_SRC ipython :session :file  :exports both :tangle ./politics.py
+#+BEGIN_SRC ipython :session :file :results output raw drawer :noweb yes :exports both :tangle ./politics.py
   import requests
   from scrapy import Selector
 
@@ -113,11 +117,11 @@ state_keys = state_keys[state_keys[GEO_NAME]!= "Puerto Rico"]
 
   # for pretty printing
   voting_space = pd.DataFrame([["------", "------", "------"]],index=["*SPACE*"], columns=voting.columns) 
-  pd.concat([voting[:5], voting_space, voting[-5:].sort_values("trumpism")])
+  print(pd.concat([voting[:5], voting_space, voting[-5:].sort_values("trumpism")]))
 #+END_SRC
 
 #+RESULTS:
-#+begin_example
+:RESULTS:
                clinton    trump  trumpism
 Wyoming          55973   174419  0.757053
 West Virginia   188794   489371  0.721611
@@ -130,11 +134,11 @@ California     8753788  4483810  0.338718
 Vermont         178573    95369  0.348136
 Massachusetts  1995196  1090893  0.353487
 Maryland       1677928   943169  0.359838
-#+end_example
+:END:
 
 ** Preprocess Data
 Some preprocessing to check data corrupted files
-#+BEGIN_SRC ipython :session :file  :exports both :tangle ./politics.py
+#+BEGIN_SRC ipython :session :file :results output raw drawer :noweb yes :exports both :tangle ./politics.py
   print "Data tests... \n\nAssertions Passed\n\n"
 
   # Confirm all expected regions and states present
@@ -158,6 +162,14 @@ Some preprocessing to check data corrupted files
 #+END_SRC
 
 #+RESULTS:
+:RESULTS:
+Data tests... 
+
+Assertions Passed
+
+
+58 regions/subregions over 32 states without any posts.
+:END:
 
 Drop unneeded data
 #+BEGIN_SRC ipython :session :file  :exports both :tangle ./politics.py
@@ -173,33 +185,54 @@ usa = usa[usa["state"] != "District of Columbia"]
 #+RESULTS:
 
 Confirm Census Data
-#+BEGIN_SRC ipython :session :file  :exports both :tangle ./politics.py
+#+BEGIN_SRC ipython :session :results output raw drawer :noweb yes  :exports both :tangle ./politics.py
 assert set(usa.state.unique()) == set(census.index) and len(usa.state.unique() == len(census.index))
 
 print "Census data complete"
 #+END_SRC
 
 #+RESULTS:
+:RESULTS:
+Census data complete
+:END:
 
 Confirm Election Data
-#+BEGIN_SRC ipython :session :file  :exports both :tangle ./politics.py
+#+BEGIN_SRC ipython :session :file :results output raw drawer :noweb yes :exports both :tangle ./politics.py
 assert set(usa.state.unique()) == set(voting.index) and len(usa.state.unique() == len(voting.index))
 
 print "Voting data complete"
 #+END_SRC
 #+RESULTS:
+:RESULTS:
+Voting data complete
+:END:
 * State Popularity
 ** Data
 *** Grab Data
-#+BEGIN_SRC ipython :session :file  :exports both :tangle ./politics.py
+#+BEGIN_SRC ipython :session :file :results output raw drawer :noweb yes :exports both :tangle ./politics.py
   patronage = pd.DataFrame(usa.groupby('state').size(), columns=["patronage"]).sort_values(
       "patronage",ascending=False)
 
   print "Top ten most frequented states:\n{}".format(patronage[:10])
 #+END_SRC 
 #+RESULTS:
+:RESULTS:
+Top ten most frequented states:
+              patronage
+state                  
+California         3808
+Florida            3594
+Texas              3147
+New York           2341
+Colorado           1982
+Pennsylvania       1918
+Arizona            1405
+Ohio               1401
+Washington         1378
+Michigan           1366
+:END:
 State Usage table
-#+BEGIN_SRC ipython :session :file  :exports both :tangle ./politics.py
+#+BEGIN_SRC ipython :session :file :results output raw drawer :noweb yes :exports both :tangle ./politics.py
     cl_by_state = patronage.join(census, how="inner")
     usage = cl_by_state.apply(
         lambda df: df["patronage"] / float(df["population"]), axis=1)
@@ -218,14 +251,14 @@ State Usage table
 #+RESULTS:
 
 Useful for displaying several splices of a dataframe as a concatenation
-#+BEGIN_SRC ipython :session :file  :exports both
+#+BEGIN_SRC ipython :session :file  :results output raw drawer :noweb yes :exports both
   state_usage_space = pd.DataFrame([["------", "------", "------"]],index=["*SPACE*"],
                                    columns=state_usage.columns)
 
-  pd.concat([state_usage[:5], state_usage_space, state_usage[-5:].sort_values("usage")])
+  print(pd.concat([state_usage[:5], state_usage_space, state_usage[-5:].sort_values("usage")]))
 #+END_SRC
 #+RESULTS:
-#+begin_example
+:RESULTS:
              patronage population       usage
 Colorado          1982    5029196           1
 Hawaii             445    1360301     0.81696
@@ -238,7 +271,7 @@ Vermont             18     625741  0.00141296
 Kansas             106    2853118   0.0243361
 Wyoming             22     563626   0.0294766
 New Jersey         400    8791894   0.0471436
-#+end_example
+:END:
 
 ** Analysis
 *** Patronage
@@ -273,35 +306,6 @@ plt.hist(states.usage,
 
 #+RESULTS:
 [[file:./img/py6320LXp.png]]
-
-#+BEGIN_SRC ipython :session :file ./img/py6320lr1.png :exports both :tangle ./politics.py
-plt.bar(x, pat.sort_values("population").usage)
-
-fig = plt.figure() # Create matplotlib figure
-
-ax = fig.add_subplot(111) # Create matplotlib axes
-ax2 = ax.twinx() # Create another axes that shares the same x-axis as ax.
-
-width = 0.4
-
-pat.population.plot(kind='bar', color='red', ax=ax, width=width, position=1)
-pat.patronage.plot(kind='bar', color='blue', ax=ax2, width=width, position=0)
-
-ax.set_ylabel('population')
-ax2.set_ylabel('usage')
-
-ax = pat.plot(kind="bar")
-ax2 = ax.twinx()
-for r in ax.patches[len(pat):]:
-    r.set_transform(ax2.transData)
-ax2.set_ylim(0, 2);
-
-
-
-#+END_SRC
-
-#+RESULTS:
-[[file:./img/py6320lr1.png]]
 
 **** Normalized state usage distributions
 #+BEGIN_SRC ipython :session :file ./img/py6320jfT.png :exports both
@@ -340,9 +344,18 @@ plt.hist([states.usage, states.trumpism], bins=30)
 [[file:./img/py6320PmN.png]]
 
 Note the correlation between trumpism and usage
-#+BEGIN_SRC ipython :session :file ./img/py6320k_K.png :exports both
-print states.filter(["patronage", "usage", "normalized", "trumpism"]).corr()
+#+BEGIN_SRC ipython :session :results output raw drawer :noweb yes :exports both
+print(states.filter(["patronage", "usage", "normalized", "trumpism"]).corr())
 #+END_SRC :tangle ./politics.py
+
+#+RESULTS:
+:RESULTS:
+           patronage     usage  trumpism
+patronage   1.000000  0.336453 -0.363133
+usage       0.336453  1.000000 -0.301936
+trumpism   -0.363133 -0.301936  1.000000
+:END:
+
 * Text Qualities
 ** Data
 *** Words
@@ -350,9 +363,6 @@ Most popular words in English. Grabbed from http://www.world-english.org/english
 #+BEGIN_SRC ipython :session :file  :exports both
 pop_english_words = ["the", "re", "a", "s", "t", "i", "of", "to", "and", "and", "in", "is", "it", "you", "that", "he", "was", "for", "on", "are", "with", "as", "I", "his", "they", "be", "at", "one", "have", "this", "from", "or", "had", "by", "hot", "but", "some", "what", "there", "we", "can", "out", "other", "were", "all", "your", "shit", "when", "up", "use", "word", "how", "said", "an", "each", "she", "which", "do", "their", "time", "if", "will", "way", "about", "many", "fuck", "then", "them", "would", "write", "like", "so", "these", "her", "long", "make", "thing", "see", "him", "two", "has", "look", "more", "day", "could", "go", "come", "did", "my", "sound", "no", "most", "number", "who", "over", "know", "water", "than", "call", "first", "people", "may", "down", "side", "been", "now", "find"]
 #+END_SRC
-
-#+RESULTS:
-
 #+BEGIN_SRC ipython :session :file ./img/py63203mB.png :exports both
   def post_words(df, no_pop=False):
       words = re.findall(r'\w+', df.title.apply(lambda x: x + " ").sum())
@@ -409,8 +419,6 @@ Find substrings in posts
   def eval_strs(string, df=usa):
       findings = find_strs(string, df)
       return categ_strs(findings).join(findings)
-
-
 #+END_SRC
 ** Analysis
 *** General Language
@@ -430,23 +438,21 @@ usa_words
 #by demographic
 #+END_SRC
 
-#+RESULTS:
-| Are | You | Deplorable | Boycott | ABC | CBS | NBC | Free | Wilbert | Gay | Jr | Sorted | date | sale | blue | today | Dare | say | Trump | Nation | GOOD | LAUGH | vs | BAD | LAUGH | 2016 | Sorted | date | Protest | Songs | Age | Trump | Free | Wilbert | Gay | Jr | A | glimpse | ghost | Christmas | future | The | American | Suicide | Happy | Trumpsgiving | Bannon | White | Nationalist | White | House | Business | Funding | 6K | 1M | Poor | Credit | Ok | Business | Funding | 6K | 1M | Poor | Credit | Ok | Kept | language | vague | still | flagged | Donald | Philby | Trump | Trump | Music | Video | blue | meetup | post | flagged | removal | Two | Snakes | Australian | Shepherd | OBAMA | Racist | buffoon | smoke | filled | Foley | Summerdale | Al | War | Terrorism | Rackets | run | organized | criminal | billionaires | OBAMA | Kellyann | Goebbels | bleeding | wherever | Donald | Philby | Trump | Boycott | ABC | CBS | NBC | Boycott | ABC | CBS | NBC | Mr | Obama | Financial | Collapse | Coming | Necessary | Good | And | Other | News | Earth | Happy | Holidays | The | Seven | Deadly | Sins | Who | draining | swamp | Great | Magician | Two | Snakes | Unhappy | election | Amended | Democracy | Now | 1 | hr | national | world | news | Mon | thru | Friday | Honest | liberal | watchdog | media | Fidel | Castro | RIP | US | vs | Brainwashed | Americans | Dumb | vs | Dumber | Demand | The | Electorial | College | Reverse | This | Sham | An | Election | Veterans | Can | Now | Have | Access | To | Medical | Marijuana | Re | Donald | P | Trump | Einstein | Nationalism | Goodwill | etc | Re | Electoral | Pensacola | Progressive | Network | Donald | Philby | Trump | Stop | Human | Trafficking | testpost | Thank | You | Voting | No | Amendment | 1 | Remember | Ronald | Reagan | president | also | Steve | Jobs | Bob | Boycott | ABC | CBS | NBC | What | election | What | Democracy | It | Never | Great | Will | Canadians | build | wall | Trump | refuels | train | FIGHT | NEWS | BIAS | Boycott | ABC | CBS | NBC | Boycott | ABC | CBS | NBC | Are | You | Deplorable | Boycott | ABC | CBS | NBC | 2020 | Republican | Presidential | Candidate | Seeking | Support | Justice | Wilbert | Gay | Jr | Justice | Wilbert | Gay | Jr | fun | effective | fitness | health | training | Boycott | ABC | CBS | NBC | Two | Snakes | Australian | Shepherd | OBAMA | Racist | buffoon | smoke | filled | Foley | Summerdale | Al | War | Terrorism | Rackets | run | organized | criminal | billionaires | OBAMA | Kellyann | Goebbels | bleeding | wherever | Donald | Philby | Trump | Boycott | ABC | CBS | NBC | Free | Wilbert | Gay | Jr | Sorted | date | sale | blue | today | Dare | say | Trump | Nation | GOOD | LAUGH | vs | BAD | LAUGH | 2016 | Sorted | date | Protest | Songs | Age | Trump | Free | Wilbert | Gay | Jr | A | glimpse | ghost | Christmas | future | The | American | Suicide | Happy | Trumpsgiving | Bannon | White | Nationalist | White | House | Business | Funding | 6K | 1M | Poor | Credit | Ok | Business | Funding | 6K | 1M | Poor | Credit | Ok | Kept | language | vague | still | flagged | Donald | Philby | Trump | Trump | Music | Video | blue | meetup | post | flagged | removal | Donald | Philby | Trump | Donald | Philby | Trump | Trump | elects | plumber | Boycott | ABC | CBS | NBC | Obama | Continues | Play | Role | Fool | Where | spell | checker | Liberal | Press | Plays | into | Republican | Hand | Patronizing | Obama | GOOGLE | Left | Wing | Bias | getting | VERY | Boring | The | black | tax | Democratic | Party | Chaotic | Collapse | BLACK | SANTA | SAYS | A | Great | Article | REALITY | At | End | Day | Obama | Leaving | Not | Soon | Enough | Food | Thought | The | Core | Agenda | Liberal | Left | EXPLODES | into | View | Hey | Liberals | Help | Us | Understand | America | Thankful | Bill | Clinton | Complaining | Angry | White | Men | Hillary | Popular | Vote | Victory | Obama | Legacy | Has | Taken | Shape | And | Obama | True | Colors | Appear | Well | IT | S | OFFICIAL | Liberal | Media | Off | Deep | End | Advice | Advice | DEFINITELY | The | JOKE | Year | Do | You | Notice | Different | Reactions | Have | ya | noticed | ridiculous | desperation | DemoRats | The | Electoral | College | Prevents | THIS | If | Liberals | Had | Their | Way | At | least | One | Hard | Core | Ultra | Liberal | Speaks | Facts | Cost | Recounts | President | Trump | Finally | An | atheist | President | Thank | Mr | Trump | Proof | climate | change | Reality | vs | Obama | Democratic | Party | Hollywood | Feel | Good | A | Myth | pretending | Fact | m | just | little | curious | Ain | AMAZING | My | Direction | My | direction | Trump | refuels | train | Trump | Fu | king | Clueless | Foreign | Policy | Knowledge | Understanding | Critical | Free | Society | Electoral | College | Challenge | The | Democratic | Party | Remains | Committed | One | Has | Wonder | Americans | keep | looking | away | election | alarming | story | Trump | picked | plumber | When | It | Over | It | Over | The | memphis | git | Plan | Castro | Mas | Klinton | Mas | Muy | bueno | Did | Frazier | Use | Phase | Con | Man | She | Lost | Get | It | Move | On | Trump | Education | Plan | Whining | Alert | RE | My | Way | NO | WAY | continue | say | Democrats | My | Way | NO | WAY | continue | say | Democrats | Here | good | challenge | Street | Protests | Their | History | Their | Demise | A | Battle | We | Can | Not | Avoid | Years | Making | Look | happens | elect | leader | Nothing | Scares | Liberal | More | Than | Free | Thinking | Black | Well | Hello | memphis | So | YOU | think | Liberals | care | America | Kanye | loves | Trump | Kanye | loves | Trump | Donald | Philby | Trump | Obama | continues | Challenge | Right | Free | Speech | Rats | swamp | The | popular | vote | does | not | elect | president | Epic | Failure | What | Expect | Within | News | Media | Attention | Majority | America | public | school | children | NOW | living | poverty | Hillary | Post | Election | Behavior | Quite | Revealing | We | Must | Unite | Behind | President | Trump | Hillary | passed | campaign | trail | again | Some | interesting | FACTS | A | Letter | John | Cleese | People | US | A | Ah | yes | Frazier | Re | Awaking | Black | Vote | A | Letter | To | US | John | Cleese | The | Awaking | Black | Voting | Base | Blue | Collar | Workers | Now | Out | Closet | Pants | Don | loot | Go | South | Go | South | Now | Ain | That | Just | Like | Liberal | So | Much | Draining | Swamp | The | Liberals | problem | Not | Unexpected | This | Placement | Blame | This | Fight | indeed | interesting | 6 | month | old | pekingese | mix | 2020 | Republican | Presidential | Candidate | Seeking | Support | Justice | Wilbert | Gay | Jr | Justice | Wilbert | Gay | Jr | fun | effective | fitness | health | training | Boycott | ABC | CBS | NBC | Boycott | ABC | CBS | NBC | Donald | Philby | Trump | Will | Canadians | build | wall | Trump | refuels | train | FIGHT | NEWS | BIAS | Boycott | ABC | CBS | NBC | Donald | Philby | Trump | Trump | elects | plumber | Boycott | ABC | CBS | NBC | Donald | Philby | Trump | Boycott | ABC | CBS | NBC | Will | Canadians | build | wall | Trump | refuels | train | FIGHT | NEWS | BIAS | Boycott | ABC | CBS | NBC | 2020 | Republican | Presidential | Candidate | Seeking | Support | Justice | Wilbert | Gay | Jr | Justice | Wilbert | Gay | Jr | fun | effective | fitness | health | training | Boycott | ABC | CBS | NBC | Who | liberals | Siberian | Husky | lost | diamond | The | EVIL | DNC | Child | molestation | ring | More | Evidence | Michelle | obama | man | The | left | continues | cry | heh | heh | love | Proof | obama | homosexual | drug | dealer | Democrats | REALLY | Liberals | don | watch | Hillary | speech | fake | news | Suspicious | Deaths | surrounding | Clintons | Can | wait | Trump | take | Ckc | Boxer | Brindle | Male | FBI | still | after | hillary | bill | PRESIDENT | TRUMP | Trump | not | stopped | Boycott | ABC | CBS | NBC | Dare | say | start | Trump | Nation | Values | Small | Dachshund | Puppy | Lots | Personality | Lost | white | fixed | pit | bull | Great | Ex | lunacy | fed | gov | State | Rep | John | Bennett | interview | AG | Pruitt | take | note | EPA | LEAD | PAINT | HOUSING | scam | ... |
-
 Ratio
-#+BEGIN_SRC ipython :session :file  :exports both   
+#+BEGIN_SRC ipython :session :results output raw drawer :noweb yes :exports both
+
   rat = lambda df: df.libs/df.conservs
   ratio = pd.DataFrame().join([lib_words[lib_words >= 10], conserv_words[conserv_words >= 10]],
                                       how="outer").apply(rat, axis=1).dropna()
   ratio = ratio.rename("dem/rep ratio")
   lib_con_ratio = pd.DataFrame(posts_corpus).join(ratio.sort_values(ascending=False), how="inner")
   lib_con_ratio.sort("dem/rep ratio", ascending=False, inplace=True)
-  lib_con_ratio[:10]
+  print(lib_con_ratio[:10])
   #lib_con_ratio = posts_corpus.join(lib_con_ratio.sort_values(ascending=False), on="words")
 #+END_SRC
 
 #+RESULTS:
-#+begin_example
+:RESULTS:
          counts  dem/rep ratio
 against     346       5.000000
 how         463       4.500000
@@ -458,7 +464,7 @@ not         993       2.000000
 to         1017       1.950000
 for         625       1.705882
 get         480       1.615385
-#+end_example
+:END:
 
 *** Trumps
 **** Patronage
@@ -482,15 +488,36 @@ pd.DataFrame.hist(trumps_vs_trumpism, bins=50)
 #+RESULTS:
 [[file:./img/py6320cup.png]]
 
-#+BEGIN_SRC ipython :session :file ./img/py6320U3u.png :exports both
+#+BEGIN_SRC ipython :session :exports both :results output raw drawer :noweb yes
 trump_posts = usa.join(voting, on="state").join(find_strs("trump"), how="outer")
 
 print "Selecting states that are espectially anti-trump:\n{0}".format(t[t.trumpism < .4].title.sample(10))
 
 print "\nPolitically liberal states composing the above sampling:\n{0}".format(t[t.trumpism < .4].groupby("state").sum().index.tolist())
 #+END_SRC
+
+#+RESULTS:
+:RESULTS:
+Selecting states that are espectially anti-trump:
+14244                       Mehdi Hasan's Awesome Reply in a Debate
+3793                                            RE;RE the tea party
+24399                          THE SATANIC CONTRACT IS BLOOD MONEY!
+15228                     'Prophetic' Underground  Animated Classic
+27797             Castros death described by the left and the right
+28145                                           Thought for the Day
+15351          Trump to bring private security staff to White House
+15239                                      The Overthrow of the USA
+12593    OBAMA SAYS "FUCK  GODDAMN AMERICA, THE TPP WILL BE PASSED"
+13396                                        re: RUDE STORE MANAGER
+Name: title, dtype: object
+
+Politically liberal states composing the above sampling:
+['California', 'Hawaii', 'Maryland', 'Massachusetts', 'New York', 'Vermont']
+:END:
+
 **** Trump Language
 #+BEGIN_SRC ipython :session :file ./img/py63202C2.png :exports both :tangle ./politics.py
+# not really ever used
 trump_words = ["liberals",
                "conservatives",
                "centipede",
@@ -500,7 +527,6 @@ trump_words = ["liberals",
                "shillary",
                "sjw",
                "triggered"]
-
 #+END_SRC
 **** word cloud
 #+BEGIN_SRC ipython :session :file ./img/py6320RCC.png :exports both
@@ -566,7 +592,7 @@ print ("{0:,} of {1:,} total posts were non-ascii ({2:.2f}%), confined to {3} "
 
 **** Pennsylvania
 Pennsylvania has was the preeminent outlier in non-ascii usage per-state
-#+BEGIN_SRC ipython :session :file  :exports both :tangle ./politics.py
+#+BEGIN_SRC ipython :session :file  :exports both :tangle ./politics.py :results output raw drawer :noweb yes
 nonascii_states_count = nonascii_posts.groupby(
     "state").title.nunique().sort_values(ascending=False)
 print "\nTop ten most popular unicode states:"
@@ -585,36 +611,59 @@ print pennsylvania["title"][:5]
 pennsylvania.groupby("region").count()
 
 post_uniqueness = pennsylvania.title.nunique()/float(len(pennsylvania.title))
+
+post_uniqueness
 #+END_SRC
 
 #+RESULTS:
-=                   title  date  state  subregion
-region                                          
-harrisburg, PA        11    11     11          0
-lancaster, PA         11    11     11          0
-philadelphia           1     1      1          0
-pittsburgh, PA         1     1      1          0
-reading, PA           10    10     10          0
-state college, PA     11    11     11          0
-york, PA              11    11     11          0
-==<pandas.core.groupby.DataFrameGroupBy object at 0x7fa5c0d57250>
-==<pandas.core.groupby.DataFrameGroupBy object at 0x7fa5f43f5050>
-==Series([], dtype: int64)
-==Empty DataFrame
-Columns: [title, date, state, region]
-Index: []
-=* 
+:RESULTS:
+
+Top ten most popular unicode states:
+state
+Pennsylvania    23
+New York         9
+Maryland         7
+Florida          5
+California       5
+Arizona          4
+Texas            4
+Washington       4
+New Jersey       3
+Alabama          2
+Name: title, dtype: int64
+ðŸ™ŠðŸ™‰The ZOMBIES Are ComingðŸ™‰ðŸ™Š
+
+A single Trump memester seems to be responsible for the chaos in Pennsylvania.
+I suspect that these crazy unicode posts are mostly done by a very small
+set of people, though there is no way to tell.
+
+Random sample of 5 non-ascii Pennsylvania posts
+18398           ðŸ™ŠðŸ™‰The ZOMBIES Are ComingðŸ™‰ðŸ™Š
+18410    ðŸ’¥DONALD J. TRUMPðŸ’¥[Need a Tissue Anyone]
+18418           ðŸ�µðŸ™‰The Zombies Are ComingðŸ�µðŸ™‰
+18426       ðŸ‘‘HAPPY NEW YEARSðŸ‘‘DONALD J. TRUMPðŸ‘‘
+18430           ðŸ™ŠðŸ™‰The ZOMBIES Are ComingðŸ™‰ðŸ™Š
+Name: title, dtype: object
+:END:
+
 ***** Colorado
-#+BEGIN_SRC ipython :session :file  :exports both :tangle ./politics.py
-print "\n\n{0} regions in Colorado".format(usa[usa['state'] == "Colorado"]["region"].nunique())
+#+BEGIN_SRC ipython :session :file  :exports both :tangle ./politics.py :results output raw drawer :noweb yes
+print "{0} regions in Colorado".format(usa[usa['state'] == "Colorado"]["region"].nunique())
 #+END_SRC
 
 #+RESULTS:
-
-
-#+BEGIN_SRC ipython :session :file ./img/py6320XN2.png :exports both :tangle ./politics.py
-posts = usa.groupby("state")["title"].agg(sum)["Kansas"]
+:RESULTS:
+7 regions in Colorado
+:END:
+#+BEGIN_SRC ipython :session :results output raw drawer :noweb yes :exports both :tangle ./politics.py
+print(len(usa.groupby("state")["title"].agg(sum)["Kansas"]))
 #+END_SRC
+
+#+RESULTS:
+:RESULTS:
+3112
+:END:
+
       
 *** Semantics
 #+BEGIN_SRC ipython :session :file ./img/py63201WL.png :exports both :tangle ./politics.py
@@ -636,36 +685,4 @@ trumps_semantics = sems_usa.groupby("state").mean().join(voting, how="inner").so
 #+END_SRC
 #+BEGIN_SRC ipython :session :file ./img/py6320Dbk.png :exports both :tangle ./politics.py
 total_semants = usa.join(semantics, how="outer").groupby("state").mean().join(voting).sort_values("semants").corr()
-#+END_SRC
-
-* historgrams
-#+BEGIN_SRC ipython :session :file ./img/py6320JLH.png :exports both
-  pat = state_usage.sort_values("patronage", ascending=True)
-  x = np.arange(len(pat))
-    
-    
-  ax = plt.subplot(111)  
-  ax.spines["top"].set_visible(False)  
-  ax.spines["right"].set_visible(False)  
-    
-  ax.get_xaxis().tick_bottom()  
-  ax.get_yaxis().tick_left()  
-    
-  plt.xticks(fontsize=14)  
-  plt.yticks(range(5000, 30001, 5000), fontsize=14)  
-    
-  plt.xlabel("Patronage", fontsize=16)  
-  plt.ylabel("Count", fontsize=16)  
-    
-  plt.text(1300, -5000, "Data source: www.ChessGames.com | "  
-           "Author: Randy Olson (randalolson.com / @randal_olson)", fontsize=10)  
-    
-  # # Finally, save the figure as a PNG.  
-  # # You can also save it as a PDF, JPEG, etc.  
-  # # Just change the file extension in this call.  
-  # # bbox_inches="tight" removes all the extra whitespace on the edges of your plot.  
-#  plt.savefig("chess-elo-rating-distribution.png", bbox_inches="tight");  
-
-  plt.hist(states.usage,  
-           color="#3F5D7D", bins=100)  
 #+END_SRC
