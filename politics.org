@@ -112,8 +112,8 @@ state_keys = state_keys[state_keys[GEO_NAME]!= "Puerto Rico"]
   voting = voting.drop("District of Columbia")
 
   # for pretty printing
-  space = pd.DataFrame([["------", "------", "------"]],index=["*SPACE*"], columns=voting.columns) 
-  pd.concat([voting[:5], space, voting[-5:].sort_values("trumpism")])
+  voting_space = pd.DataFrame([["------", "------", "------"]],index=["*SPACE*"], columns=voting.columns) 
+  pd.concat([voting[:5], voting_space, voting[-5:].sort_values("trumpism")])
 #+END_SRC
 
 #+RESULTS:
@@ -192,38 +192,56 @@ print "Voting data complete"
 ** Data
 *** Grab Data
 #+BEGIN_SRC ipython :session :file  :exports both :tangle ./politics.py
-patronage = pd.DataFrame(usa.groupby('state').size(), columns=["patronage"])
+  patronage = pd.DataFrame(usa.groupby('state').size(), columns=["patronage"]).sort_values(
+      "patronage",ascending=False)
 
-print "\nTop ten most popular states"
-print usage_by_state[:10]
+  print "Top ten most frequented states:\n{}".format(patronage[:10])
 #+END_SRC 
 #+RESULTS:
-
-*** Normalization
+State Usage table
 #+BEGIN_SRC ipython :session :file  :exports both :tangle ./politics.py
     cl_by_state = patronage.join(census, how="inner")
     usage = cl_by_state.apply(
         lambda df: df["patronage"] / float(df["population"]), axis=1)
 
-    # Weight for mean usage = 1.000
-    weight = weight/weight.max() # maximum popularity is 1
-    weighted_usage = pd.DataFrame((usage/usage.max()),
-                                   columns=["popularity"])
+    # Weight for max = 1.000
+    usage_weighted = (usage - usage.min())/(usage.max() - usage.min())
+    weighted_usage = pd.DataFrame((usage_weighted),
+                                   columns=["usage"])
 
     state_usage = pd.concat([cl_by_state, weighted_usage],
-                            axis=1).sort_values("patronage",
+                            axis=1).sort_values("usage",
                                                 ascending=False)
+
+#+END_SRC
+
+#+RESULTS:
+
+Useful for displaying several splices of a dataframe as a concatenation
+#+BEGIN_SRC ipython :session :file  :exports both
+  state_usage_space = pd.DataFrame([["------", "------", "------"]],index=["*SPACE*"],
+                                   columns=state_usage.columns)
+
+  pd.concat([state_usage[:5], state_usage_space, state_usage[-5:].sort_values("usage")])
 #+END_SRC
 #+RESULTS:
+#+begin_example
+             patronage population popularity
+Colorado          1982    5029196          1
+Hawaii             445    1360301    0.83008
+Montana            286     989415    0.73347
+Oregon            1094    3831074   0.724589
+Nevada             770    2700551   0.723491
+*SPACE*         ------     ------     ------
+North Dakota        19     672591  0.0716799
+Vermont             18     625741  0.0729916
+Kansas             106    2853118  0.0942716
+Wyoming             22     563626  0.0990436
+New Jersey         400    8791894   0.115444
+#+end_example
 
 ** Analysis
 *** Patronage
-#+BEGIN_SRC ipython :session :file /home/dodge/workspace/craig-politics/img/py6320LXp.png :exports both :tangle ./politics.py
-pat = state_usage.sort_values("patronage", ascending=True)
-x = np.arange(len(pat))
-
-plt.bar(x, pat.popularity)
-#+END_SRC
 
 #+RESULTS:
 [[file:/home/dodge/workspace/craig-politics/img/py6320LXp.png]]
@@ -237,12 +255,63 @@ plt.bar(x, pat.population)
 #+RESULTS:
 [[file:/home/dodge/workspace/craig-politics/img/py6320oYD.png]]
 
-*** Popularity
-#+BEGIN_SRC ipython :session :file /home/dodge/workspace/craig-politics/img/py6320lr1.png :exports both :tangle ./politics.py
-plt.bar(x, pat.popularity)
+*** Usage
+**** Distribution
+#+BEGIN_SRC ipython :session :file /home/dodge/workspace/craig-politics/img/py6320LXp.png :exports both :tangle ./politics.py
+pat = state_usage.sort_values("patronage", ascending=True)
+x = np.arange(len(pat))
+
+ax = plt.subplot(111)  
+ax.spines["top"].set_visible(False)  
+ax.spines["right"].set_visible(False)  
+    
+ax.get_xaxis().tick_bottom()  
+ax.get_yaxis().tick_left()  
+
+plt.xlabel("Usage", fontsize=16)  
+plt.ylabel("States", fontsize=16)      
+
+plt.hist(states.usage
+         color="#3F5D7D", bins=15)  
 #+END_SRC
+
 #+RESULTS:
-[[file:/home/dodge/workspace/craig-politics/img/py6320lr1.png]]
+[[file:/home/dodge/workspace/craig-politics/img/py6320LXp.png]]
+
+#+BEGIN_SRC ipython :session :file /home/dodge/workspace/craig-politics/img/py6320lr1.png :exports both :tangle ./politics.py
+plt.bar(x, pat.sort_values("population").usage)
+
+fig = plt.figure() # Create matplotlib figure
+
+ax = fig.add_subplot(111) # Create matplotlib axes
+ax2 = ax.twinx() # Create another axes that shares the same x-axis as ax.
+
+width = 0.4
+
+pat.population.plot(kind='bar', color='red', ax=ax, width=width, position=1)
+pat.patronage.plot(kind='bar', color='blue', ax=ax2, width=width, position=0)
+
+ax.set_ylabel('population')
+ax2.set_ylabel('usage')
+
+ax = pat.plot(kind="bar")
+ax2 = ax.twinx()
+for r in ax.patches[len(pat):]:
+    r.set_transform(ax2.transData)
+ax2.set_ylim(0, 2);
+
+
+
+#+END_SRC
+**** Normalized state usage distributions
+#+BEGIN_SRC ipython :session :file /home/dodge/workspace/craig-politics/py6320jfT.png :exports both
+norm_usage = (state_usage - state_usage.min()) / (state_usage.max() - state_usage.min())
+norm_usage.plot(kind="density", title="Normalized PDF estimations", sharey=True)
+#+END_SRC
+
+#+RESULTS:
+[[file:/home/dodge/workspace/craig-politics/py6320jfT.png]]
+
 #+BEGIN_SRC ipython :session :file /home/dodge/workspace/craig-politics/img/py6320Yhv.png :exports both :tangle ./politics.py
 plt.plot(x, state_usage.population.sort_values().values)
 #+END_SRC
@@ -253,26 +322,70 @@ I expect population to relate to patronage linearly.
 # Getting rid of California
 p1 = state_usage.sort_values("population", ascending=False)[5:]
 
-plt.bar(p1["population"], p1["popularity"])
+plt.bar(p1["population"], p1["usage"])
 #+END_SRC
  #+RESULTS:
 [[file:/tmp/image.png]]
 
 *** Politics
+Assign to each post their expected value for political leaning
+#+BEGIN_SRC ipython :session :file  :exports both
+post_politics = usa.join(voting, on="state").join(find_strs("trump"), how="inner")
+#+END_SRC
+
+#+RESULTS:
+
 #+BEGIN_SRC ipython ipython :session :file /tmp/population2.png  :exports both :tangle ./politics.py
-states = state_usage.join(voting, how="left").sort_values("popularity")[:50]
-plt.hist([states.popularity, states.trumpism], bins=30)
+states = state_usage.join(voting, how="left").sort_values("usage")[:50]
+plt.hist([states.usage, states.trumpism], bins=30)
 #+END_SRC
 #+RESULTS:
 [[file:/tmp/population2.png]]
 
-Note the correlation between trumpism and popularity
+Note the correlation between trumpism and usage
 #+BEGIN_SRC ipython :session :file /home/dodge/workspace/craig-politics/img/py6320k_K.png :exports both
-print states.filter(["patronage", "popularity", "normalized", "trumpism"]).corr()
+print states.filter(["patronage", "usage", "normalized", "trumpism"]).corr()
 #+END_SRC :tangle ./politics.py
 * Text Qualities
 ** Data
-Find strings in posts
+*** Words
+Most popular words in English. Grabbed from http://www.world-english.org/english500.htm
+#+BEGIN_SRC ipython :session :file  :exports both
+pop_english_words = ["the", "re", "a", "s", "t", "i", "of", "to", "and", "and", "in", "is", "it", "you", "that", "he", "was", "for", "on", "are", "with", "as", "I", "his", "they", "be", "at", "one", "have", "this", "from", "or", "had", "by", "hot", "but", "some", "what", "there", "we", "can", "out", "other", "were", "all", "your", "shit", "when", "up", "use", "word", "how", "said", "an", "each", "she", "which", "do", "their", "time", "if", "will", "way", "about", "many", "fuck", "then", "them", "would", "write", "like", "so", "these", "her", "long", "make", "thing", "see", "him", "two", "has", "look", "more", "day", "could", "go", "come", "did", "my", "sound", "no", "most", "number", "who", "over", "know", "water", "than", "call", "first", "people", "may", "down", "side", "been", "now", "find"]
+#+END_SRC
+
+#+RESULTS:
+
+#+BEGIN_SRC ipython :session :file /home/dodge/workspace/craig-politics/py63203mB.png :exports both
+  def post_words(df, no_pop=False):
+      words = re.findall(r'\w+', df.title.apply(lambda x: x + " ").sum())
+      if no_pop:
+          # pop_english_words is a list of the most popular (and boring) English
+          # words. E.g., "and", "to", "the", etc.
+          words = [word for word in words if word not in pop_english_words]
+      return  words
+
+  def words(df=usa, no_pop=False):
+      # word counts across all posts
+      words = post_words(df, no_pop)
+      word_counts = Counter([word.lower() for word in words])
+      wcs = zip(*[[word, count] for word, count in word_counts.iteritems()])
+
+      corpus = pd.Series(wcs[1], index=wcs[0]).rename("counts")
+
+      return corpus.sort_values(ascending=False)
+#+END_SRC
+Probably don't care about stupid common words 
+#+BEGIN_SRC ipython :session :file /home/dodge/workspace/craig-politics/py6320H0c.png :exports both
+posts_corpus = words(df=usa, no_pop=True)
+
+usa_words_full = post_words(df=usa)
+usa_words = post_words(df=usa, no_pop=True)
+
+posts_sum = " ".join([word for word in usa_words_full if word.lower() not in pop_english_words])
+#+END_SRC
+*** Substrings
+Find substrings in posts
 #+BEGIN_SRC ipython :session :file /home/dodge/workspace/craig-politics/img/py6320WhL.png :exports both  :tangle ./politics.py
   def find_strs(substr, df=usa):
       """
@@ -304,24 +417,51 @@ Find strings in posts
 #+END_SRC
 ** Analysis
 *** General Language
-Most popular words in English. Grabbed from http://www.world-english.org/english500.htm
 #+BEGIN_SRC ipython :session :file  :exports both
-pop_english_words = ["the", "re", "a", "s", "t", "i", "of", "to", "and", "and", "in", "is", "it", "you", "that", "he", "was", "for", "on", "are", "with", "as", "I", "his", "they", "be", "at", "one", "have", "this", "from", "or", "had", "by", "hot", "but", "some", "what", "there", "we", "can", "out", "other", "were", "all", "your", "when", "up", "use", "word", "how", "said", "an", "each", "she", "which", "do", "their", "time", "if", "will", "way", "about", "many", "then", "them", "would", "write", "like", "so", "these", "her", "long", "make", "thing", "see", "him", "two", "has", "look", "more", "day", "could", "go", "come", "did", "my", "sound", "no", "most", "number", "who", "over", "know", "water", "than", "call", "first", "people", "may", "down", "side", "been", "now", "find"]
+  lib_words = words(df=post_politics[post_politics.trumpism < .45], no_pop=True).rename("libs")
+  conserv_words = words(df=post_politics[post_politics.trumpism > .55], no_pop=True).rename("conservs")  
+#+end_src
+Words distribution
+#+BEGIN_SRC ipython :session :file  :exports both
+# number of words
+# percentage distinct
+usa_words
+
+#by demographic
+#+END_SRC
+Ratio
+#+BEGIN_SRC ipython :session :file  :exports both   
+  rat = lambda df: df.libs/df.conservs
+  ratio = pd.DataFrame().join([lib_words[lib_words >= 10], conserv_words[conserv_words >= 10]],
+                                      how="outer").apply(rat, axis=1).dropna()
+  ratio = ratio.rename("dem/rep ratio")
+  lib_con_ratio = pd.DataFrame(posts_corpus).join(ratio.sort_values(ascending=False), how="inner")
+  lib_con_ratio.sort("dem/rep ratio", ascending=False, inplace=True)
+  lib_con_ratio[:10]
+  #lib_con_ratio = posts_corpus.join(lib_con_ratio.sort_values(ascending=False), on="words")
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+           counts  dem/rep ratio
+against       346       5.000000
+won           320       4.461538
+sign          262       3.363636
+voted         223       2.375000
+not           993       2.000000
+get           480       1.615385
+trump        5071       1.366133
+america       784       1.363636
+appoints       37       1.083333
+president     654       1.075758
+#+end_example
+
+#+BEGIN_SRC ipython :session :file /home/dodge/workspace/craig-politics/py6320I8X.png :exports both
+l
 #+END_SRC
 
 #+RESULTS:
 
-#+BEGIN_SRC ipython :session :file /home/dodge/workspace/craig-politics/py63203mB.png :exports both
-  from collections import Counter
-
-  # word counts across all posts
-  words = re.findall(r'\w+', usa.title.apply(lambda x: x + " ").sum())
-  word_counts = Counter([word.lower() for word in words])
-  wcs = zip(*[[word, count] for word, count in word_counts.iteritems()])
-
-  word_counts = pd.Series(wcs[1], index=wcs[0]).rename("word counts")
-  word_counts.sort(ascending=False)
-#+END_SRC
 *** Trumps
 **** Patronage
 #+BEGIN_SRC ipython :session :file /home/dodge/workspace/craig-politics/img/py6320Qlq.png :exports both :tangle ./politics.py
@@ -345,7 +485,7 @@ pd.DataFrame.hist(trumps_vs_trumpism, bins=50)
 [[file:/home/dodge/workspace/craig-politics/img/py6320cup.png]]
 
 #+BEGIN_SRC ipython :session :file /home/dodge/workspace/craig-politics/py6320U3u.png :exports both
-trump_posts = usa.join(voting, on="state").join(find_strs("trump"), how="inner")
+trump_posts = usa.join(voting, on="state").join(find_strs("trump"), how="outer")
 
 print "Selecting states that are espectially anti-trump:\n{0}".format(t[t.trumpism < .4].title.sample(10))
 
@@ -364,7 +504,7 @@ trump_words = ["liberals",
                "triggered"]
 
 #+END_SRC
-**** Wordcloud
+**** word cloud
 #+BEGIN_SRC ipython :session :file /home/dodge/workspace/craig-politics/py6320RCC.png :exports both
 from os import path
 from PIL import Image
@@ -377,11 +517,12 @@ trump_mask = np.array(Image.open(path.join(d, "Trump_silhouette.png")))
 
 stopwords = set(STOPWORDS)
 
-wc = WordCloud(background_color="black", max_words=2000, mask=alice_mask,
+wc = WordCloud(background_color="white", max_words=2000, mask=alice_mask,
                stopwords=stopwords)
 
+
 # generate word cloud
-wc.generate(usa.title.apply(lambda x: x + " ").sum())
+wc.generate(posts_sum)
 
 # save to file
 wc.to_file(path.join(d, "Trump_test.png"))
@@ -497,4 +638,36 @@ trumps_semantics = sems_usa.groupby("state").mean().join(voting, how="inner").so
 #+END_SRC
 #+BEGIN_SRC ipython :session :file /home/dodge/workspace/craig-politics/img/py6320Dbk.png :exports both :tangle ./politics.py
 total_semants = usa.join(semantics, how="outer").groupby("state").mean().join(voting).sort_values("semants").corr()
+#+END_SRC
+
+* historgrams
+#+BEGIN_SRC ipython :session :file /home/dodge/workspace/craig-politics/py6320JLH.png :exports both
+  pat = state_usage.sort_values("patronage", ascending=True)
+  x = np.arange(len(pat))
+    
+    
+  ax = plt.subplot(111)  
+  ax.spines["top"].set_visible(False)  
+  ax.spines["right"].set_visible(False)  
+    
+  ax.get_xaxis().tick_bottom()  
+  ax.get_yaxis().tick_left()  
+    
+  plt.xticks(fontsize=14)  
+  plt.yticks(range(5000, 30001, 5000), fontsize=14)  
+    
+  plt.xlabel("Patronage", fontsize=16)  
+  plt.ylabel("Count", fontsize=16)  
+    
+  plt.text(1300, -5000, "Data source: www.ChessGames.com | "  
+           "Author: Randy Olson (randalolson.com / @randal_olson)", fontsize=10)  
+    
+  # # Finally, save the figure as a PNG.  
+  # # You can also save it as a PDF, JPEG, etc.  
+  # # Just change the file extension in this call.  
+  # # bbox_inches="tight" removes all the extra whitespace on the edges of your plot.  
+#  plt.savefig("chess-elo-rating-distribution.png", bbox_inches="tight");  
+
+  plt.hist(states.usage,  
+           color="#3F5D7D", bins=100)  
 #+END_SRC
