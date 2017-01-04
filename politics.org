@@ -1,4 +1,4 @@
-#+TITLE: Babel Powered Jupyter Notebook
+#+TITLE: A look into Craigslist politics
 #+OPTIONS: toc:nil
 
 
@@ -318,7 +318,7 @@ plt.plot(x, state_usage.population.sort_values().values)
 #+RESULTS:
 [[file:/home/dodge/workspace/craig-politics/img/py6320Yhv.png]]
 I expect population to relate to patronage linearly.
-#+BEGIN_SRC ipython :session :file /home/dodge/workspace/craig-politics/py63201RB.png :exports both
+#+BEGIN_SRC ipython :session :file ./img/py63201RB.png :exports both
 # Getting rid of California
 p1 = state_usage.sort_values("population", ascending=False)[5:]
 
@@ -329,7 +329,7 @@ plt.bar(p1["population"], p1["usage"])
 
 *** Politics
 Assign to each post their expected value for political leaning
-#+BEGIN_SRC ipython :session :file ./craig-politics/py6320CcH.png :exports both
+#+BEGIN_SRC ipython :session :file ./img/py6320CcH.png :exports both
 post_politics = usa.join(voting, on="state").join(find_strs("trump"), how="inner")
 #+END_SRC
 #+BEGIN_SRC ipython :session :file ./img/py6320PmN.png :exports both
