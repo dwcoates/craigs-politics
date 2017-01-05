@@ -427,19 +427,19 @@ pop_english_words = ["the", "re", "a", "s", "t", "i", "of", "to", "and", "and", 
   from collections import Counter 
 
   def post_words(df, no_pop=False):
-      words = re.findall(r'\w+', df.title.apply(lambda x: x + " ").sum())
+      wds = re.findall(r'\w+', df.title.apply(lambda x: x + " ").sum())
       if no_pop:
           # pop_english_words is a list of the most popular (and boring) English
           # words. E.g., "and", "to", "the", etc.
-          words = [word for word in words if word not in pop_english_words]
+          words = [word for word in wds if word.lower() not in pop_english_words]
       return  words
 
   def words(df=usa, no_pop=False):
       # word counts across all posts
-      words = post_words(df, no_pop)
-      word_counts = Counter([word.lower() for word in words])
-      wcs = zip(*[[word, count] for word, count in word_counts.iteritems()])
-      corpus = pd.Series(wcs[1], index=wcs[0]).rename("counts")
+      wds = post_words(df, no_pop)
+      word_counts = Counter([word.lower() for word in wds])
+      wd_counts = zip(*[[word, count] for word, count in word_counts.iteritems()])
+      corpus = pd.Series(wd_counts[1], index=wd_counts[0]).rename("counts")
 
       return corpus.sort_values(ascending=False)
 #+END_SRC
