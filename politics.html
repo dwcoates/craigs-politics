@@ -3,8 +3,8 @@
 "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
 <head>
-<title>A look into Craigslist politics</title>
-<!-- 2017-01-05 Thu 23:28 -->
+<title>Scraping the Bottom of the Barrel</title>
+<!-- 2017-01-06 Fri 00:21 -->
 <meta  http-equiv="Content-Type" content="text/html;charset=utf-8" />
 <meta  name="generator" content="Org-mode" />
 <meta  name="author" content="Dodge Coates" />
@@ -58,10 +58,10 @@ for the JavaScript code in this tag.
 </head>
 <body>
 <div id="content">
-<h1 class="title">A look into Craigslist politics</h1>
-<p>
-let's do it
-</p>
+<h1 class="title">Scraping the Bottom of the Barrel</h1>
+
+
+
 <div id="outline-container-sec-1" class="outline-2">
 <h2 id="sec-1"><span class="section-number-2">1</span> Introduction</h2>
 <div class="outline-text-2" id="text-1">
@@ -86,31 +86,6 @@ convincingly affirm. More generally, also I sought to analyze the
 trends of politcs discussion of craiglist, mostly in the area of text
 usage (capitalization, word frequency, etc) vs political leaning.
 </p>
-<div class="org-src-container">
-
-<pre class="src src-ipython"><span style="color: #9BA657;">from</span> os <span style="color: #9BA657;">import</span> path
-<span style="color: #9BA657;">from</span> PIL <span style="color: #9BA657;">import</span> Image
-
-<span style="color: #9BA657;">from</span> wordcloud <span style="color: #9BA657;">import</span> WordCloud, STOPWORDS
-
-<span style="color: #CFB980;">d</span> = path.dirname(<span style="color: #84857E;">"."</span>)
-
-<span style="color: #CFB980;">trump_mask</span> = np.array(Image.<span style="color: #B9A572;">open</span>(path.join(d, <span style="color: #84857E;">"img/Trump_silhouette.png"</span>)))
-
-<span style="color: #CFB980;">wc</span> = WordCloud(background_color=<span style="color: #84857E;">"white"</span>, max_words=2000, mask=trump_mask)
-
-wc.generate(posts_sum)
-
-wc.to_file(path.join(d, <span style="color: #84857E;">"img/Trump_test.png"</span>))
-
-plt.imshow(wc)
-plt.axis(<span style="color: #84857E;">"off"</span>)
-plt.figure()
-plt.imshow(trump_mask, cmap=plt.cm.gray)
-plt.axis(<span style="color: #84857E;">"off"</span>)
-plt.show()
-</pre>
-</div>
 
 <div class="figure">
 <p><img src="./img/py31406VwZ.png" alt="py31406VwZ.png" />
@@ -134,7 +109,7 @@ a corresponding state and region, with some regions additionally
 divided into subregions (the New York City region, for example,
 consists of Brooklyn, Queens, Manhattan, etc). Each post, its time and
 its geographical origin are represented with a single row in a 40k row
-Pandas DataFrame, 'usa`. Data corruption was not an issue, as the CL
+Pandas DataFrame, <code>usa</code>. Data corruption was not an issue, as the CL
 layout is quite uniform, though I did need to take into account data
 redundancy (e.g., occaisionally "regions" are also "subregions" of
 sibling regions). To make use of the extracted post title data, I
@@ -145,10 +120,1275 @@ extraction script.
 </p>
 </div>
 </div>
+<div id="outline-container-sec-3" class="outline-2">
+<h2 id="sec-3"><span class="section-number-2">3</span> Preparing data</h2>
+<div class="outline-text-2" id="text-3">
+</div><div id="outline-container-sec-3-1" class="outline-3">
+<h3 id="sec-3-1"><span class="section-number-3">3.1</span> Grab CL Data</h3>
+<div class="outline-text-3" id="text-3-1">
+<p>
+Data is read from file that craigcrawler built
+</p>
+<div class="org-src-container">
+
+<pre class="src src-ipython"><span style="color: #CFB980;">usa_raw</span> = pd.read_csv(<span style="color: #84857E;">"data/us.csv"</span>, index_col=0)
+</pre>
+</div>
+
+<p>
+Data synopsis:
+</p>
+<p>
+
+</p>
+
+<p>
+38,692 total posts exctracted from 416 regions over 52 state. The most popular
+state was Alabama, and the most popular region was, surprisingly, SF bay area.
+</p>
+</div>
+<div id="outline-container-sec-3-1-1" class="outline-4">
+<h4 id="sec-3-1-1"><span class="section-number-4">3.1.1</span> <code>usa</code> Sample</h4>
+<div class="outline-text-4" id="text-3-1-1">
+<p>
+Sample of posts in the <code>usa</code> DataFrame before preprocessing, which is
+the DF for storing all CL politics posts:
+</p>
+<table border="2" cellspacing="0" cellpadding="6" rules="all" frame="all">
+
+
+<colgroup>
+<col  class="right" />
+
+<col  class="left" />
+
+<col  class="left" />
+
+<col  class="left" />
+
+<col  class="left" />
+
+<col  class="right" />
+</colgroup>
+<thead>
+<tr>
+<th scope="col" class="right">&#xa0;</th>
+<th scope="col" class="left">title</th>
+<th scope="col" class="left">date</th>
+<th scope="col" class="left">state</th>
+<th scope="col" class="left">region</th>
+<th scope="col" class="right">subregion</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="right">33596</td>
+<td class="left">Fed. Paper No. 6</td>
+<td class="left">2016-11-28 11:02</td>
+<td class="left">North Carolina</td>
+<td class="left">fayetteville, NC</td>
+<td class="right">nan</td>
+</tr>
+
+<tr>
+<td class="right">26313</td>
+<td class="left">Killswitch - On Netflix</td>
+<td class="left">2016-12-26 03:27</td>
+<td class="left">Ohio</td>
+<td class="left">dayton / springfield</td>
+<td class="right">nan</td>
+</tr>
+
+<tr>
+<td class="right">30403</td>
+<td class="left">Idiot who calls dems commies all day every day cannot name ONE</td>
+<td class="left">2016-12-27 17:10</td>
+<td class="left">Colorado</td>
+<td class="left">denver, CO</td>
+<td class="right">nan</td>
+</tr>
+
+<tr>
+<td class="right">24190</td>
+<td class="left">BIPOLAR CRAZY, PSYCHO KAAIHUE??</td>
+<td class="left">2016-12-13 17:08</td>
+<td class="left">Hawaii</td>
+<td class="left">hawaii</td>
+<td class="right">oahu</td>
+</tr>
+
+<tr>
+<td class="right">36706</td>
+<td class="left">Garofalo on Unions</td>
+<td class="left">2016-12-26 04:26</td>
+<td class="left">Texas</td>
+<td class="left">tyler / east TX</td>
+<td class="right">nan</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+
+<div id="outline-container-sec-3-2" class="outline-3">
+<h3 id="sec-3-2"><span class="section-number-3">3.2</span> U.S. Census 2010</h3>
+</div>
+
+<div id="outline-container-sec-3-3" class="outline-3">
+<h3 id="sec-3-3"><span class="section-number-3">3.3</span> U.S. 2016 Election</h3>
+<div class="outline-text-3" id="text-3-3">
+<p>
+The 2016 Election results will be useful. They are grabbed from a really nice site, <a href="http://uselectionatlas.org/RESULTS/data.php?year=2016&datatype=national&def=1&f=1&off=0&elect=0">uselectionsatlas.org</a>.
+</p>
+<div class="org-src-container">
+
+<pre class="src src-ipython"><span style="color: #9BA657;">import</span> requests
+<span style="color: #9BA657;">from</span> scrapy <span style="color: #9BA657;">import</span> Selector
+
+<span style="color: #CFB980;">atlas_url</span> = (<span style="color: #84857E;">"http://uselectionatlas.org/RESULTS/data.php?year"</span> +
+             <span style="color: #84857E;">"=2016&amp;datatype=national&amp;def=1&amp;f=1&amp;off=0&amp;elect=0"</span>)
+<span style="color: #CFB980;">atlas_source</span> = requests.get(atlas_url).text
+<span style="color: #CFB980;">select</span> = Selector(text=atlas_source).xpath(<span style="color: #84857E;">'//*[@id="datatable"]/tbody/tr'</span>)
+
+<span style="color: #CFB980;">convert</span> = <span style="color: #9BA657;">lambda</span> s: <span style="color: #B9A572;">int</span>(s.replace(<span style="color: #84857E;">','</span>, <span style="color: #84857E;">''</span>))
+<span style="color: #CFB980;">vote_names</span> = <span style="color: #B9A572;">map</span>(<span style="color: #B9A572;">str</span>, select.xpath(<span style="color: #84857E;">'td[3]/a/text()'</span>).extract())
+<span style="color: #6C6B59;"># </span><span style="color: #6C6B59;">Correct name for DC</span>
+<span style="color: #CFB980;">vote_names</span>[8] = <span style="color: #84857E;">"District of Columbia"</span>
+<span style="color: #CFB980;">clinton_votes</span> = <span style="color: #B9A572;">map</span>(convert, select.xpath(<span style="color: #84857E;">'td[17]/text()'</span>).extract())
+<span style="color: #CFB980;">trump_votes</span> = <span style="color: #B9A572;">map</span>(convert, select.xpath(<span style="color: #84857E;">'td[18]/text()'</span>).extract())
+
+<span style="color: #CFB980;">gen_votes</span> = pd.DataFrame({<span style="color: #84857E;">"clinton"</span>: clinton_votes, <span style="color: #84857E;">"trump"</span>: trump_votes},
+                         index=vote_names)
+
+<span style="color: #6C6B59;"># </span><span style="color: #6C6B59;">Dub a states Rebublican vote rate "trumpism"</span>
+<span style="color: #CFB980;">trump_favor</span> = pd.DataFrame(gen_votes[<span style="color: #84857E;">"trump"</span>]/gen_votes.<span style="color: #B9A572;">sum</span>(axis=1),
+                           columns=[<span style="color: #84857E;">"trumpism"</span>],
+                           index=vote_names)
+<span style="color: #CFB980;">voting</span> = gen_votes.join(trump_favor).sort_values(<span style="color: #84857E;">"trumpism"</span>, ascending=<span style="color: #B97E56;">False</span>)
+<span style="color: #CFB980;">voting</span> = voting.drop(<span style="color: #84857E;">"District of Columbia"</span>)
+</pre>
+</div>
+
+<p>
+Sample of voting table:
+</p>
+<table border="2" cellspacing="0" cellpadding="6" rules="all" frame="all">
+
+
+<colgroup>
+<col  class="left" />
+
+<col  class="right" />
+
+<col  class="right" />
+
+<col  class="right" />
+</colgroup>
+<thead>
+<tr>
+<th scope="col" class="left">&#xa0;</th>
+<th scope="col" class="right">clinton</th>
+<th scope="col" class="right">trump</th>
+<th scope="col" class="right">trumpism</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="left">Wyoming</td>
+<td class="right">55973</td>
+<td class="right">174419</td>
+<td class="right">0.757</td>
+</tr>
+
+<tr>
+<td class="left">West Virginia</td>
+<td class="right">188794</td>
+<td class="right">489371</td>
+<td class="right">0.722</td>
+</tr>
+
+<tr>
+<td class="left">North Dakota</td>
+<td class="right">93758</td>
+<td class="right">216794</td>
+<td class="right">0.698</td>
+</tr>
+
+<tr>
+<td class="left"><b>SPACE</b></td>
+<td class="right">------</td>
+<td class="right">------</td>
+<td class="right">------</td>
+</tr>
+
+<tr>
+<td class="left">Hawaii</td>
+<td class="right">266891</td>
+<td class="right">128847</td>
+<td class="right">0.326</td>
+</tr>
+
+<tr>
+<td class="left">California</td>
+<td class="right">8753788</td>
+<td class="right">4483810</td>
+<td class="right">0.339</td>
+</tr>
+
+<tr>
+<td class="left">Vermont</td>
+<td class="right">178573</td>
+<td class="right">95369</td>
+<td class="right">0.348</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+
+<div id="outline-container-sec-3-4" class="outline-3">
+<h3 id="sec-3-4"><span class="section-number-3">3.4</span> Preprocess Data</h3>
+<div class="outline-text-3" id="text-3-4">
+<p>
+Some preprocessing to check data for corruption and unexpected results
+</p>
+<div class="org-src-container">
+
+<pre class="src src-ipython"><span style="color: #9BA657;">print</span> <span style="color: #84857E;">"Data tests... \n\nAssertions Passed\n\n"</span>
+
+<span style="color: #6C6B59;"># </span><span style="color: #6C6B59;">Confirm all expected regions and states present</span>
+<span style="color: #9BA657;">assert</span> <span style="color: #B9A572;">len</span>(usa_raw[<span style="color: #84857E;">"state"</span>].unique()) == 52 <span style="color: #6C6B59;"># </span><span style="color: #6C6B59;">expected number of states (D.C., Territories)</span>
+<span style="color: #9BA657;">assert</span> <span style="color: #B9A572;">len</span>(usa_raw[<span style="color: #84857E;">"region"</span>].unique()) == 416  <span style="color: #6C6B59;"># </span><span style="color: #6C6B59;">expected number of regions</span>
+
+<span style="color: #6C6B59;"># </span><span style="color: #6C6B59;">Confirm that there are no posts without regions/states. Not all CL</span>
+<span style="color: #6C6B59;"># </span><span style="color: #6C6B59;">regions have subregions, so it's okay for null subregions.</span>
+<span style="color: #9BA657;">assert</span> <span style="color: #B9A572;">len</span>(usa_raw[usa_raw[<span style="color: #84857E;">"state"</span>].isnull()].index) == 0
+<span style="color: #9BA657;">assert</span> <span style="color: #B9A572;">len</span>(usa_raw[usa_raw[<span style="color: #84857E;">"region"</span>].isnull()].index) == 0
+
+<span style="color: #6C6B59;"># </span><span style="color: #6C6B59;">Find regions/subregions for which there are no posts</span>
+<span style="color: #CFB980;">postless_regions</span> = usa_raw[usa_raw[<span style="color: #84857E;">"title"</span>].isnull()]
+<span style="color: #CFB980;">postless_regions_times</span> = usa_raw[usa_raw[<span style="color: #84857E;">"date"</span>].isnull()]
+
+<span style="color: #6C6B59;"># </span><span style="color: #6C6B59;">Not actually a good test, but good enough</span>
+<span style="color: #9BA657;">assert</span> <span style="color: #B9A572;">len</span>(postless_regions) == <span style="color: #B9A572;">len</span>(postless_regions_times)
+</pre>
+</div>
+
+<p>
+58 regions/subregions over 32 states without any posts.
+</p>
+
+<p>
+Drop unneeded data.
+</p>
+<div class="org-src-container">
+
+<pre class="src src-ipython"><span style="color: #6C6B59;"># </span><span style="color: #6C6B59;">Drop empty regions.</span>
+<span style="color: #CFB980;">usa</span> = usa_raw.dropna(subset=[<span style="color: #84857E;">"title"</span>, <span style="color: #84857E;">"date"</span>], how=<span style="color: #84857E;">"any"</span>, axis=0)
+<span style="color: #9BA657;">assert</span> <span style="color: #B9A572;">len</span>(postless_regions) == <span style="color: #B9A572;">len</span>(usa_raw)-<span style="color: #B9A572;">len</span>(usa)
+
+<span style="color: #6C6B59;"># </span><span style="color: #6C6B59;">Get rid of territories (Guam, Puerto Rico).</span>
+<span style="color: #CFB980;">usa</span> = usa[usa[<span style="color: #84857E;">"state"</span>] != <span style="color: #84857E;">"Territories"</span>]
+<span style="color: #6C6B59;"># </span><span style="color: #6C6B59;">Get rid of "District of Columbia"</span>
+<span style="color: #CFB980;">usa</span> = usa[usa[<span style="color: #84857E;">"state"</span>] != <span style="color: #84857E;">"District of Columbia"</span>]
+</pre>
+</div>
+
+<p>
+Confirm Census Data
+</p>
+<div class="org-src-container">
+
+<pre class="src src-ipython"><span style="color: #9BA657;">assert</span> <span style="color: #B9A572;">set</span>(usa.state.unique()) == <span style="color: #B9A572;">set</span>(census.index) <span style="color: #9BA657;">and</span> <span style="color: #B9A572;">len</span>(usa.state.unique() == <span style="color: #B9A572;">len</span>(census.index))
+</pre>
+</div>
+
+<p>
+Confirm Election Data
+</p>
+<div class="org-src-container">
+
+<pre class="src src-ipython"><span style="color: #9BA657;">assert</span> <span style="color: #B9A572;">set</span>(usa.state.unique()) == <span style="color: #B9A572;">set</span>(voting.index) <span style="color: #9BA657;">and</span> <span style="color: #B9A572;">len</span>(usa.state.unique() == <span style="color: #B9A572;">len</span>(voting.index))
+</pre>
+</div>
+</div>
+</div>
+</div>
+
+<div id="outline-container-sec-4" class="outline-2">
+<h2 id="sec-4"><span class="section-number-2">4</span> State Usage</h2>
+<div class="outline-text-2" id="text-4">
+<p>
+Although the post data has attached a fairly fine-grain geographical
+description, I found the CL regions in general to not line up well
+with any census bureau categories. Moreover, even in the lucky event
+of such name correspondence, the division of regions was at least
+questionable. For example, by far the datasets most prominent "state"
+outliers, District of Columbia, has a census population of about 600k,
+yet a practical metropolitan area population in the several millions,
+a disparity that gross skews its contributions to state-wide
+statistics. Therefore, regions and subregions were largely found to be
+unmanageably tedious to consider seriously in any analysis. States,
+however, having relatively little variation between practical
+occupancy and census population, and have indisputable borders,
+barring District of Columbia, are ideal for inspection.
+</p>
+</div>
+<div id="outline-container-sec-4-1" class="outline-3">
+<h3 id="sec-4-1"><span class="section-number-3">4.1</span> Terms</h3>
+<div class="outline-text-3" id="text-4-1">
+<ol class="org-ol">
+<li><b>Patronage</b>
+   Patronage is the raw number of posts on a politics board.
+</li>
+<li><b>Usage</b>
+Usage is my measure for a states proportional interest in the
+politics board. It is simply the normalized ratio of patronage and
+state population.
+</li>
+<li><b>Trumpism</b>
+Trumpism is the name for a states republican vote percentage in the
+general election. It is used as a rough measure of how pro-Trump
+rate of a given state, and is a column in the <code>voting</code> DataFrame,
+which is comprised of scraped data on the 2016 General Election
+results.
+</li>
+</ol>
+</div>
+</div>
+<div id="outline-container-sec-4-2" class="outline-3">
+<h3 id="sec-4-2"><span class="section-number-3">4.2</span> Organize Data</h3>
+<div class="outline-text-3" id="text-4-2">
+<p>
+The <code>state_usage</code> table is the census table concatenated with patronage usage.
+</p>
+<table border="2" cellspacing="0" cellpadding="6" rules="all" frame="all">
+
+
+<colgroup>
+<col  class="left" />
+
+<col  class="right" />
+
+<col  class="right" />
+
+<col  class="right" />
+</colgroup>
+<thead>
+<tr>
+<th scope="col" class="left">state</th>
+<th scope="col" class="right">patronage</th>
+<th scope="col" class="right">population</th>
+<th scope="col" class="right">usage</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="left">Minnesota</td>
+<td class="right">999</td>
+<td class="right">5.30392e+06</td>
+<td class="right">0.437617</td>
+</tr>
+
+<tr>
+<td class="left">Vermont</td>
+<td class="right">18</td>
+<td class="right">625741</td>
+<td class="right">0.00141296</td>
+</tr>
+
+<tr>
+<td class="left">Oregon</td>
+<td class="right">1094</td>
+<td class="right">3.83107e+06</td>
+<td class="right">0.703323</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="outline-container-sec-4-2-1" class="outline-4">
+<h4 id="sec-4-2-1"><span class="section-number-4">4.2.1</span> <code>states</code> Sample</h4>
+<div class="outline-text-4" id="text-4-2-1">
+<p>
+Joining <code>state_usage</code> with voting gives us a decent top down view of
+state political tendencies on CL.
+</p>
+<div class="org-src-container">
+
+<pre class="src src-ipython"><span style="color: #CFB980;">states</span> = state_usage.join(voting, how=<span style="color: #84857E;">"left"</span>).sort_values(<span style="color: #84857E;">"usage"</span>)
+</pre>
+</div>
+
+<table border="2" cellspacing="0" cellpadding="6" rules="all" frame="all">
+
+
+<colgroup>
+<col  class="left" />
+
+<col  class="right" />
+
+<col  class="right" />
+
+<col  class="right" />
+
+<col  class="right" />
+
+<col  class="right" />
+
+<col  class="right" />
+</colgroup>
+<thead>
+<tr>
+<th scope="col" class="left">state</th>
+<th scope="col" class="right">patronage</th>
+<th scope="col" class="right">population</th>
+<th scope="col" class="right">usage</th>
+<th scope="col" class="right">clinton</th>
+<th scope="col" class="right">trump</th>
+<th scope="col" class="right">trumpism</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="left">North Carolina</td>
+<td class="right">946</td>
+<td class="right">9.53548e+06</td>
+<td class="right">0.193958</td>
+<td class="right">2.18932e+06</td>
+<td class="right">2.36263e+06</td>
+<td class="right">0.519037</td>
+</tr>
+
+<tr>
+<td class="left">Ohio</td>
+<td class="right">1401</td>
+<td class="right">1.15365e+07</td>
+<td class="right">0.254726</td>
+<td class="right">2.39416e+06</td>
+<td class="right">2.84100e+06</td>
+<td class="right">0.542677</td>
+</tr>
+
+<tr>
+<td class="left">Oklahoma</td>
+<td class="right">235</td>
+<td class="right">3.75135e+06</td>
+<td class="right">0.0940144</td>
+<td class="right">420375</td>
+<td class="right">949136</td>
+<td class="right">0.693047</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<div id="outline-container-sec-4-3" class="outline-3">
+<h3 id="sec-4-3"><span class="section-number-3">4.3</span> Outliers</h3>
+<div class="outline-text-3" id="text-4-3">
+<p>
+There are two major outlying states in the dataset: Colorodo and
+District of Columbia.
+</p>
+</div>
+<div id="outline-container-sec-4-3-1" class="outline-4">
+<h4 id="sec-4-3-1"><span class="section-number-4">4.3.1</span> Colorodo</h4>
+<div class="outline-text-4" id="text-4-3-1">
+<p>
+We can see from the following that Colorado is an extreme outlier,
+being the fifth most popular state, yet the 23rd most populous.
+</p>
+
+<div class="figure">
+<p><img src="./img/py6320WCb.png" alt="py6320WCb.png" />
+</p>
+</div>
+
+<p>
+Denver, as a region, is also especially large. Despite having a
+population of 650,000 people (and a metropolitcan area of 3 million),
+Denver sees a patronage of 1187.
+</p>
+<div class="org-src-container">
+
+<pre class="src src-ipython"><span style="color: #9BA657;">print</span>(<span style="color: #B9A572;">len</span>(usa[usa.region == <span style="color: #84857E;">"denver, CO"</span>]))
+</pre>
+</div>
+<p>
+1187
+</p>
+<p>
+By comparison, the "new york city" region, which is expansive enough
+as to include metropolitan area subregions like "new jersey", "long island",
+"fairfield", etc, has fewer posts, at 1006.
+</p>
+<p>
+1006 posts in NYC spread over manhattan, brooklyn, queens, bronx, staten island, new jersey, long island, westchester, and fairfield. This is ~6.5% the usage rate of Denver
+</p>
+
+<p>
+This is a remarkably popular region, clearly. I suspect that it has to
+do with the region granularity CL mostly likely arbitrarily assigned
+to the state. They might want to consider providing mode regions to
+the state of Colorado.
+</p>
+</div>
+</div>
+<div id="outline-container-sec-4-3-2" class="outline-4">
+<h4 id="sec-4-3-2"><span class="section-number-4">4.3.2</span> District of Columbia</h4>
+<div class="outline-text-4" id="text-4-3-2">
+<p>
+While I found Colorado to be an inexplicable anamoly, it was also
+justifiably accurate. District of Columbia, having a Republican voting
+rate of ~4% and the usage similar to that of Colorado, coupled with
+it's unclear geographic distinction and population, meant its results
+were too extreme and variable to consider in analysis. Besides, it's
+not even a real state&#x2026;
+</p>
+</div>
+</div>
+</div>
+
+<div id="outline-container-sec-4-4" class="outline-3">
+<h3 id="sec-4-4"><span class="section-number-3">4.4</span> Patronage</h3>
+<div class="outline-text-3" id="text-4-4">
+
+<div class="figure">
+<p><img src="./img/py6320oYD.png" alt="py6320oYD.png" />
+</p>
+</div>
+
+<p>
+We can get a feel for the usage distribution by taking a look at the
+following sample from the state<sub>usage</sub> table:
+</p>
+<table border="2" cellspacing="0" cellpadding="6" rules="all" frame="all">
+
+
+<colgroup>
+<col  class="left" />
+
+<col  class="right" />
+
+<col  class="right" />
+
+<col  class="right" />
+</colgroup>
+<thead>
+<tr>
+<th scope="col" class="left">&#xa0;</th>
+<th scope="col" class="right">patronage</th>
+<th scope="col" class="right">population</th>
+<th scope="col" class="right">usage</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="left">Colorado</td>
+<td class="right">1982</td>
+<td class="right">5029196</td>
+<td class="right">1.0</td>
+</tr>
+
+<tr>
+<td class="left">Hawaii</td>
+<td class="right">445</td>
+<td class="right">1360301</td>
+<td class="right">0.817</td>
+</tr>
+
+<tr>
+<td class="left">Montana</td>
+<td class="right">286</td>
+<td class="right">989415</td>
+<td class="right">0.713</td>
+</tr>
+
+<tr>
+<td class="left">Oregon</td>
+<td class="right">1094</td>
+<td class="right">3831074</td>
+<td class="right">0.703</td>
+</tr>
+
+<tr>
+<td class="left">Nevada</td>
+<td class="right">770</td>
+<td class="right">2700551</td>
+<td class="right">0.702</td>
+</tr>
+
+<tr>
+<td class="left"><b>SPACE</b></td>
+<td class="right">------</td>
+<td class="right">------</td>
+<td class="right">------</td>
+</tr>
+
+<tr>
+<td class="left">North Dakota</td>
+<td class="right">19</td>
+<td class="right">672591</td>
+<td class="right">0.0</td>
+</tr>
+
+<tr>
+<td class="left">Vermont</td>
+<td class="right">18</td>
+<td class="right">625741</td>
+<td class="right">0.001</td>
+</tr>
+
+<tr>
+<td class="left">Kansas</td>
+<td class="right">106</td>
+<td class="right">2853118</td>
+<td class="right">0.024</td>
+</tr>
+
+<tr>
+<td class="left">Wyoming</td>
+<td class="right">22</td>
+<td class="right">563626</td>
+<td class="right">0.029</td>
+</tr>
+
+<tr>
+<td class="left">New Jersey</td>
+<td class="right">400</td>
+<td class="right">8791894</td>
+<td class="right">0.047</td>
+</tr>
+</tbody>
+</table>
+
+<p>
+Seemingly some correlation between low population and low usage is
+evident from this table. However, the states for which the politics
+board is most popular are also fairly small. This correlation is
+explored more by some political investigation. However, first outliers
+must be determined and possibly removed from the data.
+</p>
+</div>
+</div>
+<div id="outline-container-sec-4-5" class="outline-3">
+<h3 id="sec-4-5"><span class="section-number-3">4.5</span> Usage</h3>
+<div class="outline-text-3" id="text-4-5">
+<p>
+<img src="./img/py6320LXp.png" alt="py6320LXp.png" />
+These are the PDF estimations for normalized patronage, population,
+usage. They are estimations, so they extend beyond 0 and 1 on the
+graph. Usage distribution is the ratio distribution of patronage and
+population.
+</p>
+<div class="org-src-container">
+
+<pre class="src src-ipython"><span style="color: #CFB980;">norm_usage</span> = (state_usage - state_usage.<span style="color: #B9A572;">min</span>()) / (state_usage.<span style="color: #B9A572;">max</span>() - state_usage.<span style="color: #B9A572;">min</span>())
+norm_usage.plot(kind=<span style="color: #84857E;">"density"</span>, title=<span style="color: #84857E;">"Normalized PDF estimations"</span>, sharey=<span style="color: #B97E56;">True</span>)
+</pre>
+</div>
+
+<div class="figure">
+<p><img src="./img/py6320jfT.png" alt="py6320jfT.png" />
+</p>
+</div>
+
+<p>
+Here we can see illustrated what's been already hinted at: the states
+with the most and least usage are generally less populated and less
+patronaged, and, of course, there is a tight correlation between
+patronage and population.
+</p>
+
+<div class="figure">
+<p><img src="./img/py6320Yhv.png" alt="py6320Yhv.png" />
+</p>
+</div>
+</div>
+</div>
+<div id="outline-container-sec-4-6" class="outline-3">
+<h3 id="sec-4-6"><span class="section-number-3">4.6</span> Politics</h3>
+<div class="outline-text-3" id="text-4-6">
+</div><div id="outline-container-sec-4-6-1" class="outline-4">
+<h4 id="sec-4-6-1"><span class="section-number-4">4.6.1</span> Posts over Trumpism</h4>
+<div class="outline-text-4" id="text-4-6-1">
+
+<div class="figure">
+<p><img src="./img/py22415X0p.png" alt="py22415X0p.png" />
+</p>
+</div>
+</div>
+</div>
+
+<div id="outline-container-sec-4-6-2" class="outline-4">
+<h4 id="sec-4-6-2"><span class="section-number-4">4.6.2</span> States/Usage</h4>
+<div class="outline-text-4" id="text-4-6-2">
+<p>
+Note the correlation between trumpism and usage. Also, the correlation
+between patronage and usage coincides with how you'd expect boards
+with the least diversity to be disproportionately unfrequented. Boards
+with few posts become ghost towns.
+</p>
+
+<table border="2" cellspacing="0" cellpadding="6" rules="all" frame="all">
+
+
+<colgroup>
+<col  class="left" />
+
+<col  class="right" />
+
+<col  class="right" />
+
+<col  class="right" />
+</colgroup>
+<thead>
+<tr>
+<th scope="col" class="left">&#xa0;</th>
+<th scope="col" class="right">patronage</th>
+<th scope="col" class="right">usage</th>
+<th scope="col" class="right">trumpism</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="left">patronage</td>
+<td class="right">1.0</td>
+<td class="right">0.336</td>
+<td class="right">-0.363</td>
+</tr>
+
+<tr>
+<td class="left">usage</td>
+<td class="right">0.336</td>
+<td class="right">1.0</td>
+<td class="right">-0.302</td>
+</tr>
+
+<tr>
+<td class="left">trumpism</td>
+<td class="right">-0.363</td>
+<td class="right">-0.302</td>
+<td class="right">1.0</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+
+<div id="outline-container-sec-4-7" class="outline-3">
+<h3 id="sec-4-7"><span class="section-number-3">4.7</span> Correlations</h3>
+<div class="outline-text-3" id="text-4-7">
+</div><div id="outline-container-sec-4-7-1" class="outline-4">
+<h4 id="sec-4-7-1"><span class="section-number-4">4.7.1</span> Distributions</h4>
+<div class="outline-text-4" id="text-4-7-1">
+<p>
+We can see the correlations between patronage, population, and usage,
+here. We of course expect correlation between patronage and
+population: states with more people generally have more posts.
+</p>
+<p>
+<img src="./img/py224159fd.png" alt="py224159fd.png" />
+We can see that usage and population correlate somewhat. In more
+concrete numerical terms, using the pearson correlation coefficient:
+</p>
+<table border="2" cellspacing="0" cellpadding="6" rules="all" frame="all">
+
+
+<colgroup>
+<col  class="left" />
+
+<col  class="right" />
+
+<col  class="right" />
+
+<col  class="right" />
+</colgroup>
+<thead>
+<tr>
+<th scope="col" class="left">&#xa0;</th>
+<th scope="col" class="right">patronage</th>
+<th scope="col" class="right">population</th>
+<th scope="col" class="right">usage</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="left">patronage</td>
+<td class="right">1</td>
+<td class="right">0.895182</td>
+<td class="right">0.336453</td>
+</tr>
+
+<tr>
+<td class="left">population</td>
+<td class="right">0.895182</td>
+<td class="right">1</td>
+<td class="right">-0.00831774</td>
+</tr>
+
+<tr>
+<td class="left">usage</td>
+<td class="right">0.336453</td>
+<td class="right">-0.00831774</td>
+<td class="right">1</td>
+</tr>
+</tbody>
+</table>
+<p>
+Below, we can see that usage has less variance than patronage and
+population, which we should expect. Perhaps it is somewhat more than
+expected, however. We expect (perhaps naively) for usage to coincide
+with population/patronage closely.
+</p>
+<div class="org-src-container">
+
+<pre class="src src-ipython"><span style="color: #CFB980;">norm_usage</span> = (state_usage - state_usage.<span style="color: #B9A572;">min</span>()) / (state_usage.<span style="color: #B9A572;">max</span>() - state_usage.<span style="color: #B9A572;">min</span>())
+norm_usage.plot(kind=<span style="color: #84857E;">"density"</span>, title=<span style="color: #84857E;">"Normalized PDF estimations"</span>, sharey=<span style="color: #B97E56;">True</span>)
+</pre>
+</div>
+
+<div class="figure">
+<p><img src="./img/py6320cwT.png" alt="py6320cwT.png" />
+</p>
+</div>
+<p>
+Mean/median of normalized state usage metrics:
+                mean    median
+patronage   0.197488  0.091557
+population  0.152608  0.105552
+usage       0.264764  0.203740
+</p>
+</div>
+</div>
+
+<div id="outline-container-sec-4-7-2" class="outline-4">
+<h4 id="sec-4-7-2"><span class="section-number-4">4.7.2</span> Usage per state</h4>
+<div class="outline-text-4" id="text-4-7-2">
+<p>
+The distribution of usage among states seems reasonable:
+</p>
+
+<div class="figure">
+<p><img src="./img/py22415jSF.png" alt="py22415jSF.png" />
+</p>
+</div>
+
+<p>
+#+END<sub>SRC</sub>
+</p>
+</div>
+</div>
+<div id="outline-container-sec-4-7-3" class="outline-4">
+<h4 id="sec-4-7-3"><span class="section-number-4">4.7.3</span> Politics</h4>
+<div class="outline-text-4" id="text-4-7-3">
+
+<div class="figure">
+<p><img src="./img/py22415k-v.png" alt="py22415k-v.png" />
+</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<div id="outline-container-sec-5" class="outline-2">
+<h2 id="sec-5"><span class="section-number-2">5</span> Text Qualities</h2>
+<div class="outline-text-2" id="text-5">
+<p>
+Text usage is interesting to consider, but difficult to evaluate
+semantically. While sampling provides some surprising ideas about the
+data, proving any derivative ideas is a bit difficult. The following
+is and effort to support the introduction of this blog post.
+</p>
+
+<p>
+pop<sub>english</sub><sub>words</sub> is a list of the most popular words in
+English. Grabbed from <a href="http://www.world-english.org/english500.htm">http://www.world-english.org/english500.htm</a>.
+Probably don't care about stupid common words.
+</p>
+</div>
+<div id="outline-container-sec-5-1" class="outline-3">
+<h3 id="sec-5-1"><span class="section-number-3">5.1</span> Analysis</h3>
+<div class="outline-text-3" id="text-5-1">
+<p>
+Investigating the discrepency between democrat/republican word usage,
+we see the some discrepencies in the most used common words. Grab some words
+</p>
+<div class="org-src-container">
+
+<pre class="src src-ipython"><span style="color: #CFB980;">lib_words</span> = words(df=post_politics[post_politics.trumpism &lt; .45],
+                  no_pop=<span style="color: #B97E56;">True</span>).rename(<span style="color: #84857E;">"libs"</span>)
+<span style="color: #CFB980;">conserv_words</span> = words(df=post_politics[post_politics.trumpism &gt; .55],
+                      no_pop=<span style="color: #B97E56;">True</span>).rename(<span style="color: #84857E;">"conservs"</span>)
+</pre>
+</div>
+
+<table border="2" cellspacing="0" cellpadding="6" rules="all" frame="all">
+
+
+<colgroup>
+<col  class="left" />
+
+<col  class="right" />
+
+<col  class="right" />
+</colgroup>
+<thead>
+<tr>
+<th scope="col" class="left">&#xa0;</th>
+<th scope="col" class="right">counts</th>
+<th scope="col" class="right">dem/rep ratio</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="left">thought</td>
+<td class="right">393</td>
+<td class="right">22.27</td>
+</tr>
+
+<tr>
+<td class="left">2017</td>
+<td class="right">230</td>
+<td class="right">9</td>
+</tr>
+
+<tr>
+<td class="left">must</td>
+<td class="right">142</td>
+<td class="right">8</td>
+</tr>
+
+<tr>
+<td class="left">11</td>
+<td class="right">128</td>
+<td class="right">7.45</td>
+</tr>
+
+<tr>
+<td class="left">usa</td>
+<td class="right">276</td>
+<td class="right">6.81</td>
+</tr>
+</tbody>
+</table>
+<p>
+We find that "against", "how", and "won" have extreme preference for
+"liberal" states. The reasons are in fact not obvious. Some random
+sampling of such posts reveals possibly surprisingly pro-Trump
+sentiment:
+</p>
+<div class="org-src-container">
+
+<pre class="src src-ipython"><span style="color: #9BA657;">print</span>(pd.concat([find_strs(<span style="color: #84857E;">"thought"</span>),
+                 find_strs(<span style="color: #84857E;">"usa"</span>),
+                 find_strs(<span style="color: #84857E;">"won"</span>)]).sample(10))
+</pre>
+</div>
+<p>
+27250                                                     Thought for the Day
+38360    Ok ,,Im confused: I thought Trump owes victory to White supremacists
+17716                         This is Why Trump Won The Presidential Election
+15890                              Time for the majority to take back the USA
+27625                                                     Thought for the Day
+23486                                                           Trump Won But
+8436                                 USA stop sending me e mails  faaaggoooot
+14424        I'm Canadian &amp; I Don't Want Donald Trump as President of the USA
+32816         defense industry aka military industrial complex owns usa media
+19623                                            Today's thought (Mrs. Niles)
+dtype: object
+</p>
+
+<p>
+Looking at the general word sentiment, we see clearly has vastly disproportionately PEOTUS Trump and President Obama are discussed.
+</p>
+
+<div class="figure">
+<p><img src="./img/py31406ImT.png" alt="py31406ImT.png" />
+</p>
+</div>
+
+
+<div class="figure">
+<p><img src="./img/py314068Os.png" alt="py314068Os.png" />
+</p>
+</div>
+</div>
+<div id="outline-container-sec-5-1-1" class="outline-4">
+<h4 id="sec-5-1-1"><span class="section-number-4">5.1.1</span> "trumps"</h4>
+<div class="outline-text-4" id="text-5-1-1">
+</div><ol class="org-ol"><li><a id="sec-5-1-1-1" name="sec-5-1-1-1"></a>Patronage<br  /></li>
+<li><a id="sec-5-1-1-2" name="sec-5-1-1-2"></a>Politics<br  /><div class="outline-text-5" id="text-5-1-1-2">
+<p>
+The more pro-Trump your state, the less likely you are to use "Trump" over "TRUMP"
+</p>
+
+<div class="figure">
+<p><img src="./img/py6320cup.png" alt="py6320cup.png" />
+</p>
+</div>
+
+<p>
+Selecting states that are espectially anti-trump:
+12214                                             What is the DC Pizza-Gate?
+24258                                          WHY DO YOU LET THE JAPZ RULE?
+28799    Do you follow Muslim custom by not wearing jewelry during Ramadan ?
+14284                                         Riverbank Rapid Response Group
+10850                                Trump protests at 11/17 Farmers Market?
+27621                                                    Thought for the Day
+28935                Prseident Trump can also send deblazio bills 4 his crap
+3872              OBAMACARE HEALTHCARE PREMIUMS TO INCREASE OVER 25% IN 2017
+14196                                               re: GOP LIARS&#x2026;&#x2026;&#x2026;..
+10866                                     Not in Chico, you owe me an answer
+Name: title, dtype: object
+Politically liberal states composing the above sampling:
+['California', 'Hawaii', 'Maryland', 'Massachusetts', 'New York', 'Vermont']
+</p>
+</div>
+</li></ol>
+</div>
+
+<div id="outline-container-sec-5-1-2" class="outline-4">
+<h4 id="sec-5-1-2"><span class="section-number-4">5.1.2</span> Unicode</h4>
+<div class="outline-text-4" id="text-5-1-2">
+<p>
+I was curious about non-ascii usage, and so I used to following code to catch them.
+</p>
+<div class="org-src-container">
+
+<pre class="src src-ipython"><span style="color: #9BA657;">def</span> <span style="color: #CFB980;">check_ascii</span>(post):
+    <span style="color: #84857E;">"""</span>
+<span style="color: #84857E;">    Determines whether a title is encodable as ascii</span>
+<span style="color: #84857E;">    """</span>
+    <span style="color: #9BA657;">try</span>:
+        post.encode(<span style="color: #84857E;">'ascii'</span>)
+        <span style="color: #9BA657;">return</span> <span style="color: #B97E56;">True</span>
+    <span style="color: #9BA657;">except</span> <span style="color: #A56F4B;">UnicodeError</span>:
+        <span style="color: #9BA657;">return</span> <span style="color: #B97E56;">False</span>
+
+<span style="color: #CFB980;">ascii_posts</span> = usa[usa.title.<span style="color: #B9A572;">apply</span>(check_ascii)]
+<span style="color: #CFB980;">nonascii_posts</span> = usa[~usa.title.<span style="color: #B9A572;">apply</span>(check_ascii)]
+<span style="color: #CFB980;">distinct_states</span> = nonascii_posts[<span style="color: #84857E;">"state"</span>].unique()
+</pre>
+</div>
+<p>
+219 of 38,324 total posts were non-ascii (0.57%), confined to 22 states.
+</p>
+<p>
+However, influence for these posts can be seen by looking at the main outlier, Pennsylvania:
+</p>
+<div class="org-src-container">
+
+<pre class="src src-ipython"><span style="color: #CFB980;">pennsylvania</span> = nonascii_posts[nonascii_posts[<span style="color: #84857E;">"state"</span>] == <span style="color: #84857E;">"Pennsylvania"</span>]
+pennsylvania.groupby(<span style="color: #84857E;">"region"</span>).count()
+<span style="color: #CFB980;">penn_lenn</span> = <span style="color: #B9A572;">float</span>(<span style="color: #B9A572;">len</span>(pennsylvania.title))
+
+<span style="color: #CFB980;">post_uniqueness</span> = (penn_lenn-pennsylvania.title.nunique())/penn_lenn * 100
+
+<span style="color: #9BA657;">print</span>(<span style="color: #84857E;">"{:.2f}% of non-ascii posts are completely unique."</span>.<span style="color: #B9A572;">format</span>(post_uniqueness))
+</pre>
+</div>
+
+<p>
+58.93% of non-ascii posts are completely unique.
+</p>
+
+<p>
+We can use a SequenceMatcher to test the similarity of the strings in the pool:
+</p>
+<div class="org-src-container">
+
+<pre class="src src-ipython"><span style="color: #9BA657;">import</span> itertools
+<span style="color: #9BA657;">from</span> difflib <span style="color: #9BA657;">import</span> SequenceMatcher
+
+<span style="color: #9BA657;">def</span> <span style="color: #CFB980;">avg_similarity</span>(posts):
+  <span style="color: #9BA657;">def</span> <span style="color: #CFB980;">similarity</span>(a, b):
+    <span style="color: #9BA657;">return</span> SequenceMatcher(<span style="color: #B97E56;">None</span>, a, b).ratio()
+
+  <span style="color: #CFB980;">sim_sum</span> = 0
+  <span style="color: #CFB980;">title_product</span> = itertools.product(posts.title, posts.title)
+  <span style="color: #9BA657;">for</span> title_pair <span style="color: #9BA657;">in</span> title_product:
+    <span style="color: #CFB980;">sim_sum</span> += similarity(*title_pair)
+
+  <span style="color: #CFB980;">avg_sim</span> = sim_sum/(<span style="color: #B9A572;">len</span>(posts)**2)
+  <span style="color: #9BA657;">return</span> avg_sim
+</pre>
+</div>
+
+<p>
+We then can run this over all non-ascii posts to get an idea of how
+much silliness is going on with these posts:
+</p>
+<p>
+The average similarity of all non-ascii posts is 0.19 while that 
+of only those in Pennsylvania is 0.38. The average for all posts in
+all regions is 0.19.
+</p>
+
+<p>
+It would seem that a single Trump memester is responsible for this
+chaos in Pennsylvania. I suspect that these crazy unicode posts are
+mostly done by a very small set of people in general, though there is
+no good way to tell:
+</p>
+<p>
+Random sample of 5 non-ascii Pennsylvania posts
+19082    ðŸŽ„Merry Christmas America ðŸŽ„ DONALD J.TRUMPðŸŽ„
+19029          ðŸ’¥DONALD J. TRUMPðŸ’¥[Need a Tissue Anyone]
+19162    ðŸŽ„Merry Christmas America ðŸŽ„ DONALD J.TRUMPðŸŽ„
+19136                 ðŸ™ŠðŸ™‰The ZOMBIES are comingðŸ™ŠðŸ™‰
+18715                ������DONALD J. TRUMP������[Need a Tissue Anyone]
+Name: title, dtype: object
+</p>
+</div>
+</div>
+<div id="outline-container-sec-5-1-3" class="outline-4">
+<h4 id="sec-5-1-3"><span class="section-number-4">5.1.3</span> Politics <code>[0/2]</code></h4>
+<div class="outline-text-4" id="text-5-1-3">
+</div><ol class="org-ol"><li><a id="sec-5-1-3-1" name="sec-5-1-3-1"></a>"liberals" vs "conservatives"<br  /><ol class="org-ol"><li><a id="sec-5-1-3-1-1" name="sec-5-1-3-1-1"></a>Pluralization<br  /><div class="outline-text-6" id="text-5-1-3-1-1">
+<p>
+The singular version of "conservative" is used a bit more than half as
+much as the pluralization. By contrast, the singular version of
+"liberal" is used more than twice as much as the pluralization. I
+suspect this is because "liberal" is a perjorative in common
+nomenclature, while "conservative" doesn't really hold the same weight
+as an insult:
+</p>
+<p>
+ singular/plural:
+'conservative': 0.628
+'liberal': 2.198
+</p>
+</div>
+</li>
+<li><a id="sec-5-1-3-1-2" name="sec-5-1-3-1-2"></a>Usage<br  /><div class="outline-text-6" id="text-5-1-3-1-2">
+<p>
+"liberal" is used far more often than "conservative". The
+pluralizations, respectively, are comparitively not quite as
+distinguished. This is expected, for previously mentioned reasons;
+pluralizations may still be used as a means to negatively generalize.
+</p>
+<p>
+liberal/conservative: 18.07
+liberals/conservatives: 5.16
+liberal(s)/conservative(s): 10.14
+</p>
+</div>
+</li>
+<li><a id="sec-5-1-3-1-3" name="sec-5-1-3-1-3"></a>Capitalization<br  /><div class="outline-text-6" id="text-5-1-3-1-3">
+<p>
+We here see that, among democrats, "liberal" is capitalized at a rate
+13x greater than the rate of capitalization of "conservative". We also
+see that lowecase usage preference is completely neglible.
+</p>
+<div class="org-src-container">
+
+<pre class="src src-ipython"><span style="color: #CFB980;">lib_cap</span> = eval_strs(<span style="color: #84857E;">"trump"</span>).<span style="color: #B9A572;">sum</span>(numeric_only=<span style="color: #B97E56;">True</span>)
+<span style="color: #CFB980;">conserv_cap</span> = eval_strs(<span style="color: #84857E;">"liberal"</span>).<span style="color: #B9A572;">sum</span>(numeric_only=<span style="color: #B97E56;">True</span>)
+
+<span style="color: #CFB980;">lib_con_cap_rat</span> = (lib_cap/conserv_cap).rename(<span style="color: #84857E;">"liberal/conservative cap rates for 'trump'"</span>)
+</pre>
+</div>
+
+<p>
+Dem/Rep capitalization ratio for 'trump':
+proper       10.595062
+uppercase    13.428571
+lower         1.077206
+</p>
+</div>
+</li></ol>
+</li>
+
+
+<li><a id="sec-5-1-3-2" name="sec-5-1-3-2"></a>Semantics<br  /><div class="outline-text-5" id="text-5-1-3-2">
+<p>
+I figured that a natural way to go about proving my hypothesis
+outlined in this blog's introduction would be semantic analysis. I
+quickly decided that this was, with it's present implementation, at
+least, not the way to go about it. The following code will run
+semantic analysis using the popular NLTK package. The results are
+dubious.
+</p>
+<div class="org-src-container">
+
+<pre class="src src-ipython"><span style="color: #6C6B59;"># </span><span style="color: #6C6B59;">from textblob import TextBlob</span>
+
+<span style="color: #6C6B59;"># </span><span style="color: #6C6B59;">def semants(text):</span>
+<span style="color: #6C6B59;">#     </span><span style="color: #6C6B59;">blob = TextBlob(text)</span>
+<span style="color: #6C6B59;">#     </span><span style="color: #6C6B59;">ss = 0</span>
+<span style="color: #6C6B59;">#     </span><span style="color: #6C6B59;">for sentence in blob.sentences:</span>
+<span style="color: #6C6B59;">#         </span><span style="color: #6C6B59;">ss += sentence.sentiment.polarity</span>
+<span style="color: #6C6B59;">#     </span><span style="color: #6C6B59;">return float(ss)/len(blob.sentences)</span>
+
+<span style="color: #6C6B59;"># </span><span style="color: #6C6B59;"># package does not like non-ascii encodings</span>
+<span style="color: #6C6B59;"># </span><span style="color: #6C6B59;">semantics = ascii_posts.title.map(lambda x: semants(x)).rename("semants")</span>
+<span style="color: #6C6B59;"># </span><span style="color: #6C6B59;">semant = eval_strs("trump", df=ascii_posts).join(pd.DataFrame(semantics))</span>
+<span style="color: #6C6B59;"># </span><span style="color: #6C6B59;">sems_usa = ascii_posts.join(usa, how="inner")</span>
+<span style="color: #6C6B59;"># </span><span style="color: #6C6B59;">trumps_semantics = sems_usa.groupby("state").mean().join(voting,</span>
+<span style="color: #6C6B59;">#                                                          </span><span style="color: #6C6B59;">how="inner").sort_values(</span>
+<span style="color: #6C6B59;">#                                                              </span><span style="color: #6C6B59;">"semants").corr()</span>
+</pre>
+</div>
+
+<div class="org-src-container">
+
+<pre class="src src-ipython"><span style="color: #6C6B59;">#</span><span style="color: #6C6B59;">trumps_semantics</span>
+</pre>
+</div>
+</div>
+</li></ol>
+</div>
+</div>
+</div>
+
+<div id="outline-container-sec-6" class="outline-2">
+<h2 id="sec-6"><span class="section-number-2">6</span> Conclusion</h2>
+<div class="outline-text-2" id="text-6">
+<p>
+The distribution posts and the favor of those posts across the
+politics sections is somewhat surprising. I suspect that this is
+evidence of cultural normalization in the face of
+resistance+anonimity: faceless, nameless interaction coupled with
+outspokenness against relatively strict local social norms. This has
+proven more difficult to prove than I initially suspected. While any
+amount of ransom sampling of the posts allows me to be confident in
+this theory, convincing proof would most likely involve a tedious,
+exhausive effort.
+</p>
+</div>
+</div>
+
+<div id="outline-container-sec-7" class="outline-2">
+<h2 id="sec-7"><span class="section-number-2">7</span> Notes about this document</h2>
+<div class="outline-text-2" id="text-7">
+<p>
+This document is, in its original form, an emacs org-mode
+organizational markup document that supports interactive programming
+and exporting quite thoroughly. It exports to a variety of formats
+(html, latex, markdown, etc). It's quite powerful, and allows me to
+tailor what headers are exported, what code is exported, what code
+results, etc. The original document, if viewed in org-mode in emacs,
+is quite a bit larger, containing all of the code used for the
+project, most of which is not shown in markdown exports. Therefore, if
+you view this document on github, you will see a truncated version
+much like the version you are likely viewing now. You can view on
+github a .ipynb and a .py export for the complete code of the
+document. Obviously, they won't include the organization and
+commentary. You can look at the raw contents of the .org file if
+curious (github will export primitively to html by default for
+display), or check out this <a href="http://kozikow.com/2016/05/21/very-powerful-data-analysis-environment-org-mode-with-ob-ipython/comment-page-1/#comment-240">blog on interactive python programming in
+emacs org-mode</a>.
+</p>
+</div>
+</div>
 </div>
 <div id="postamble" class="status">
 <p class="author">Author: Dodge Coates</p>
-<p class="date">Created: 2017-01-05 Thu 23:28</p>
+<p class="date">Created: 2017-01-06 Fri 00:21</p>
 <p class="creator"><a href="http://www.gnu.org/software/emacs/">Emacs</a> 24.5.1 (<a href="http://orgmode.org">Org</a> mode 8.2.10)</p>
 <p class="validation"><a href="http://validator.w3.org/check?uri=referer">Validate</a></p>
 </div>
