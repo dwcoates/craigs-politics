@@ -405,7 +405,7 @@ barring District of Columbia, are ideal for inspection.
   patronage = pd.DataFrame(usa.groupby('state').size(), columns=["patronage"]).sort_values(
       "patronage",ascending=False)
 
-  print "Top ten most frequented states:\n"
+  print("Top ten most frequented states:\n")
   print_df(patronage[:10])
 #+END_SRC 
 
@@ -441,7 +441,7 @@ The state_usage table is the census table concatenated with patronage usage.
                           axis=1).sort_values("usage",
                                               ascending=False)
 #+end_src
-#+BEGIN_SRC ipython :session  :results output raw drawer :noweb yes :exports results
+#+BEGIN_SRC ipython :session :results output raw drawer :noweb yes :exports results
   # Just some printing
 
   # Useful for displaying several splices of a dataframe as a concatenation
@@ -1024,6 +1024,7 @@ def check_ascii(post):
 
 ascii_posts = usa[usa.title.apply(check_ascii)]
 nonascii_posts = usa[~usa.title.apply(check_ascii)]
+distinct_states = nonascii_posts["state"].unique()
 #+END_SRC
 #+RESULTS:
 The number of posts containing non-ascii characters was surprisingly small:
@@ -1210,7 +1211,7 @@ dubious.
   #                                                              "semants").corr()
 #+END_SRC
 #+BEGIN_SRC ipython :session :exports both :results output raw drawer :noweb yes
-trumps_semantics
+#trumps_semantics
 #+END_SRC
 * Conclusion
 The distribution posts and the favor of those posts across the
