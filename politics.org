@@ -5,10 +5,8 @@
 
 # <h1 align="center"><font color="0066FF" size=110%>Simple Notebook</font></h1>
 
-* TODO stuff todo [5/6]                                            :noexport:
-
+* TODO stuff todo [5/6] :noexport:
 ** DONE Corpus is broken. Including non-pop words
-
 ** DONE Make thesis more clear
 
 ** DONE Stop using the word "generally"
@@ -31,9 +29,9 @@ in voting, and in preprocessing, and in census
 - basically demonstrates liberal usage of craigslist politics
 ** TODO lib words vs conserv words needs a revamp
 - see "THIS IS BROKEN AND BAD"
-* Setup Code                                                       :noexport:
+* Setup Code :noexport:
 General settings, packages and functions.
-#+BEGIN_SRC ipython :session :exports results :tangle ./politics.py :results output raw
+#+BEGIN_SRC ipython :session :exports results :tangle ./politics.py
   %matplotlib inline
   import numpy as np
   import scipy
@@ -49,8 +47,6 @@ General settings, packages and functions.
   import pickle
   import re
 
-  np.set_printoptions(suppress=True)
-
   pd.options.display.max_colwidth = 1000
 
   def print_df(df, headers="keys", rnd=100, dis_parse=False):
@@ -63,6 +59,7 @@ General settings, packages and functions.
                      headers=headers,
                      disable_numparse=dis_parse))
 #+END_SRC
+#+RESULTS:
 
 * Introduction
 For my web scraping project, I've chosen to extract some of the
@@ -84,34 +81,8 @@ positive sentiment aspect of that hypothesis proved to be difficult to
 convincingly affirm. More generally, also I sought to analyze the
 trends of politcs discussion of craiglist, mostly in the area of text
 usage (capitalization, word frequency, etc) vs political leaning.
-#+BEGIN_SRC ipython :session :file ./img/py31406VwZ.png :exports results :tangle ./politics.py
-from os import path
-from PIL import Image
 
-from wordcloud import WordCloud, STOPWORDS
-
-d = path.dirname(".")
-
-plt.figure(num=None, figsize=(10, 8))
-
-trump_mask = np.array(Image.open(path.join(d, "img/Trump_silhouette.png")))
-
-wc = WordCloud(background_color="white", max_words=2000, mask=trump_mask)
-
-wc.generate(posts_sum)
-
-wc.to_file(path.join(d, "img/Trump_test.png"))
-
-plt.imshow(wc)
-plt.axis("off")
-plt.figure()
-plt.imshow(trump_mask, cmap=plt.cm.gray)
-plt.axis("off")
-
-plt.show()
-#+END_SRC
-#+RESULTS:
-[[file:./img/py31406VwZ.png]]
+[[./img/Trump_cloud_proper.png]]
 
 * Methodology
 To extract data from craigslist, I used the Python Scrapy package,
@@ -134,7 +105,7 @@ http://www.census.gov, as well as the 2016 election results data,
 which I scraped from http://uselectionatlas.org/ using a BeautifulSoup
 extraction script.
 * Preparing data
-** TODO Craigcrawler                                               :noexport:
+** TODO Craigcrawler                                               
 ** Grab CL Data
 Data is read from file that craigcrawler built
 #+BEGIN_SRC ipython :session :exports code :tangle ./politics.py
@@ -176,18 +147,16 @@ the DF for storing all CL politics posts:
 print_df(usa_raw.sample(5), rnd=3)
 #+END_SRC
 #+RESULTS:
-:RESULTS:
-|       | title                                                            | date             | state      | region                | subregion      |
-|-------+------------------------------------------------------------------+------------------+------------+-----------------------+----------------|
-| 23018 | re:  THE U S MARINE - Hillary Voters Take it Up the ASS BIG Time | 2016-12-23 19:00 | Florida    | ft myers / SW florida | collier co     |
-|  4501 | Justice for Wilbert Gay, Jr.                                     | 2016-12-28 13:20 | Idaho      | lewiston / clarkston  | nan            |
-| 32938 | Trump win shatters Obama legacy                                  | 2016-12-27 13:52 | Washington | seattle-tacoma        | olympia        |
-| 22102 | RE: re, RE: re: What A Global Patriot (Rock n Roll)              | 2016-12-01 10:24 | Florida    | orlando, FL           | nan            |
-| 11225 | Save this most important piece of American history               | 2016-12-25 10:15 | California | san diego             | east SD county |
-:END:
+|       | title                                                                  | date             | state      | region            |   subregion |
+|-------+------------------------------------------------------------------------+------------------+------------+-------------------+-------------|
+| 35330 | RE. RE. RE. DEMOCRATS                                                  | 2016-11-29 06:04 | Texas      | houston, TX       |         nan |
+| 20275 | It's Not Over: Jill Stein Now Asking Loretta Lynch To Investigate Elec | 2016-12-26 11:38 | Florida    | ocala, FL         |         nan |
+| 29634 | Abolishing the EPA                                                     | 2016-12-27 08:08 | Colorado   | eastern CO        |         nan |
+| 12990 | 2RE:Who's Conning Who?                                                 | 2016-12-27 18:28 | California | stockton, CA      |         nan |
+|  3512 | Trump't Music Video                                                    | 2016-11-17 16:02 | Indiana    | muncie / anderson |         nan |
 
 ** U.S. Census 2010
-*** Geo Keys                                                       :noexport:
+*** Geo Keys                                                       
 #+BEGIN_SRC ipython :session  :exports both :tangle ./politics.py
 # Keys for geography stuff. Table is an index table.
 # These keys are used as index for census table.
@@ -202,7 +171,7 @@ state_keys = state_keys[state_keys[GEO_NAME]!= "Puerto Rico"]
 
 #+RESULTS:
 
-*** Census Data                                                      :ignore:
+*** Census Data                                                      
 #+BEGIN_SRC ipython :session :exports none :tangle ./politics.py
   # keys for the census data. Only really care about two of them (there are hundreds):
   TOT_NUM_ID = "HD01_S001" # total number key
@@ -244,14 +213,12 @@ print_df(census.sample(4), rnd=3)
 #+END_SRC
 
 #+RESULTS:
-:RESULTS:
-| state       |  population |
-|-------------+-------------|
-| New York    | 1.93781e+07 |
-| Minnesota   | 5.30392e+06 |
-| Mississippi |  2.9673e+06 |
-| Nevada      | 2.70055e+06 |
-:END:
+| state         |   population |
+|---------------+--------------|
+| West Virginia |  1.85299e+06 |
+| Oklahoma      |  3.75135e+06 |
+| Oregon        |  3.83107e+06 |
+| Pennsylvania  |  1.27024e+07 |
 ** U.S. 2016 Election
 The 2016 Election results will be useful. They are grabbed from a really nice site, [[http://uselectionatlas.org/RESULTS/data.php?year%3D2016&datatype%3Dnational&def%3D1&f%3D1&off%3D0&elect%3D0][uselectionsatlas.org]].
 #+BEGIN_SRC ipython :session :exports code :tangle ./politics.py
@@ -707,6 +674,7 @@ plt.yticks(range(len(corr.columns)), corr.columns);
 
 #+RESULTS:
 [[file:./img/py224159fd.png]]
+
 We can see that usage and population correlate somewhat. In more
 concrete numerical terms, using the pearson correlation coefficient:
 #+BEGIN_SRC ipython :session :results output raw drawer :noweb yes :exports results
@@ -790,7 +758,7 @@ Text usage is interesting to consider, but difficult to evaluate
 semantically. While sampling provides some surprising ideas about the
 data, proving any derivative ideas is a bit difficult. The following
 is and effort to support the introduction of this blog post.
-** Words                                                             :ignore:
+** Words                                                             
 pop_english_words is a list of the most popular words in
 English. Grabbed from http://www.world-english.org/english500.htm.
 #+BEGIN_SRC ipython :session :exports none :tangle ./politics.py
@@ -835,7 +803,7 @@ posts_sum = " ".join(usa_words) # good estimate of sum of all posts, minus popul
 
 #+RESULTS:
 
-** Substrings                                                      :noexport:
+** Substrings                                                      
 Find substrings in posts
 #+BEGIN_SRC ipython :session :exports none :tangle ./politics.py
   def find_strs(substr, df=usa):
@@ -1116,22 +1084,22 @@ It would seem that a single Trump memester is responsible for this
 chaos in Pennsylvania. I suspect that these crazy unicode posts are
 mostly done by a very small set of people in general, though there is
 no good way to tell:
-#+BEGIN_SRC ipython :session :exports results :results output raw drawer :noweb yes
-  print(("Random sample of 5 non-ascii Pennsylvania posts\n" +
-         "{}").format(pennsylvania["title"].sample(5)))
+#+BEGIN_SRC ipython :session :exports none :results output raw drawer :noweb yes
+  print("Random sample of 5 non-ascii Pennsylvania posts")
+  print(pennsylvania["title"].sample(5))
 #+END_SRC
 #+RESULTS:
 :RESULTS:
 Random sample of 5 non-ascii Pennsylvania posts
-18553                     ðŸ™ŠðŸ™‰The ZOMBIES are comingðŸ™ŠðŸ™‰
-19131                 HAPPY NEW YEARS AMERICAðŸ”›DONALD J. TRUMP
-19125                 ðŸ‘‘HAPPY NEW YEARSðŸ‘‘DONALD J. TRUMPðŸ‘‘
-18462                                     ðŸ—½Keep on CryingðŸ—½
-19065    ðŸŽ€HAPPY NEW YEARðŸŽ€ AMERICA ðŸ‘‘ DONALD J. TRUMPðŸ‘‘
+18577                                 ðŸ—½Keep on CryingðŸ—½
+19125             ðŸ‘‘HAPPY NEW YEARSðŸ‘‘DONALD J. TRUMPðŸ‘‘
+18426             ðŸ‘‘HAPPY NEW YEARSðŸ‘‘DONALD J. TRUMPðŸ‘‘
+19082    ðŸŽ„Merry Christmas America ðŸŽ„ DONALD J.TRUMPðŸŽ„
+19051             HAPPY NEW YEARS AMERICAðŸ”›DONALD J. TRUMP
 Name: title, dtype: object
 :END:
 *** Politics [0/2]
-**** TODO Diversity of words vs trumpism                           :noexport:
+**** TODO Diversity of words vs trumpism                           
 **** "liberals" vs "conservatives"
 ***** Pluralization
 The singular version of "conservative" is used a bit more than half as
@@ -1204,7 +1172,7 @@ uppercase    13.428571
 lower         1.077206
 :END:
 
-**** TODO "trump" vs "clinton" vs "obama"                          :noexport:
+**** TODO "trump" vs "clinton" vs "obama" 
 ***** "trump" usage / total usage
 #+BEGIN_SRC ipython :session :exports both
 
@@ -1286,3 +1254,33 @@ commentary. You can look at the raw contents of the .org file if
 curious (github will export primitively to html by default for
 display), or check out this [[http://kozikow.com/2016/05/21/very-powerful-data-analysis-environment-org-mode-with-ob-ipython/comment-page-1/#comment-240][blog on interactive python programming in
 emacs org-mode]].
+* Meta  :noexport:
+** Trump Word Cloud
+#+BEGIN_SRC ipython :session :file :exports results :tangle ./politics.py :cache yes
+  from os import path
+  from PIL import Image
+
+  from wordcloud import WordCloud
+
+  d = path.dirname(".")
+
+  plt.figure(num=None, figsize=(10, 8))
+
+  trump_mask = np.array(Image.open(path.join(d, "img/Trump_silhouette.png")))
+
+  wc = WordCloud(background_color="white", max_words=2000, mask=trump_mask)
+
+  wc.generate(posts_sum)
+
+  wc.to_file(path.join(d, "img/Trump_test.png"))
+
+  plt.imshow(wc)
+  plt.axis("off")
+  plt.figure()
+  plt.imshow(trump_mask, cmap=plt.cm.gray)
+  plt.axis("off")
+
+  plt.show()
+
+#+END_SRC
+#+RESULTS:
