@@ -114,13 +114,13 @@ which I scraped from http://uselectionatlas.org/ using a BeautifulSoup
 extraction script.
 
 * Preparing data
-** TODO Craigcrawler :noexport:
+** TODO Craigcrawler :ignore:
 The [[https://github.com/dwcoates/craigs-politics/tree/master/craigcrawler][craigslist extractor]], written as a scrapy program, collected
-titles and dates, as well as corresponding geographical
-designation. To keep it simple, these are all stored together as rows
+titles and dates, as well as the corresponding geographical
+designations. To keep it simple, these are all stored together as rows
 in a csv file. 
 ** Grab CL Data  :ignore:
-Reading this data from a file:
+Reading this data from craigcrawler's file:
 #+BEGIN_SRC ipython :session :exports none :tangle ./politics.py
 usa_raw = pd.read_csv("data/us.csv", index_col=0)
 #+END_SRC
@@ -133,12 +133,9 @@ post_count_by_state_raw = usa_raw.groupby("state").count()["title"].sort_values(
 post_count_by_region_raw = usa_raw.groupby("region").count()["title"].sort_values(ascending=False)
 #+END_SRC
 
-#+RESULTS:
-
-Data synopsis:
 #+BEGIN_SRC ipython :session :file  :results output org :noweb yes :exports results  :tangle ./politics.py
   print ("{0:,} total posts exctracted from {1:} regions over {2} "+
-         "state. The most \nfrequented state was '{3}', and the most " +
+         "states. The most \nfrequented state was '{3}', and the most " +
          "frequented region was,\nsurprisingly, '{4}'.").format(post_count_total_raw,                                                          
                                                                len(post_count_by_region_raw),
                                                                len(post_count_by_state_raw),
@@ -220,7 +217,8 @@ state_keys = state_keys[state_keys[GEO_NAME]!= "Puerto Rico"]
 
 #+RESULTS:
 
-Census data is collected from U.S. Census Bureau for 2010 census. Here's a sample:
+Census data is collected from U.S. Census Bureau for [[http://www.census.gov/2010census/][2010
+census]]. Here's a sample:
 #+begin_src ipython :session :results output raw drawer :noweb yes :exports results :tangle ./politics.py
 print_df(census.sample(4), rnd=3)
 #+END_SRC
@@ -235,7 +233,7 @@ print_df(census.sample(4), rnd=3)
 | Mississippi |  2.9673e+06 |
 :END:
 ** U.S. 2016 Election
-The 2016 Election results will be useful. They are grabbed from a really nice site, [[http://uselectionatlas.org/RESULTS/data.php?year%3D2016&datatype%3Dnational&def%3D1&f%3D1&off%3D0&elect%3D0][uselectionsatlas.org]].
+The 2016 Election results will be useful. They are grabbed from a really nice site, [[http://uselectionatlas.org/RESULTS/data.php?year%3D2016&datatype%3Dnational&def%3D1&f%3D1&off%3D0&elect%3D0][uselectionsatlas.org]]:
 #+BEGIN_SRC ipython :session :exports code :tangle ./politics.py
   import requests
   from scrapy import Selector
@@ -520,18 +518,27 @@ as to include metropolitan area subregions like "new jersey", "long island",
 
 #+RESULTS:
 
-#+BEGIN_SRC ipython :session :results output raw drawer :noweb yes :exports results
+#+BEGIN_SRC ipython :session :results output org :noweb yes :exports results
   print("{} posts in NYC spread over:\n".format(num_nyc_posts) +
-        ', '.join('{}'.format(r) for r in nyc_subregions[:-1]) +
-        (",\nand {}. This is ~{:.1f}% the usage rate of " +
+        ',\n'.join('{}'.format(r) for r in nyc_subregions[:-1]) +
+        (",\nand {}.\n\nThis is ~{:.1f}% the usage rate of " +
          "Denver").format(nyc_subregions[-1], den_nyc_rat*100))
 #+END_SRC
 #+RESULTS:
-:RESULTS:
+#+BEGIN_SRC org
 1006 posts in NYC spread over:
-manhattan, brooklyn, queens, bronx, staten island, new jersey, long island, westchester,
-and fairfield. This is ~6.5% the usage rate of Denver
-:END:
+manhattan,
+brooklyn,
+queens,
+bronx,
+staten island,
+new jersey,
+long island,
+westchester,
+and fairfield.
+
+This is ~6.5% the usage rate of Denver
+#+END_SRC
 
 This is a remarkably popular region, clearly. I suspect that it has to
 do with the region granularity CL mostly likely arbitrarily assigned
@@ -800,7 +807,7 @@ print_df(corr, rnd=3)
 Text usage is interesting to consider, but difficult to evaluate
 semantically. While sampling encourages some compelling thoughts about
 the data, proving any derivative ideas is a bit difficult. The
-following is and effort to support the introduction of this blog post.
+following is an effort to support the introduction of this blog post.
 ** Words :ignore:
 Popular English words are excluded from the analysis. Words like
 "the", "re", "and", etc., don't contribute interestingly. Popular
@@ -1128,7 +1135,7 @@ ax.get_yaxis().tick_left()
  much silliness is going on with these posts:
  #+BEGIN_SRC ipython :session :exports results :results output org :noweb yes 
      print(("The average similarity of all non-ascii posts is " +
-            "{:.2f} while that \nof only those in Pennsylvania is " +
+            "{:.2f}, while that \nof only those in Pennsylvania is " +
             "{:.2f}. The average for all posts in\nall regions is " +
             "{:.2f}.")).format(avg_similarity(nonascii_posts),
                                avg_similarity(pennsylvania),
@@ -1140,8 +1147,8 @@ ax.get_yaxis().tick_left()
  of only those in Pennsylvania is 0.38. The average for all posts in
  all regions is 0.19.
  #+END_SRC
- It would therefore seem that a single Trump memester making use of a
- handful of unicode symbols is responsible for this chaos in
+ It would therefore seem that a single Trump memester, making use of a
+ handful of unicode symbols, is responsible for this chaos in
  Pennsylvania. I suspect that these crazy unicode posts are mostly
  done by a very small set of people in general, though there is no
  good way to tell, as CL remains completely anonymous.
@@ -1429,19 +1436,20 @@ exhausive effort.
 This document is, in its original form, an emacs org-mode
 organizational markup document that supports interactive programming
 and exporting quite thoroughly. It exports to a variety of formats
-(html, latex, markdown, etc). It's quite powerful, and allows me to
-tailor what headers are exported, what code is exported, what code
-results, etc. The original document, if viewed in org-mode in emacs,
-is quite a bit larger, containing all of the code used for the
-project, most of which is not shown in markdown exports. Therefore, if
-you view this document on github, you will see a truncated version
-much like the version you are likely viewing now. You can view on
-github a .ipynb and a .py export for the complete code of the
-document. Obviously, they won't include the organization and
-commentary. You can look at the raw contents of the .org file if
-curious (github will export primitively to html by default for
-display), or check out this [[http://kozikow.com/2016/05/21/very-powerful-data-analysis-environment-org-mode-with-ob-ipython/comment-page-1/#comment-240][blog on interactive python programming in
-emacs org-mode]].
+(html, latex, markdown, etc), and in this case, was exported directly
+to html. It's quite powerful, and allows me to tailor what headers are
+exported, what code is exported, what code results, to what
+interpreter the code talks, how it's formated, etc. The original
+document, if viewed in org-mode in emacs, is quite a bit larger,
+containing all of the code used for the project, most of which is not
+shown in markdown exports. Therefore, if you view this document on
+github, you will see a truncated version much like the version you are
+likely viewing now. You can view on github, a .ipynb and a .py export
+are available for the complete code of the document. Obviously, they
+won't include the organization and commentary. You can look at the raw
+contents of the .org file if curious (github will export primitively
+to html by default for display), or check out this [[http://kozikow.com/2016/05/21/very-powerful-data-analysis-environment-org-mode-with-ob-ipython/comment-page-1/#comment-240][blog on interactive
+python programming in emacs org-mode]].
 * Meta  :noexport:
 ** Trump Word Cloud
 #+BEGIN_SRC ipython :session :file :exports results :tangle ./politics.py 

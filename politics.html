@@ -3,7 +3,7 @@
 "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
 <head>
-<!-- 2017-01-09 Mon 04:48 -->
+<!-- 2017-01-09 Mon 05:13 -->
 <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title><b><font color = "C2492F">Scraping the Bottom of the Barrel</font></b></title>
@@ -269,9 +269,9 @@ for the JavaScript code in this tag.
 <h1 class="title"><b><font color = "C2492F">Scraping the Bottom of the Barrel</font></b></h1>
 
 
-<div id="outline-container-org684defe" class="outline-2">
-<h2 id="org684defe">Introduction</h2>
-<div class="outline-text-2" id="text-org684defe">
+<div id="outline-container-orgc1e46e4" class="outline-2">
+<h2 id="orgc1e46e4">Introduction</h2>
+<div class="outline-text-2" id="text-orgc1e46e4">
 <p>
 For my web scraping project, I've chosen to extract some of the
 politics data from craigslist.org. My original ambition, though it
@@ -302,9 +302,9 @@ usage (capitalization, word frequency, etc) vs political leaning.
 </div>
 </div>
 
-<div id="outline-container-orgf733623" class="outline-2">
-<h2 id="orgf733623">Methodology</h2>
-<div class="outline-text-2" id="text-orgf733623">
+<div id="outline-container-orga4c90e7" class="outline-2">
+<h2 id="orga4c90e7">Methodology</h2>
+<div class="outline-text-2" id="text-orga4c90e7">
 <p>
 To extract data from craigslist, I used the Python Scrapy package,
 which was probably overkill. Originally, I intended to collect post
@@ -329,23 +329,30 @@ extraction script.
 </div>
 </div>
 
-<div id="outline-container-org8e2b8a7" class="outline-2">
-<h2 id="org8e2b8a7">Preparing data</h2>
-<div class="outline-text-2" id="text-org8e2b8a7">
+<div id="outline-container-orgfd53e1a" class="outline-2">
+<h2 id="orgfd53e1a">Preparing data</h2>
+<div class="outline-text-2" id="text-orgfd53e1a">
 <p>
-Reading this data from a file:
-Data synopsis:
+The <a href="https://github.com/dwcoates/craigs-politics/tree/master/craigcrawler">craigslist extractor</a>, written as a scrapy program, collected
+titles and dates, as well as the corresponding geographical
+designations. To keep it simple, these are all stored together as rows
+in a csv file. 
+</p>
+</div>
+<div class="outline-text-2" id="text-orgfd53e1a">
+<p>
+Reading this data from craigcrawler's file:
 </p>
 <div class="org-src-container">
-<pre class="src src-org">38,692 total posts exctracted from 416 regions over 52 state. The most 
+<pre class="src src-org">38,692 total posts exctracted from 416 regions over 52 states. The most 
 frequented state was 'California', and the most frequented region was,
 surprisingly, 'denver, CO'.
 </pre>
 </div>
 </div>
-<div id="outline-container-org467435e" class="outline-3">
-<h3 id="org467435e"><code>usa</code> Sample</h3>
-<div class="outline-text-3" id="text-org467435e">
+<div id="outline-container-org335e50d" class="outline-3">
+<h3 id="org335e50d"><code>usa</code> Sample</h3>
+<div class="outline-text-3" id="text-org335e50d">
 <p>
 Sample of posts in the <code>usa</code> DataFrame before preprocessing, which is the DF for storing all CL politics posts:
 </p>
@@ -363,7 +370,7 @@ Sample of posts in the <code>usa</code> DataFrame before preprocessing, which is
 
 <col  class="org-left" />
 
-<col  class="org-right" />
+<col  class="org-left" />
 </colgroup>
 <thead>
 <tr>
@@ -372,48 +379,49 @@ Sample of posts in the <code>usa</code> DataFrame before preprocessing, which is
 <th scope="col" class="org-left">date</th>
 <th scope="col" class="org-left">state</th>
 <th scope="col" class="org-left">region</th>
-<th scope="col" class="org-right">subregion</th>
+<th scope="col" class="org-left">subregion</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td class="org-right">30826</td>
-<td class="org-left">Just The Facts</td>
-<td class="org-left">2016-12-16 09:51</td>
-<td class="org-left">Colorado</td>
-<td class="org-left">denver, CO</td>
-<td class="org-right">nan</td>
+<td class="org-right">18708</td>
+<td class="org-left">Let there be no confusion about the definition.</td>
+<td class="org-left">2016-12-28 13:10</td>
+<td class="org-left">Pennsylvania</td>
+<td class="org-left">york, PA</td>
+<td class="org-left">nan</td>
 </tr>
 
 <tr>
-<td class="org-right">268</td>
-<td class="org-left">Dare we say the start of  "Trump Nation?"</td>
-<td class="org-left">2016-12-28 07:59</td>
-<td class="org-left">Oklahoma</td>
-<td class="org-left">stillwater, OK</td>
-<td class="org-right">nan</td>
+<td class="org-right">7369</td>
+<td class="org-left">Trump't Music Video</td>
+<td class="org-left">2016-11-30 15:57</td>
+<td class="org-left">Michigan</td>
+<td class="org-left">detroit metro</td>
+<td class="org-left">macomb co</td>
 </tr>
 
 <tr>
-<td class="org-right">24620</td>
-<td class="org-left">jack set 4x4 dodge</td>
-<td class="org-left">2016-12-05 23:19</td>
-<td class="org-left">Nebraska</td>
-<td class="org-left">omaha / council bluffs</td>
-<td class="org-right">nan</td>
+<td class="org-right">14070</td>
+<td class="org-left">re Crime facts</td>
+<td class="org-left">2016-12-24 10:50</td>
+<td class="org-left">California</td>
+<td class="org-left">los angeles</td>
+<td class="org-left">long beach / 562</td>
 </tr>
 </tbody>
 </table>
 </div>
 </div>
-<div id="outline-container-org7df4f7d" class="outline-3">
-<h3 id="org7df4f7d">U.S. Census 2010</h3>
-<div class="outline-text-3" id="text-org7df4f7d">
-</div><div id="outline-container-orgcd91ccb" class="outline-4">
-<h4 id="orgcd91ccb">Census Data</h4>
-<div class="outline-text-4" id="text-orgcd91ccb">
+<div id="outline-container-org63559bb" class="outline-3">
+<h3 id="org63559bb">U.S. Census 2010</h3>
+<div class="outline-text-3" id="text-org63559bb">
+</div><div id="outline-container-orge71af92" class="outline-4">
+<h4 id="orge71af92">Census Data</h4>
+<div class="outline-text-4" id="text-orge71af92">
 <p>
-Census data is collected from U.S. Census Bureau for 2010 census. Here's a sample:
+Census data is collected from U.S. Census Bureau for <a href="http://www.census.gov/2010census/">2010
+census</a>. Here's a sample:
 </p>
 <table border="2" cellspacing="0" cellpadding="6" rules="all" frame="all">
 
@@ -431,34 +439,34 @@ Census data is collected from U.S. Census Bureau for 2010 census. Here's a sampl
 </thead>
 <tbody>
 <tr>
-<td class="org-left">Kentucky</td>
-<td class="org-right">4.33937e+06</td>
+<td class="org-left">Illinois</td>
+<td class="org-right">1.28306e+07</td>
 </tr>
 
 <tr>
-<td class="org-left">Colorado</td>
-<td class="org-right">5.0292e+06</td>
+<td class="org-left">Michigan</td>
+<td class="org-right">9.88364e+06</td>
 </tr>
 
 <tr>
-<td class="org-left">Alabama</td>
-<td class="org-right">4.77974e+06</td>
+<td class="org-left">Maryland</td>
+<td class="org-right">5.77355e+06</td>
 </tr>
 
 <tr>
-<td class="org-left">Iowa</td>
-<td class="org-right">3.04636e+06</td>
+<td class="org-left">Mississippi</td>
+<td class="org-right">2.9673e+06</td>
 </tr>
 </tbody>
 </table>
 </div>
 </div>
 </div>
-<div id="outline-container-org69b2736" class="outline-3">
-<h3 id="org69b2736">U.S. 2016 Election</h3>
-<div class="outline-text-3" id="text-org69b2736">
+<div id="outline-container-orgc6fe5c6" class="outline-3">
+<h3 id="orgc6fe5c6">U.S. 2016 Election</h3>
+<div class="outline-text-3" id="text-orgc6fe5c6">
 <p>
-The 2016 Election results will be useful. They are grabbed from a really nice site, <a href="http://uselectionatlas.org/RESULTS/data.php?year=2016&amp;datatype=national&amp;def=1&amp;f=1&amp;off=0&amp;elect=0">uselectionsatlas.org</a>.
+The 2016 Election results will be useful. They are grabbed from a really nice site, <a href="http://uselectionatlas.org/RESULTS/data.php?year=2016&amp;datatype=national&amp;def=1&amp;f=1&amp;off=0&amp;elect=0">uselectionsatlas.org</a>:
 </p>
 <div class="org-src-container">
 <pre class="src src-ipython"><span class="org-keyword">import</span> requests
@@ -565,9 +573,9 @@ Sample of voting table:
 </div>
 </div>
 
-<div id="outline-container-org5c4e881" class="outline-3">
-<h3 id="org5c4e881">Preprocess Data</h3>
-<div class="outline-text-3" id="text-org5c4e881">
+<div id="outline-container-orgba6d064" class="outline-3">
+<h3 id="orgba6d064">Preprocess Data</h3>
+<div class="outline-text-3" id="text-orgba6d064">
 <p>
 A small bit of preprocessing to check data for corruption and
 unexpected results was necessary. There was no missing data, and no
@@ -592,9 +600,9 @@ completely distinct).
 </div>
 </div>
 </div>
-<div id="outline-container-orgb1682fd" class="outline-2">
-<h2 id="orgb1682fd">State Usage</h2>
-<div class="outline-text-2" id="text-orgb1682fd">
+<div id="outline-container-orgbbb70a1" class="outline-2">
+<h2 id="orgbbb70a1">State Usage</h2>
+<div class="outline-text-2" id="text-orgbbb70a1">
 <p>
 Although the post data has attached a fairly fine-grain geographical
 description, I found the CL regions in general to not line up well
@@ -611,9 +619,9 @@ occupancy and census population, and have indisputable borders,
 barring District of Columbia, are ideal for inspection.
 </p>
 </div>
-<div id="outline-container-org5f472d7" class="outline-3">
-<h3 id="org5f472d7">Terms</h3>
-<div class="outline-text-3" id="text-org5f472d7">
+<div id="outline-container-org587fa6f" class="outline-3">
+<h3 id="org587fa6f">Terms</h3>
+<div class="outline-text-3" id="text-org587fa6f">
 <ol class="org-ol">
 <li><b>Patronage</b>
 Patronage is the raw number of posts on a politics board.</li>
@@ -630,14 +638,14 @@ results.</li>
 </ol>
 </div>
 </div>
-<div class="outline-text-2" id="text-orgb1682fd">
+<div class="outline-text-2" id="text-orgbbb70a1">
 <p>
 The <code>state_usage</code> table is the census table concatenated with patronage usage.
 </p>
 </div>
-<div id="outline-container-orgbf9d891" class="outline-3">
-<h3 id="orgbf9d891"><code>states</code> Sample</h3>
-<div class="outline-text-3" id="text-orgbf9d891">
+<div id="outline-container-org08e71cf" class="outline-3">
+<h3 id="org08e71cf"><code>states</code> Sample</h3>
+<div class="outline-text-3" id="text-org08e71cf">
 <p>
 Joining <code>state_usage</code> with <code>voting</code> gives us a decent top down view of
 state political tendencies on CL.
@@ -678,6 +686,26 @@ state political tendencies on CL.
 </thead>
 <tbody>
 <tr>
+<td class="org-left">Tennessee</td>
+<td class="org-right">487</td>
+<td class="org-right">6.34610e+06</td>
+<td class="org-right">0.132544</td>
+<td class="org-right">870695</td>
+<td class="org-right">1.52292e+06</td>
+<td class="org-right">0.636243</td>
+</tr>
+
+<tr>
+<td class="org-left">Connecticut</td>
+<td class="org-right">272</td>
+<td class="org-right">3.5741e+06</td>
+<td class="org-right">0.130803</td>
+<td class="org-right">897572</td>
+<td class="org-right">673215</td>
+<td class="org-right">0.428585</td>
+</tr>
+
+<tr>
 <td class="org-left">Delaware</td>
 <td class="org-right">100</td>
 <td class="org-right">897934</td>
@@ -686,41 +714,21 @@ state political tendencies on CL.
 <td class="org-right">185127</td>
 <td class="org-right">0.440014</td>
 </tr>
-
-<tr>
-<td class="org-left">Nevada</td>
-<td class="org-right">770</td>
-<td class="org-right">2.70055e+06</td>
-<td class="org-right">0.702141</td>
-<td class="org-right">539260</td>
-<td class="org-right">512058</td>
-<td class="org-right">0.487063</td>
-</tr>
-
-<tr>
-<td class="org-left">Hawaii</td>
-<td class="org-right">445</td>
-<td class="org-right">1.3603e+06</td>
-<td class="org-right">0.81696</td>
-<td class="org-right">266891</td>
-<td class="org-right">128847</td>
-<td class="org-right">0.325587</td>
-</tr>
 </tbody>
 </table>
 </div>
 </div>
-<div id="outline-container-org7551be0" class="outline-3">
-<h3 id="org7551be0">Outliers</h3>
-<div class="outline-text-3" id="text-org7551be0">
+<div id="outline-container-orgdb3d27f" class="outline-3">
+<h3 id="orgdb3d27f">Outliers</h3>
+<div class="outline-text-3" id="text-orgdb3d27f">
 <p>
 There are two major outlying states in the dataset: Colorodo and
 District of Columbia.
 </p>
 </div>
-<div id="outline-container-org87d43e4" class="outline-4">
-<h4 id="org87d43e4">Colorodo</h4>
-<div class="outline-text-4" id="text-org87d43e4">
+<div id="outline-container-org138c7bd" class="outline-4">
+<h4 id="org138c7bd">Colorodo</h4>
+<div class="outline-text-4" id="text-org138c7bd">
 <p>
 We can see from the following that Colorado is an extreme outlier,
 being the fifth most popular state, yet the 23rd most populous.
@@ -739,11 +747,21 @@ By comparison, the "new york city" region, which is expansive enough
 as to include metropolitan area subregions like "new jersey", "long island",
 "fairfield", etc, has fewer posts, at 1006.
 </p>
-<p>
-1006 posts in NYC spread over:
-manhattan, brooklyn, queens, bronx, staten island, new jersey, long island, westchester,
-and fairfield. This is ~6.5% the usage rate of Denver
-</p>
+<div class="org-src-container">
+<pre class="src src-org">1006 posts in NYC spread over:
+manhattan,
+brooklyn,
+queens,
+bronx,
+staten island,
+new jersey,
+long island,
+westchester,
+and fairfield.
+
+This is ~6.5% the usage rate of Denver
+</pre>
+</div>
 
 <p>
 This is a remarkably popular region, clearly. I suspect that it has to
@@ -753,9 +771,9 @@ the state of Colorado.
 </p>
 </div>
 </div>
-<div id="outline-container-orgf037c33" class="outline-4">
-<h4 id="orgf037c33">District of Columbia</h4>
-<div class="outline-text-4" id="text-orgf037c33">
+<div id="outline-container-orga6987af" class="outline-4">
+<h4 id="orga6987af">District of Columbia</h4>
+<div class="outline-text-4" id="text-orga6987af">
 <p>
 While I found Colorado to be an inexplicable anamoly, it was also
 justifiably accurate. District of Columbia, having a Republican voting
@@ -768,9 +786,9 @@ not even a real state&#x2026;
 </div>
 </div>
 
-<div id="outline-container-org92165a7" class="outline-3">
-<h3 id="org92165a7">Patronage</h3>
-<div class="outline-text-3" id="text-org92165a7">
+<div id="outline-container-orge4d7234" class="outline-3">
+<h3 id="orge4d7234">Patronage</h3>
+<div class="outline-text-3" id="text-orge4d7234">
 
 <div class="figure">
 <p><img src="./img/py6320oYD.png" alt="py6320oYD.png" />
@@ -896,9 +914,9 @@ removed from the data.
 </p>
 </div>
 </div>
-<div id="outline-container-org59edbe6" class="outline-3">
-<h3 id="org59edbe6">Usage</h3>
-<div class="outline-text-3" id="text-org59edbe6">
+<div id="outline-container-org92e55e5" class="outline-3">
+<h3 id="org92e55e5">Usage</h3>
+<div class="outline-text-3" id="text-org92e55e5">
 
 <div class="figure">
 <p><img src="./img/py6320LXp.png" alt="py6320LXp.png" />
@@ -993,9 +1011,9 @@ populated states/least patroned boards.
 </div>
 </div>
 </div>
-<div id="outline-container-org1583d16" class="outline-3">
-<h3 id="org1583d16">Politics</h3>
-<div class="outline-text-3" id="text-org1583d16">
+<div id="outline-container-org11b48cf" class="outline-3">
+<h3 id="org11b48cf">Politics</h3>
+<div class="outline-text-3" id="text-org11b48cf">
 <p>
 It seems that the distribution of posts is weighted on the Democrat's
 side of the spectrum:
@@ -1047,9 +1065,9 @@ An alternative representation that may make this skew a bit more apparent:
 </p>
 </div>
 </div>
-<div id="outline-container-orgf3987da" class="outline-4">
-<h4 id="orgf3987da">Usage vs Trumpism</h4>
-<div class="outline-text-4" id="text-orgf3987da">
+<div id="outline-container-orgb2cb42a" class="outline-4">
+<h4 id="orgb2cb42a">Usage vs Trumpism</h4>
+<div class="outline-text-4" id="text-orgb2cb42a">
 <p>
 We can see the correlations between patronage, population, and usage,
 here. We of course expect correlation between patronage and population
@@ -1133,17 +1151,17 @@ numbers behinds the colors:
 </div>
 </div>
 </div>
-<div id="outline-container-org1a31d60" class="outline-2">
-<h2 id="org1a31d60">Text Qualities</h2>
-<div class="outline-text-2" id="text-org1a31d60">
+<div id="outline-container-org8078842" class="outline-2">
+<h2 id="org8078842">Text Qualities</h2>
+<div class="outline-text-2" id="text-org8078842">
 <p>
 Text usage is interesting to consider, but difficult to evaluate
 semantically. While sampling encourages some compelling thoughts about
 the data, proving any derivative ideas is a bit difficult. The
-following is and effort to support the introduction of this blog post.
+following is an effort to support the introduction of this blog post.
 </p>
 </div>
-<div class="outline-text-2" id="text-org1a31d60">
+<div class="outline-text-2" id="text-org8078842">
 <p>
 Popular English words are excluded from the analysis. Words like
 "the", "re", "and", etc., don't contribute interestingly. Popular
@@ -1151,9 +1169,9 @@ words were grabbed from <a href="http://www.world-english.org/english500.htm">ht
 and a couple were added as needed (e.g., "re" appears all the time).
 </p>
 </div>
-<div id="outline-container-orgee92c80" class="outline-3">
-<h3 id="orgee92c80">Liberals vs Conservatives</h3>
-<div class="outline-text-3" id="text-orgee92c80">
+<div id="outline-container-org8c5fa22" class="outline-3">
+<h3 id="org8c5fa22">Liberals vs Conservatives</h3>
+<div class="outline-text-3" id="text-org8c5fa22">
 <p>
 Investigating the discrepency between democrat/republican word usage,
 we see the some discrepencies in the most used common words. Grab some words
@@ -1216,7 +1234,7 @@ we see the some discrepencies in the most used common words. Grab some words
 </tbody>
 </table>
 </div>
-<div class="outline-text-3" id="text-orgee92c80">
+<div class="outline-text-3" id="text-org8c5fa22">
 <p>
 We find that "against", "how", and "won" have extreme preference for
 "liberal" states. The reasons are in fact not obvious. Some random
@@ -1239,27 +1257,27 @@ sentiment:
 </thead>
 <tbody>
 <tr>
-<td class="org-right">7786</td>
-<td class="org-left">NO TRUMP  IT WONT HAPPEN</td>
+<td class="org-right">12992</td>
+<td class="org-left">RufRydrRADIO=&gt;LATEST Podcast=&gt;"WE WON'T GET 'TOOLED' AGAIN"=&gt;POP SONG</td>
 </tr>
 
 <tr>
-<td class="org-right">15729</td>
-<td class="org-left">USA Flag Burning</td>
-</tr>
-
-<tr>
-<td class="org-right">9407</td>
-<td class="org-left">re: Liberalism has been rejected&#x2026;.Again. (usa)</td>
-</tr>
-
-<tr>
-<td class="org-right">28173</td>
+<td class="org-right">28062</td>
 <td class="org-left">Thought for the Day</td>
 </tr>
 
 <tr>
-<td class="org-right">27437</td>
+<td class="org-right">27429</td>
+<td class="org-left">Thought for the Day</td>
+</tr>
+
+<tr>
+<td class="org-right">6571</td>
+<td class="org-left">I WONT SHED ONE TEAR !    you pukes made me suffer for 8 years !</td>
+</tr>
+
+<tr>
+<td class="org-right">28026</td>
 <td class="org-left">Thought for the Day</td>
 </tr>
 </tbody>
@@ -1282,9 +1300,9 @@ week.
 </div>
 </div>
 
-<div id="outline-container-orgf8aaeb3" class="outline-4">
-<h4 id="orgf8aaeb3">Unicode</h4>
-<div class="outline-text-4" id="text-orgf8aaeb3">
+<div id="outline-container-org78bd01f" class="outline-4">
+<h4 id="org78bd01f">Unicode</h4>
+<div class="outline-text-4" id="text-org78bd01f">
 <p>
 I was curious about non-ascii usage, and so I used to following code
 to catch them.
@@ -1353,23 +1371,23 @@ We then can run this over all non-ascii posts to get an idea of how
 much silliness is going on with these posts:
 </p>
 <div class="org-src-container">
-<pre class="src src-org">The average similarity of all non-ascii posts is 0.19 while that 
+<pre class="src src-org">The average similarity of all non-ascii posts is 0.19, while that 
 of only those in Pennsylvania is 0.38. The average for all posts in
-all regions is 0.20.
+all regions is 0.19.
 </pre>
 </div>
 <p>
-It would therefore seem that a single Trump memester making use of a
-handful of unicode symbols is responsible for this chaos in
+It would therefore seem that a single Trump memester, making use of a
+handful of unicode symbols, is responsible for this chaos in
 Pennsylvania. I suspect that these crazy unicode posts are mostly
 done by a very small set of people in general, though there is no
 good way to tell, as CL remains completely anonymous.
 </p>
 </div>
 </div>
-<div id="outline-container-org820d039" class="outline-4">
-<h4 id="org820d039">"trumps"</h4>
-<div class="outline-text-4" id="text-org820d039">
+<div id="outline-container-orgc8436fe" class="outline-4">
+<h4 id="orgc8436fe">"trumps"</h4>
+<div class="outline-text-4" id="text-orgc8436fe">
 <p>
 The more pro-Trump your state, the less likely you are to use "TRUMP"
 over "Trump". Below is a visual depicting this ratio, by states in
@@ -1440,42 +1458,42 @@ Selecting states that are espectially anti-trump:
 </thead>
 <tbody>
 <tr>
-<td class="org-right">14291</td>
-<td class="org-left">Dare we say the start of  "Trump Nation?"</td>
+<td class="org-right">2470</td>
+<td class="org-left">Trump win shatters Obama legacy</td>
 </tr>
 
 <tr>
-<td class="org-right">2039</td>
-<td class="org-left">Trump Administration</td>
+<td class="org-right">14765</td>
+<td class="org-left">Trump to bring private security staff to White House</td>
 </tr>
 
 <tr>
-<td class="org-right">12231</td>
-<td class="org-left">Trump tax plan would aid Wall St. despite closing loophole</td>
+<td class="org-right">27604</td>
+<td class="org-left">Trump Is Right about our Sevice Men!</td>
 </tr>
 
 <tr>
-<td class="org-right">24538</td>
-<td class="org-left">PRESIDENT TRUMP WILL DESIGNATE MUSLIM BROTHERHOOD TERRORIST ORG.</td>
+<td class="org-right">10989</td>
+<td class="org-left">Trumps approach is actually more honest</td>
 </tr>
 
 <tr>
-<td class="org-right">11150</td>
-<td class="org-left">TRUMP'S FEMALE FOLLOWERS&#x2026;&#x2026;&#x2026;&#x2026;&#x2026;&#x2026;&#x2026;&#x2026;&#x2026;&#x2026;&#x2026;&#x2026;&#x2026;&#x2026;&#x2026;.</td>
+<td class="org-right">13495</td>
+<td class="org-left">Love Trumps Hate Wall</td>
 </tr>
 </tbody>
 </table>
 <p>
 Politically liberal states composing the above sampling:
-California, Illinois, Hawaii.
+Illinois, Massachusetts, New York, California.
 </p>
 </div>
 </div>
 
-<div id="outline-container-org7704134" class="outline-4">
-<h4 id="org7704134">"liberals" vs "conservatives"</h4>
-<div class="outline-text-4" id="text-org7704134">
-</div><ul class="org-ul"><li><a id="org5b50151"></a><b>Usage</b><br  /><div class="outline-text-5" id="text-org5b50151">
+<div id="outline-container-org947b418" class="outline-4">
+<h4 id="org947b418">"liberals" vs "conservatives"</h4>
+<div class="outline-text-4" id="text-org947b418">
+</div><ul class="org-ul"><li><a id="orgf147441"></a><b>Usage</b><br  /><div class="outline-text-5" id="text-orgf147441">
 <p>
 "liberal" is used far more often than "conservative". The
 pluralizations, respectively, are comparitively not quite as
@@ -1490,7 +1508,7 @@ liberal(s)/conservative(s): 10.14
 </div>
 </div></li>
 
-<li><a id="orgd6d0c99"></a><b>Pluralization</b><br  /><div class="outline-text-5" id="text-orgd6d0c99">
+<li><a id="orgf0cca2b"></a><b>Pluralization</b><br  /><div class="outline-text-5" id="text-orgf0cca2b">
 <p>
 The singular version of "conservative" is used a bit more than half as
 much as the pluralization. By contrast, the singular version of
@@ -1507,7 +1525,7 @@ as an insult:
 </div>
 </div></li>
 
-<li><a id="org982d718"></a><b>Capitalization</b><br  /><div class="outline-text-5" id="text-org982d718">
+<li><a id="orgbb0311e"></a><b>Capitalization</b><br  /><div class="outline-text-5" id="text-orgbb0311e">
 <p>
 We here see that, among democrats, "liberal" is capitalized at a rate
 13x greater than the rate of capitalization of "conservative". We also
@@ -1556,9 +1574,9 @@ see that lowecase usage preference is completely neglible.
 </div></li></ul>
 </div>
 
-<div id="outline-container-org87012e5" class="outline-4">
-<h4 id="org87012e5">Semantics</h4>
-<div class="outline-text-4" id="text-org87012e5">
+<div id="outline-container-orgd126865" class="outline-4">
+<h4 id="orgd126865">Semantics</h4>
+<div class="outline-text-4" id="text-orgd126865">
 <p>
 I figured that a natural way to go about proving my hypothesis
 outlined in this blog's introduction would be semantic analysis. I
@@ -1608,9 +1626,9 @@ were quite unconvincing, even if only interpreted as a binary measure:
 </div>
 </div>
 
-<div id="outline-container-orgf5491ca" class="outline-2">
-<h2 id="orgf5491ca">Conclusion</h2>
-<div class="outline-text-2" id="text-orgf5491ca">
+<div id="outline-container-orgc942a2a" class="outline-2">
+<h2 id="orgc942a2a">Conclusion</h2>
+<div class="outline-text-2" id="text-orgc942a2a">
 <p>
 The distribution posts and the favor of those posts across the
 politics sections is somewhat surprising. I suspect that this is
@@ -1625,33 +1643,34 @@ exhausive effort.
 </div>
 </div>
 
-<div id="outline-container-orgea79ff6" class="outline-2">
-<h2 id="orgea79ff6">Notes about this document</h2>
-<div class="outline-text-2" id="text-orgea79ff6">
+<div id="outline-container-org9e7c35b" class="outline-2">
+<h2 id="org9e7c35b">Notes about this document</h2>
+<div class="outline-text-2" id="text-org9e7c35b">
 <p>
 This document is, in its original form, an emacs org-mode
 organizational markup document that supports interactive programming
 and exporting quite thoroughly. It exports to a variety of formats
-(html, latex, markdown, etc). It's quite powerful, and allows me to
-tailor what headers are exported, what code is exported, what code
-results, etc. The original document, if viewed in org-mode in emacs,
-is quite a bit larger, containing all of the code used for the
-project, most of which is not shown in markdown exports. Therefore, if
-you view this document on github, you will see a truncated version
-much like the version you are likely viewing now. You can view on
-github a .ipynb and a .py export for the complete code of the
-document. Obviously, they won't include the organization and
-commentary. You can look at the raw contents of the .org file if
-curious (github will export primitively to html by default for
-display), or check out this <a href="http://kozikow.com/2016/05/21/very-powerful-data-analysis-environment-org-mode-with-ob-ipython/comment-page-1/#comment-240">blog on interactive python programming in
-emacs org-mode</a>.
+(html, latex, markdown, etc), and in this case, was exported directly
+to html. It's quite powerful, and allows me to tailor what headers are
+exported, what code is exported, what code results, to what
+interpreter the code talks, how it's formated, etc. The original
+document, if viewed in org-mode in emacs, is quite a bit larger,
+containing all of the code used for the project, most of which is not
+shown in markdown exports. Therefore, if you view this document on
+github, you will see a truncated version much like the version you are
+likely viewing now. You can view on github, a .ipynb and a .py export
+are available for the complete code of the document. Obviously, they
+won't include the organization and commentary. You can look at the raw
+contents of the .org file if curious (github will export primitively
+to html by default for display), or check out this <a href="http://kozikow.com/2016/05/21/very-powerful-data-analysis-environment-org-mode-with-ob-ipython/comment-page-1/#comment-240">blog on interactive
+python programming in emacs org-mode</a>.
 </p>
 </div>
 </div>
 </div>
 <div id="postamble" class="status">
 <p class="author">Author: Dodge Coates</p>
-<p class="date">Created: 2017-01-09 Mon 04:48</p>
+<p class="date">Created: 2017-01-09 Mon 05:13</p>
 <p class="validation"><a href="http://validator.w3.org/check?uri=referer">Validate</a></p>
 </div>
 </body>
