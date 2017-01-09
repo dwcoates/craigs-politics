@@ -541,8 +541,8 @@ This is ~6.5% the usage rate of Denver
 #+END_SRC
 
 This is a remarkably popular region, clearly. I suspect that it has to
-do with the region granularity CL mostly likely arbitrarily assigned
-to the state. They might want to consider providing mode regions to
+do with the state granularity CL most likely arbitrarily assigned
+to the Colorado. They might want to consider providing mode regions to
 the state of Colorado.
 *** District of Columbia
 While I found Colorado to be an inexplicable anamoly, it was also
@@ -771,9 +771,8 @@ An alternative representation that may make this skew a bit more apparent:
 We can see the correlations between patronage, population, and usage,
 here. We of course expect correlation between patronage and population
 to be quite high: states with more people generally have more
-posts. However we see W Below, positive correlation is pictured by
-redness, while negative is pictures by blueness. Darkness visualizes
-closeness.
+posts. Below, positive correlation is pictured by redness, while
+negative is pictures by blueness. Darkness visualizes closeness.
 #+BEGIN_SRC ipython :session :file ./img/py2241F8fd.png :exports results
   corr = states.filter(["patronage", "usage", "trumpism", "population"]).corr()
   fig, ax = plt.subplots(figsize=(4, 4))
@@ -1169,11 +1168,10 @@ trumps_by_state = trumps_by_state.join([prop_over_trumps, up_over_trumps, trumps
 The more pro-Trump your state, the less likely you are to use "TRUMP"
 over "Trump". Below is a visual depicting this ratio, by states in
 order of trumpism. We can see that states on the right of the graph
-tend to have a low ratio of upper to proper. This isn't too
-surprising, as you expect, in leiu of social resistance, for pro-Trump
-regions to settle for respectful praise over excitement and hysteria,
-a general tone which is supported by some cursory sampling of these
-regions.
+tend to have a low ratio of upper to proper. It isn't too surprising,
+as you expect, in leiu of social resistance, for pro-Trump regions to
+settle for respectful praise over excitement and hysteria, a general
+tone which is supported by some cursory sampling of these regions.
 #+BEGIN_SRC ipython :session :file ./img/py6320cup.png :exports results :tangle ./politics.py
   trumps_vs_trumpism = trumps_by_state.sort_values(
       "trumpism", ascending=True).filter(["propercase usage",
@@ -1269,7 +1267,7 @@ mean:
 [[file:./img/py26878b0D.png]]
 
 It isn't clear why there seems to be preference for capitalization of
-"TRUMP" among Dem states; are mostly angry and disparaging,
+"TRUMP" among Dem states; are they mostly angry and disparaging,
 supportive, or a bit of both? Some random sampling of particularly
 liberal states might provide some clues:
 #+BEGIN_SRC ipython :session :exports code
