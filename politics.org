@@ -39,7 +39,7 @@ away with only a couple of points between them
 ** TODO Correlation matrix vis is broken?!
 * Setup Code :noexport:
 General settings, packages and functions.
-#+BEGIN_SRC ipython :session :exports results :tangle ./politics.py
+#+BEGIN_SRC ipython :session mysession :exports results :tangle ./politics.py
   %matplotlib inline
   import numpy as np
   import scipy
@@ -1283,7 +1283,7 @@ liberal states might provide some clues:
 
   print("Politically liberal states composing " +
         "the above sampling:\n{}.".format(
-             ", ".join("{}".format(r) for r in liberal_sample.state.unique())))
+             ", ".join("{}h".format(r) for r in liberal_sample.state.unique())))
 #+END_SRC
 
 #+RESULTS:
