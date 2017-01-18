@@ -95,32 +95,32 @@ Sample of posts in the `usa` DataFrame before preprocessing, which is the DF for
 
 <tbody>
 <tr>
-<td class="org-right">22572</td>
-<td class="org-left">RE: van jones</td>
-<td class="org-left">2016-12-26 09:34</td>
-<td class="org-left">Florida</td>
-<td class="org-left">north central FL</td>
+<td class="org-right">6699</td>
+<td class="org-left">election blame</td>
+<td class="org-left">2016-11-17 12:42</td>
+<td class="org-left">Iowa</td>
+<td class="org-left">southeast IA</td>
 <td class="org-right">nan</td>
 </tr>
 
 
 <tr>
-<td class="org-right">216</td>
-<td class="org-left">Boycott ABC, CBS & NBC</td>
-<td class="org-left">2016-11-16 18:04</td>
-<td class="org-left">Mississippi</td>
-<td class="org-left">southwest MS</td>
-<td class="org-right">nan</td>
-</tr>
-
-
-<tr>
-<td class="org-right">11186</td>
-<td class="org-left">RE: More than all previous Presidents combined&#x2026;.</td>
-<td class="org-left">2016-12-24 14:41</td>
+<td class="org-right">13798</td>
+<td class="org-left">America's Future and Technological Progress Was Stopped in 1990s</td>
+<td class="org-left">2016-12-26 20:10</td>
 <td class="org-left">California</td>
-<td class="org-left">san diego</td>
-<td class="org-right">east SD county</td>
+<td class="org-left">los angeles</td>
+<td class="org-right">SF valley</td>
+</tr>
+
+
+<tr>
+<td class="org-right">33843</td>
+<td class="org-left">Grateful American</td>
+<td class="org-left">2016-12-08 01:32</td>
+<td class="org-left">North Carolina</td>
+<td class="org-left">outer banks</td>
+<td class="org-right">nan</td>
 </tr>
 </tbody>
 </table>
@@ -151,26 +151,26 @@ census](http://www.census.gov/2010census/). Here's a sample:
 
 <tbody>
 <tr>
-<td class="org-left">Washington</td>
-<td class="org-right">6.72454e+06</td>
-</tr>
-
-
-<tr>
-<td class="org-left">Indiana</td>
-<td class="org-right">6.4838e+06</td>
-</tr>
-
-
-<tr>
-<td class="org-left">West Virginia</td>
-<td class="org-right">1.85299e+06</td>
-</tr>
-
-
-<tr>
 <td class="org-left">New Mexico</td>
 <td class="org-right">2.05918e+06</td>
+</tr>
+
+
+<tr>
+<td class="org-left">Virginia</td>
+<td class="org-right">8.00102e+06</td>
+</tr>
+
+
+<tr>
+<td class="org-left">Georgia</td>
+<td class="org-right">9.68765e+06</td>
+</tr>
+
+
+<tr>
+<td class="org-left">South Carolina</td>
+<td class="org-right">4.62536e+06</td>
 </tr>
 </tbody>
 </table>
@@ -382,35 +382,35 @@ state political tendencies on CL.
 
 <tbody>
 <tr>
-<td class="org-left">Ohio</td>
-<td class="org-right">1401</td>
-<td class="org-right">1.15365e+07</td>
-<td class="org-right">0.254726</td>
-<td class="org-right">2.39416e+06</td>
-<td class="org-right">2.84100e+06</td>
-<td class="org-right">0.542677</td>
+<td class="org-left">Rhode Island</td>
+<td class="org-right">100</td>
+<td class="org-right">1.05257e+06</td>
+<td class="org-right">0.182471</td>
+<td class="org-right">252525</td>
+<td class="org-right">180543</td>
+<td class="org-right">0.416893</td>
 </tr>
 
 
 <tr>
-<td class="org-left">Wyoming</td>
-<td class="org-right">22</td>
-<td class="org-right">563626</td>
-<td class="org-right">0.0294766</td>
-<td class="org-right">55973</td>
-<td class="org-right">174419</td>
-<td class="org-right">0.757053</td>
+<td class="org-left">Connecticut</td>
+<td class="org-right">272</td>
+<td class="org-right">3.5741e+06</td>
+<td class="org-right">0.130803</td>
+<td class="org-right">897572</td>
+<td class="org-right">673215</td>
+<td class="org-right">0.428585</td>
 </tr>
 
 
 <tr>
-<td class="org-left">Tennessee</td>
-<td class="org-right">487</td>
-<td class="org-right">6.34610e+06</td>
-<td class="org-right">0.132544</td>
-<td class="org-right">870695</td>
-<td class="org-right">1.52292e+06</td>
-<td class="org-right">0.636243</td>
+<td class="org-left">Maine</td>
+<td class="org-right">100</td>
+<td class="org-right">1.32836e+06</td>
+<td class="org-right">0.128555</td>
+<td class="org-right">357735</td>
+<td class="org-right">335593</td>
+<td class="org-right">0.484032</td>
 </tr>
 </tbody>
 </table>
@@ -887,32 +887,32 @@ sentiment:
 
 <tbody>
 <tr>
-<td class="org-right">25793</td>
-<td class="org-left">RE Proof of massive Democrats voter fraud thousands voter fraud ..</td>
+<td class="org-right">29440</td>
+<td class="org-left">George Lopez said he would leave USA if Trump won!</td>
 </tr>
 
 
 <tr>
-<td class="org-right">13320</td>
-<td class="org-left">usa tv 2016 trending #STFU Idiot Democrats !!! impeach muslim barry</td>
+<td class="org-right">28220</td>
+<td class="org-left">Thought for the Day</td>
 </tr>
 
 
 <tr>
-<td class="org-right">17965</td>
-<td class="org-left">RE Proof of massive Democrats voter fraud thousands voter fraud ..</td>
+<td class="org-right">1427</td>
+<td class="org-left">TRUMP PICKS GOLDMAN SACHS PRES GARY COHN TO DESTROY USA ECONOMY AGAIN</td>
 </tr>
 
 
 <tr>
-<td class="org-right">3795</td>
-<td class="org-left">Re: See what the tea party is all about (USA</td>
+<td class="org-right">28806</td>
+<td class="org-left">CHER said she would move to jupiter if TRUMP won!</td>
 </tr>
 
 
 <tr>
-<td class="org-right">8841</td>
-<td class="org-left">love trump won, usa, usa,usa</td>
+<td class="org-right">28149</td>
+<td class="org-left">Thought for the Day</td>
 </tr>
 </tbody>
 </table>
@@ -984,7 +984,7 @@ much silliness is going on with these posts:
 
     The average similarity of all non-ascii posts is 0.19, while that 
     of only those in Pennsylvania is 0.38. The average for all posts in
-    all regions is 0.18.
+    all regions is 0.20.
 
 It would therefore seem that a single Trump memester, making use of a
 handful of unicode symbols, is responsible for this chaos in
@@ -1043,38 +1043,38 @@ Selecting states that are espectially anti-trump:
 
 <tbody>
 <tr>
-<td class="org-right">2070</td>
-<td class="org-left">Trump's gopers Talk the Talk and</td>
+<td class="org-right">12168</td>
+<td class="org-left">Trump voters, voting against their own interest perhaps?</td>
 </tr>
 
 
 <tr>
-<td class="org-right">12882</td>
-<td class="org-left">RE: Protest Trump</td>
-</tr>
-
-
-<tr>
-<td class="org-right">1623</td>
-<td class="org-left">naked pics of mrs.rumptrumpet</td>
-</tr>
-
-
-<tr>
-<td class="org-right">14723</td>
-<td class="org-left">Trump's New Broom</td>
-</tr>
-
-
-<tr>
-<td class="org-right">12775</td>
+<td class="org-right">11770</td>
 <td class="org-left">Holding anti-Trump sign at 3PM, 11/19, SLO Courthouse</td>
+</tr>
+
+
+<tr>
+<td class="org-right">28633</td>
+<td class="org-left">These folks said they would move out if TRUMP WON!</td>
+</tr>
+
+
+<tr>
+<td class="org-right">2258</td>
+<td class="org-left">lesbian bitch got trumped fuck you ho's</td>
+</tr>
+
+
+<tr>
+<td class="org-right">14127</td>
+<td class="org-left">trump and clinton agree on this</td>
 </tr>
 </tbody>
 </table>
 
 Politically liberal states composing the above sampling:
-Illinois, California, Massachusetts.
+Californiah, New Yorkh, Illinoish.
 
 
 ### "liberals" vs "conservatives"
