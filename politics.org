@@ -1,7 +1,7 @@
 #+HTML_HEAD: <link href="/home/dodge/.emacs.d/leuven-theme.css" rel="stylesheet">
 #+TITLE: *@@html:<font color = "C2492F">@@Scraping the Bottom of the Barrel@@html:</font>@@*
 
-#+OPTIONS: toc:nil num:nil
+#+OPTIONS: toc:2 num:nil
 #+TABLFM: $0;%0.3f
 
 
@@ -964,39 +964,36 @@ some discrepencies in the most used common words.
 lib_con_ratio
 #+END_SRC
 
-***
-*** Words                                                            :ignore:
+*** Words :ignore:
     :PROPERTIES:
     :ATTACH_DIR_INHERIT: t
     :END:
-We find that "against", "how", and "won" have extreme preference for "liberal"
-states. Some random sampling of such posts:
-#+BEGIN_SRC ipython :session :results output raw drawer :noweb yes  :exports results
-  print_df(pd.DataFrame(pd.concat([find_strs("against"),
-                                   find_strs("usa"),
-                                   find_strs("won")]).rename(
+We find that "tax", "speech", and "russian" among those words with large
+preference in "liberal" states. Some random sampling of such posts:
+#+BEGIN_SRC ipython :session :results output raw drawer :noweb yes  :exports results :cache yes
+  print_df(pd.DataFrame(pd.concat([find_strs("tax"),
+                                   find_strs("speech"),
+                                   find_strs("russian")]).rename(
                                        "title")).sample(5), 
            rnd=3)
 #+END_SRC
 #+RESULTS:
 :RESULTS:
-|       | title                                                                  |
-|-------+------------------------------------------------------------------------|
-|  3453 | RE Proof of massive Democrats voter fraud thousands voter fraud ..     |
-| 27278 | Lightworkers united against Greed                                      |
-|  9547 | re: Tens of thousands more Mexicans flooding across Texas's border.    |
-| 13873 | RUSSIANS DO NOT WANT WAR WITH USA OR NATO DO NOT BELIEVE LIES AND PROP |
-|  1994 | RE: Bakery won't...............                                        |
+|       | title                                                                |
+|-------+----------------------------------------------------------------------|
+| 30431 | Hate The Constitution, God, Free Speech, White People & Enjoy Lying? |
+| 15043 | American journalists who 'danced' on Russian Ambassador's grave      |
+| 38685 | Russians still regret USSR collapse, believe restoration unrealistic |
+|  6508 | Conservunism Defined (Free Speech Edition)                           |
+| 38085 | Your Taxes At Work                                                   |
 :END:
 
-Looking at the general word sentiment, we see clearly that
-disproportionately Trump and Obama are discussed. Note that "hillary"
-and "clinton" are surprisingly not mentioned as much as you might
-think. "Clinton", in fact, is mentioned less freqeuntly than
-"Donald". It may be that a month after the election, "hillary" talk
-has already begun to significantly subside. It's impossible to know
-for sure, as CL does not hold on to their posts for longer than a
-week.
+Looking at general word usage, we see how often President Obama and President
+Trump are discussed. Note that "hillary" and "clinton" are surprisingly not
+mentioned as much as you might think. "Clinton", in fact, is mentioned less
+freqeuntly than "Donald". It may be that a month after the election, "hillary"
+talk has already begun to significantly subside. It's impossible to know for
+sure, as CL does not hold on to their posts for longer than a week.
 #+BEGIN_SRC ipython :session :file ./img/py31406ImT.png :exports results 
 p = posts_corpus[:25].sort_values(ascending=True)
 
@@ -1047,14 +1044,19 @@ ax.get_yaxis().tick_left()
  
  ax.spines["top"].set_visible(False)
  ax.spines["right"].set_visible(False)
+
  ax.get_xaxis().tick_bottom()
  ax.get_yaxis().tick_left()
+
  plt.ylabel("", fontsize=12)
  plt.suptitle('', fontsize=14)
+
  ax.spines["top"].set_visible(False)
  ax.spines["right"].set_visible(False)
+
  ax.get_xaxis().tick_bottom()
  ax.get_yaxis().tick_left()
+
  plt.bar(np.arange(0, len(chunks)), np.array([len(c) for c in chunks]))
  
 #+END_SRC
@@ -1062,8 +1064,8 @@ ax.get_yaxis().tick_left()
 [[file:./img/pyF7JjmI.png]]
 *** TODO Diversity of words vs trumpism                            :noexport:
 *** Unicode
-I was curious about non-ascii usage, and so I used to following code
-to catch them.
+I was curious about non-ascii usage, and so I used the following code to grab
+them:
 #+BEGIN_SRC ipython :session :exports code
 def check_ascii(post):
     """
@@ -1091,17 +1093,15 @@ print ("{0:,} of {1:,} total posts were non-ascii ({2:.2f}%), confined to {3} "
 #+BEGIN_SRC org
 219 of 38,324 total posts were non-ascii (0.57%), confined to 22 states.
 #+END_SRC
-However, influence for these posts can be seen by looking at the main
-outlier, Pennsylvania:
+We can look at the main outlier for the posts by checking out Pennsylvania:
 #+BEGIN_SRC ipython :session  :exports code :tangle ./politics.py
   pennsylvania = nonascii_posts[nonascii_posts["state"] == "Pennsylvania"]
   pennsylvania.groupby("region").count()
   penn_lenn = float(len(pennsylvania.title))
   post_uniqueness = (penn_lenn-pennsylvania.title.nunique())/penn_lenn * 100
-+END_SRC
-+RESULTS:
-We can use a SequenceMatcher to test the similarity of the strings in
-the pool:
+#+END_SRC
+#+RESULTS:
+We can use a SequenceMatcher to test the similarity of the strings in the pool:
 #+BEGIN_SRC ipython :session  :exports code
   import itertools
   from difflib import SequenceMatcher
@@ -1116,8 +1116,8 @@ the pool:
     return avg_sim
 #+END_SRC
 #+RESULTS:
-We then can run this over all non-ascii posts to get an idea of how
-much silliness is going on with these posts:
+Running this over all non-ascii posts to get an idea of how much silliness is
+going on with these posts:
 #+BEGIN_SRC ipython :session :exports results :results output org :noweb yes 
     print(("The average similarity of all non-ascii posts is " +
            "{:.2f}, while that \nof only those in Pennsylvania is " +
@@ -1136,7 +1136,7 @@ It would therefore seem that a single Trump memester, making use of a
 handful of unicode symbols, is responsible for this chaos in
 Pennsylvania. I suspect that these crazy unicode posts are mostly
 done by a very small set of people in general, though there is no
-good way to tell, as CL remains completely anonymous.
+good way to tell, as CL is completely anonymous.
 *** "trumps"
 **** intro                                                           :ignore:
 #+BEGIN_SRC ipython :session :exports none :tangle ./politics.py :results none
@@ -1152,10 +1152,7 @@ trumps_by_state = trumps_by_state.join([prop_over_trumps, up_over_trumps, trumps
 The more pro-Trump your state, the less likely you are to use "TRUMP" over
 "Trump". Below is a visual depicting this ratio, by states in order of
 trumpism. We can see that states on the right of the graph tend to have a low
-ratio of upper to proper. It isn't too surprising, as you expect, in leiu of
-social resistance, for pro-Trump regions to settle for respectful praise over
-excitement and hysteria, a general tone which is supported by some cursory
-sampling of these regions.
+ratio of upper to proper. 
 #+BEGIN_SRC ipython :session :file ./img/py6320cup.png :exports results :tangle ./politics.py
   trumps_vs_trumpism = trumps_by_state.sort_values(
       "trumpism", ascending=True).filter(["propercase usage",
@@ -1267,7 +1264,7 @@ liberal states might provide some clues:
 
   print("Politically liberal states composing " +
         "the above sampling:\n{}.".format(
-             ", ".join("{}h".format(r) for r in liberal_sample.state.unique())))
+             ", ".join("{}".format(r) for r in liberal_sample.state.unique())))
 #+END_SRC
 
 #+RESULTS:
@@ -1285,13 +1282,12 @@ Politically liberal states composing the above sampling:
 Oregonh, New Jerseyh, Illinoish.
 :END:
 
-*** "liberals" vs "conservatives"
+*** "liberal" vs "conservative"
 **** *Usage*
-
 "liberal" is used far more often than "conservative". The pluralizations,
-respectively, are comparitively not quite as distinguished. This is expected,
-for previously mentioned reasons; pluralizations may still be used as a means to
-negatively generalize.
+respectively, are comparitively not quite as distinguished, but still quite
+different.  Below are the instance rate ratios of "liberal" and "conservative"
+in their various forms.
 #+BEGIN_SRC ipython :session :exports results :results output org :noweb yes
   liberal = float(posts_corpus["liberal"])
   liberal_p = float(posts_corpus["liberals"])
@@ -1316,9 +1312,7 @@ liberal(s)/conservative(s): 10.14
 **** *Pluralization*
 The singular version of "conservative" is used a bit more than half as much as
 the pluralization. By contrast, the singular version of "liberal" is used more
-than twice as much as the pluralization. I suspect this is because "liberal" is
-a perjorative in common nomenclature, while "conservative" doesn't really hold
-the same weight as an insult:
+than twice as much as the pluralization:
 #+BEGIN_SRC ipython :session :exports results :results output org :noweb yes
   print("*singular/plural*\n" +
         "'conservative': {0:.3f}\n" +
@@ -1336,17 +1330,20 @@ the same weight as an insult:
 #+END_SRC
 
 **** *Capitalization*
-We here see that, among democrats, "liberal" is capitalized at a rate 13x
-greater than the rate of capitalization of "conservative". We also see that
-lowecase usage preference is completely neglible.
+We here see that there is a great preference for capitalization of "liberal"
+vs. "conservative". "'liberal' preference" refers to the capitalization rates of
+"liberal"/"conservative".
 #+BEGIN_SRC ipython :session :exports code
-  lib_cap = eval_strs("trump").sum(numeric_only=True)
-  conserv_cap = eval_strs("liberal").sum(numeric_only=True)
+  libs = eval_strs("liberal").sum(numeric_only=True)
+  conservs = eval_strs("conservative").sum(numeric_only=True)
 
-  lib_con_cap_rat = (lib_cap/conserv_cap).rename(
-      "Dem/Rep capital rates for 'trump'")
+  lib_con_rates = (libs/libs.sum()) / (conservs/conservs.sum())
+  lib_con_rates.rename("'liberal' preference", inplace=True)
+
+  lib_con_cap_rat = pd.DataFrame([(libs/conserv).rename(
+      "# 'liberal' per 'trump'"), lib_con_rates])
 #+END_SRC
-
+ 
 #+RESULTS:
 
 #+BEGIN_SRC ipython :session :exports results :results output raw drawer :noweb yes
@@ -1354,20 +1351,18 @@ print_df(pd.DataFrame(lib_con_cap_rat))
 #+END_SRC
 #+RESULTS:
 :RESULTS:
-|           | Dem/Rep capital rates for 'trump' |
-|-----------+-----------------------------------|
-| proper    |                           10.5951 |
-| uppercase |                           13.4286 |
-| lower     |                           1.07721 |
+|                         |   proper | uppercase |   lower |
+|-------------------------+----------+-----------+---------|
+| # 'liberal' per 'trump' |       15 |   2.07407 | 10.0741 |
+| 'liberal' preference    | 0.703212 |  0.594209 | 4.32924 |
 :END:
 
 *** Semantics
-I figured that a natural way to go about proving my hypothesis
-outlined in this blog's introduction would be semantic analysis. I
-quickly decided that this was, with it's present implementation, at
-least, not the way to go about it. The following code will run
-semantic analysis using the popular NLTK package. The results are
-dubious.
+I figured that a natural way to go about investigating sentiment would be
+semantic analysis. I quickly decided that this was, with it's present
+implementation at least, not the way to go about it. The following code will run
+semantic analysis using the popular NLTK package. The results are as dubious as
+my implementation.
 #+BEGIN_SRC ipython :session :exports code 
   from textblob import TextBlob
 
@@ -1389,8 +1384,7 @@ dubious.
 
 #+RESULTS[f9c165e005384b105d899de515d25e9a2578b73a]:
 
-However, the results, and general output of the semantic analyzer,
-were quite unconvincing, even if only interpreted as a binary measure:
+Unconvincing results:
 #+BEGIN_SRC ipython :session :exports both :results output org :noweb yes
   zero_sents = len(usa_sentiment[usa_sentiment.sentiment == 0])
   print(('Number of posts with 0 sentiment: {0:,} ' + 
@@ -1404,15 +1398,13 @@ Number of posts with 0 sentiment: 25,632 (66.88%).
 #+END_SRC
 
 * Conclusion
-The distribution posts and the favor of those posts across the
-politics sections is somewhat surprising. I suspect that this is
-evidence of cultural normalization in the face of
-resistance+anonimity: faceless, nameless interaction coupled with
-outspokenness against relatively strict local social norms. This has
-proven more difficult to prove than I initially suspected. While any
-amount of ransom sampling of the posts allows me to be confident in
-this theory, convincing proof would most likely involve a tedious,
-exhausive effort.
+The distribution posts and the favor of those posts across the politics sections
+is somewhat surprising. Denver, Colorado, was a perplexing result. I suspect that this is evidence of cultural
+normalization in the face of resistance+anonimity: faceless, nameless
+interaction coupled with outspokenness against relatively strict local social
+norms. This has proven more difficult to prove than I initially suspected. While
+any amount of ransom sampling of the posts allows me to be confident in this
+theory, convincing proof would most likely involve a tedious, exhausive effort.
 
 * Notes about this document
 This document is, in its original form, an emacs org-mode
