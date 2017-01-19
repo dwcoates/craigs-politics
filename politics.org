@@ -938,9 +938,9 @@ posts_sum = " ".join(usa_words) # good estimate of sum of all posts, minus popul
 
 ** Liberals vs Conservatives
 *** intro :ignore:
-Investigating the discrepency between democrat/republican word usage, we see
+Investigating the discrepency between Democrat/Republican word usage, we see
 some discrepencies in the most used common words.
-#+BEGIN_SRC ipython :session :exports code :results none
+#+BEGIN_SRC ipython :session :exports code :results code
   # Grab some words
   lib_words = words(df=post_politics[post_politics.trumpism < .45],
                     no_pop=True).rename("libs")
@@ -960,9 +960,186 @@ some discrepencies in the most used common words.
                                                   how="inner")
 #+end_src
 
+#+BEGIN_SRC ipython :session  :exports results :results :output raw drawer :noweb yes 
+lib_con_ratio
+#+END_SRC
+
+***
+*** Words                                                            :ignore:
+    :PROPERTIES:
+    :ATTACH_DIR_INHERIT: t
+    :END:
+We find that "against", "how", and "won" have extreme preference for "liberal"
+states. Some random sampling of such posts:
+#+BEGIN_SRC ipython :session :results output raw drawer :noweb yes  :exports results
+  print_df(pd.DataFrame(pd.concat([find_strs("against"),
+                                   find_strs("usa"),
+                                   find_strs("won")]).rename(
+                                       "title")).sample(5), 
+           rnd=3)
+#+END_SRC
+#+RESULTS:
+:RESULTS:
+|       | title                                                                  |
+|-------+------------------------------------------------------------------------|
+|  3453 | RE Proof of massive Democrats voter fraud thousands voter fraud ..     |
+| 27278 | Lightworkers united against Greed                                      |
+|  9547 | re: Tens of thousands more Mexicans flooding across Texas's border.    |
+| 13873 | RUSSIANS DO NOT WANT WAR WITH USA OR NATO DO NOT BELIEVE LIES AND PROP |
+|  1994 | RE: Bakery won't...............                                        |
+:END:
+
+Looking at the general word sentiment, we see clearly that
+disproportionately Trump and Obama are discussed. Note that "hillary"
+and "clinton" are surprisingly not mentioned as much as you might
+think. "Clinton", in fact, is mentioned less freqeuntly than
+"Donald". It may be that a month after the election, "hillary" talk
+has already begun to significantly subside. It's impossible to know
+for sure, as CL does not hold on to their posts for longer than a
+week.
+#+BEGIN_SRC ipython :session :file ./img/py31406ImT.png :exports results 
+p = posts_corpus[:25].sort_values(ascending=True)
+
+ax = p.plot(kind="bar", color="#662200", grid=True)
+
+ax.spines["top"].set_visible(False)
+ax.spines["right"].set_visible(False)
+
+ax.get_xaxis().tick_bottom()
+ax.get_yaxis().tick_left()
+
+plt.ylabel("Occurences", fontsize=12)
+
+plt.suptitle('Word usages', fontsize=14)
+
+ax.spines["top"].set_visible(False)
+ax.spines["right"].set_visible(False)
+
+ax.get_xaxis().tick_bottom()
+ax.get_yaxis().tick_left()
+#+END_SRC
+
+#+RESULTS[4cfeb62c1d4cb9d2e0ccc865f9f60fd806d810e9]:
+[[file:./img/py31406ImT.png]]
+
+#+BEGIN_SRC ipython :session :exports results   
+ # Splitting a series into chunks such that values.sum() = val (or as close
+ # as possible, greedily) so we can wee how the diversity of words is
+ # distributed:
+ def splicer(ss, val):
+   indices = ss.index.tolist()
+   if len(indices) <= 1:
+     return pd.Series(ss[index[0]], index=[[indices[0]]])
+   left = [ss.index[0]]
+   right = ss.index[1:].tolist()
+   s = ss[left[0]]
+   while s < val and len(right) > 0:
+     i = right.pop(0)
+     left.append(i)
+     s += ss[i]
+   return [ss.filter(left)] + (splicer(ss.filter(right), val) if len(right) > 0 else [])
+#+END_SRC
+#+RESULTS[44365645107e2b7164001f81c43a81afbf66cd00]:
+*** TODO Correct bad graph                                         :noexport:
+#+BEGIN_SRC ipython :session :file ./img/pyF7JjmI.png :exports results
+ chunks = splicer(posts_corpus, posts_corpus.iloc[0])
+ ax = plt.subplot()
+ 
+ ax.spines["top"].set_visible(False)
+ ax.spines["right"].set_visible(False)
+ ax.get_xaxis().tick_bottom()
+ ax.get_yaxis().tick_left()
+ plt.ylabel("", fontsize=12)
+ plt.suptitle('', fontsize=14)
+ ax.spines["top"].set_visible(False)
+ ax.spines["right"].set_visible(False)
+ ax.get_xaxis().tick_bottom()
+ ax.get_yaxis().tick_left()
+ plt.bar(np.arange(0, len(chunks)), np.array([len(c) for c in chunks]))
+ 
+#+END_SRC
+#+RESULTS:
+[[file:./img/pyF7JjmI.png]]
+*** TODO Diversity of words vs trumpism                            :noexport:
+*** Unicode
+I was curious about non-ascii usage, and so I used to following code
+to catch them.
+#+BEGIN_SRC ipython :session :exports code
+def check_ascii(post):
+    """
+    Determines whether a title is encodable as ascii
+    """
+    try:
+        post.encode('ascii')
+        return True
+    except UnicodeError:
+        return False
+ascii_posts = usa[usa.title.apply(check_ascii)]
+nonascii_posts = usa[~usa.title.apply(check_ascii)]
+distinct_states = nonascii_posts["state"].unique()
+#+END_SRC
+#+RESULTS:
+The number of posts containing non-ascii characters was surprisingly small:
+#+BEGIN_SRC ipython :session   :exports results :results output org :noweb yes
+print ("{0:,} of {1:,} total posts were non-ascii ({2:.2f}%), confined to {3} "
+       + "states.").format(len(nonascii_posts),
+                       len(usa),
+                       len(nonascii_posts)/float(len(usa)) * 100,
+                       len(distinct_states))
+#+END_SRC
+#+RESULTS:
+#+BEGIN_SRC org
+219 of 38,324 total posts were non-ascii (0.57%), confined to 22 states.
+#+END_SRC
+However, influence for these posts can be seen by looking at the main
+outlier, Pennsylvania:
+#+BEGIN_SRC ipython :session  :exports code :tangle ./politics.py
+  pennsylvania = nonascii_posts[nonascii_posts["state"] == "Pennsylvania"]
+  pennsylvania.groupby("region").count()
+  penn_lenn = float(len(pennsylvania.title))
+  post_uniqueness = (penn_lenn-pennsylvania.title.nunique())/penn_lenn * 100
++END_SRC
++RESULTS:
+We can use a SequenceMatcher to test the similarity of the strings in
+the pool:
+#+BEGIN_SRC ipython :session  :exports code
+  import itertools
+  from difflib import SequenceMatcher
+  def avg_similarity(posts):
+    def similarity(a, b):
+      return SequenceMatcher(None, a, b).ratio()
+    sim_sum = 0
+    title_product = itertools.product(posts.title, posts.title)
+    for title_pair in title_product:
+      sim_sum += similarity(*title_pair)
+    avg_sim = sim_sum/(len(posts)**2)
+    return avg_sim
+#+END_SRC
+#+RESULTS:
+We then can run this over all non-ascii posts to get an idea of how
+much silliness is going on with these posts:
+#+BEGIN_SRC ipython :session :exports results :results output org :noweb yes 
+    print(("The average similarity of all non-ascii posts is " +
+           "{:.2f}, while that \nof only those in Pennsylvania is " +
+           "{:.2f}. The average for all posts in\nall regions is " +
+           "{:.2f}.")).format(avg_similarity(nonascii_posts),
+                              avg_similarity(pennsylvania),
+                              avg_similarity(usa.sample(200)))
+#+END_SRC
+#+RESULTS[2f3dffa2f757c0a80e292c245bfdb5a8afb660a0]:
+#+BEGIN_SRC org
+The average similarity of all non-ascii posts is 0.19 while that 
+of only those in Pennsylvania is 0.38. The average for all posts in
+all regions is 0.19.
+#+END_SRC
+It would therefore seem that a single Trump memester, making use of a
+handful of unicode symbols, is responsible for this chaos in
+Pennsylvania. I suspect that these crazy unicode posts are mostly
+done by a very small set of people in general, though there is no
+good way to tell, as CL remains completely anonymous.
 *** "trumps"
 **** intro                                                           :ignore:
-#+BEGIN_SRC ipython :session :exports none :tangle ./politics.py
+#+BEGIN_SRC ipython :session :exports none :tangle ./politics.py :results none
 trumps = eval_strs("trump").join(usa.state, how="inner")
 trumps_by_state = trumps.groupby("state").count().join(states).drop(["clinton", "trump"], axis=1)
 up_over_trumps = (trumps_by_state.uppercase/trumps_by_state["*trump*"]).rename("uppercase usage")
@@ -971,16 +1148,14 @@ trumps_over_pat = (trumps_by_state["*trump*"]/trumps_by_state.patronage).rename(
 trumps_by_state = trumps_by_state.join([prop_over_trumps, up_over_trumps, trumps_over_pat], how="outer")
 #+END_SRC
 
-#+RESULTS:
-
 **** Politics                                                        :ignore:
-The more pro-Trump your state, the less likely you are to use "TRUMP"
-over "Trump". Below is a visual depicting this ratio, by states in
-order of trumpism. We can see that states on the right of the graph
-tend to have a low ratio of upper to proper. It isn't too surprising,
-as you expect, in leiu of social resistance, for pro-Trump regions to
-settle for respectful praise over excitement and hysteria, a general
-tone which is supported by some cursory sampling of these regions.
+The more pro-Trump your state, the less likely you are to use "TRUMP" over
+"Trump". Below is a visual depicting this ratio, by states in order of
+trumpism. We can see that states on the right of the graph tend to have a low
+ratio of upper to proper. It isn't too surprising, as you expect, in leiu of
+social resistance, for pro-Trump regions to settle for respectful praise over
+excitement and hysteria, a general tone which is supported by some cursory
+sampling of these regions.
 #+BEGIN_SRC ipython :session :file ./img/py6320cup.png :exports results :tangle ./politics.py
   trumps_vs_trumpism = trumps_by_state.sort_values(
       "trumpism", ascending=True).filter(["propercase usage",
@@ -1112,10 +1287,11 @@ Oregonh, New Jerseyh, Illinoish.
 
 *** "liberals" vs "conservatives"
 **** *Usage*
-"liberal" is used far more often than "conservative". The
-pluralizations, respectively, are comparitively not quite as
-distinguished. This is expected, for previously mentioned reasons;
-pluralizations may still be used as a means to negatively generalize.
+
+"liberal" is used far more often than "conservative". The pluralizations,
+respectively, are comparitively not quite as distinguished. This is expected,
+for previously mentioned reasons; pluralizations may still be used as a means to
+negatively generalize.
 #+BEGIN_SRC ipython :session :exports results :results output org :noweb yes
   liberal = float(posts_corpus["liberal"])
   liberal_p = float(posts_corpus["liberals"])
@@ -1138,12 +1314,11 @@ liberal(s)/conservative(s): 10.14
 #+END_SRC
 
 **** *Pluralization*
-The singular version of "conservative" is used a bit more than half as
-much as the pluralization. By contrast, the singular version of
-"liberal" is used more than twice as much as the pluralization. I
-suspect this is because "liberal" is a perjorative in common
-nomenclature, while "conservative" doesn't really hold the same weight
-as an insult:
+The singular version of "conservative" is used a bit more than half as much as
+the pluralization. By contrast, the singular version of "liberal" is used more
+than twice as much as the pluralization. I suspect this is because "liberal" is
+a perjorative in common nomenclature, while "conservative" doesn't really hold
+the same weight as an insult:
 #+BEGIN_SRC ipython :session :exports results :results output org :noweb yes
   print("*singular/plural*\n" +
         "'conservative': {0:.3f}\n" +
@@ -1161,9 +1336,9 @@ as an insult:
 #+END_SRC
 
 **** *Capitalization*
-We here see that, among democrats, "liberal" is capitalized at a rate
-13x greater than the rate of capitalization of "conservative". We also
-see that lowecase usage preference is completely neglible.
+We here see that, among democrats, "liberal" is capitalized at a rate 13x
+greater than the rate of capitalization of "conservative". We also see that
+lowecase usage preference is completely neglible.
 #+BEGIN_SRC ipython :session :exports code
   lib_cap = eval_strs("trump").sum(numeric_only=True)
   conserv_cap = eval_strs("liberal").sum(numeric_only=True)
