@@ -1183,7 +1183,7 @@ ratio of upper to proper.
 
 Looking at the distribution of "trump" posts across trumpism looks
 much the same as the distribution of all posts across trumpism:
-#+BEGIN_SRC ipython :session :file .img/py268781zz.png :exports results :tangle ./politics.py
+#+BEGIN_SRC ipython :session :file ./img/py268781zz.png :exports results :tangle ./politics.py
     post_politics.trumpism.plot(kind="density", linewidth=0.8)
 
     ax = plt.subplot()
