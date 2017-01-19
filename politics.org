@@ -499,7 +499,7 @@ next highest popularity, Hawaii, is rated 0.816.
 Usage in the Denver region is also especially large. Despite having a population
 of 650,000 people (and a metropolitcan area of 3 million), Denver sees a
 large patronage:
-#+BEGIN_SRC ipython :session :results output raw drawer :noweb yes  :exports none
+#+BEGIN_SRC ipython :session :results output raw drawer :noweb yes  :exports results
 print("Patronage of Denver, Colorado: {}".format(len(usa[usa.region == "denver, CO"])))
 #+END_SRC
 
@@ -517,7 +517,7 @@ posts for the week of data extracted, at 1006 posts:
 #+BEGIN_SRC ipython :session :noweb yes :exports code :results code
   # From census bureau, to the nearest 1000 people
   pop_denver_proper = 649000.0 
-  pop_denver_metro = 2814000.0 
+  pop_denver_metro = 2814000.0
   pop_nyc_proper = 8550000.0  
   pop_nyc_metro = 20200000.0
 
@@ -987,7 +987,7 @@ We can use a SequenceMatcher to test the similarity of the strings in the pool:
     avg_sim = sim_sum/(len(posts)**2)
     return avg_sim
 #+END_SRC
-#+RESULTS:
+
 Running this over all non-ascii posts to get an idea of how much silliness is
 going on with these posts:
 #+BEGIN_SRC ipython :session :exports results :results output org :noweb yes 
@@ -1337,10 +1337,10 @@ vs. "conservative". "'liberal' preference" refers to the capitalization rates of
   conservs = eval_strs("conservative").sum(numeric_only=True)
 
   lib_con_rates = (libs/libs.sum()) / (conservs/conservs.sum())
-  lib_con_rates.rename("'liberal' preference", inplace=True)
+  lib_con_rates.rename("'liberal'/'conservative' usage", inplace=True)
 
   lib_con_cap_rat = pd.DataFrame([(libs/conserv).rename(
-      "# 'liberal' per 'trump'"), lib_con_rates])
+      "# 'liberal' per 'conservative'"), lib_con_rates])
 #+END_SRC
 
 #+BEGIN_SRC ipython :session :exports results :results output raw drawer :noweb yes
@@ -1394,15 +1394,13 @@ Unconvincing results:
 Number of posts with 0 sentiment: 25,632 (66.88%).
 #+END_SRC
 
-* Conclusion
-The distribution of posts and the favor of those posts across the politics
-sections is somewhat surprising. Denver, Colorado, was a perplexing result. I
-suspect that this is evidence of cultural normalization in the face of
-resistance+anonimity: faceless, nameless interaction coupled with outspokenness
-against relatively strict local social norms. This has proven more difficult to
-prove than I initially suspected. While any amount of ransom sampling of the
-posts allows me to be confident in this theory, convincing proof would most
-likely involve a tedious, exhausive effort.
+* Conclusion :noexport:
+Overall, I've been quite satisfied with the process of deploying a scrapy
+program. Denver, Colorado, was by far the most perplexing outlier of the
+dataset, one which I am interested to rescrape in the near future. I was also
+suprised to find such high usage rates among democratic states, which seemed to
+be somehow related to the exorbitent rates at which "liberal" used over
+"conservative".
 
 * Notes about this document
 This document is, in its original form, an emacs org-mode
