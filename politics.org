@@ -936,6 +936,80 @@ posts_sum = " ".join(usa_words) # good estimate of sum of all posts, minus popul
       return categ_strs(findings).join(findings)
 #+END_SRC
 
+** Unicode
+I was curious about non-ascii usage, and so I used the following code to grab
+them:
+#+BEGIN_SRC ipython :session :exports code
+def check_ascii(post):
+    """
+    Determines whether a title is encodable as ascii
+    """
+    try:
+        post.encode('ascii')
+        return True
+    except UnicodeError:
+        return False
+ascii_posts = usa[usa.title.apply(check_ascii)]
+nonascii_posts = usa[~usa.title.apply(check_ascii)]
+distinct_states = nonascii_posts["state"].unique()
+#+END_SRC
+#+RESULTS:
+The number of posts containing non-ascii characters was surprisingly small:
+#+BEGIN_SRC ipython :session   :exports results :results output org :noweb yes
+print ("{0:,} of {1:,} total posts were non-ascii ({2:.2f}%), confined to {3} "
+       + "states.").format(len(nonascii_posts),
+                       len(usa),
+                       len(nonascii_posts)/float(len(usa)) * 100,
+                       len(distinct_states))
+#+END_SRC
+#+RESULTS:
+#+BEGIN_SRC org
+219 of 38,324 total posts were non-ascii (0.57%), confined to 22 states.
+#+END_SRC
+We can look at the main outlier for the posts by checking out Pennsylvania:
+#+BEGIN_SRC ipython :session  :exports code :tangle ./politics.py :results none
+  pennsylvania = nonascii_posts[nonascii_posts["state"] == "Pennsylvania"]
+  pennsylvania.groupby("region").count()
+  penn_lenn = float(len(pennsylvania.title))
+  post_uniqueness = (penn_lenn-pennsylvania.title.nunique())/penn_lenn * 100
+#+END_SRC
+We can use a SequenceMatcher to test the similarity of the strings in the pool:
+#+BEGIN_SRC ipython :session  :exports code
+  import itertools
+  from difflib import SequenceMatcher
+  def avg_similarity(posts):
+    def similarity(a, b):
+      return SequenceMatcher(None, a, b).ratio()
+    sim_sum = 0
+    title_product = itertools.product(posts.title, posts.title)
+    for title_pair in title_product:
+      sim_sum += similarity(*title_pair)
+    avg_sim = sim_sum/(len(posts)**2)
+    return avg_sim
+#+END_SRC
+#+RESULTS:
+Running this over all non-ascii posts to get an idea of how much silliness is
+going on with these posts:
+#+BEGIN_SRC ipython :session :exports results :results output org :noweb yes 
+    print(("The average similarity of all non-ascii posts is " +
+           "{:.2f}, while that \nof only those in Pennsylvania is " +
+           "{:.2f}. The average for all posts in\nall regions is " +
+           "{:.2f}.")).format(avg_similarity(nonascii_posts),
+                              avg_similarity(pennsylvania),
+                              avg_similarity(usa.sample(200)))
+#+END_SRC
+#+RESULTS[2f3dffa2f757c0a80e292c245bfdb5a8afb660a0]:
+#+BEGIN_SRC org
+The average similarity of all non-ascii posts is 0.19 while that 
+of only those in Pennsylvania is 0.38. The average for all posts in
+all regions is 0.19.
+#+END_SRC
+It would therefore seem that a single Trump memester, making use of a
+handful of unicode symbols, is responsible for this chaos in
+Pennsylvania. I suspect that these crazy unicode posts are mostly
+done by a very small set of people in general, though there is no
+good way to tell, as CL is completely anonymous.
+
 ** Liberals vs Conservatives
 *** intro :ignore:
 Investigating the discrepency between Democrat/Republican word usage, we see
@@ -960,7 +1034,7 @@ some discrepencies in the most used common words.
                                                   how="inner")
 #+end_src
 
-#+BEGIN_SRC ipython :session  :exports results :results :output raw drawer :noweb yes 
+#+BEGIN_SRC ipython :session  :exports results :results output raw drawer :noweb yes 
 lib_con_ratio
 #+END_SRC
 
@@ -1063,82 +1137,8 @@ ax.get_yaxis().tick_left()
 #+RESULTS:
 [[file:./img/pyF7JjmI.png]]
 *** TODO Diversity of words vs trumpism                            :noexport:
-*** Unicode
-I was curious about non-ascii usage, and so I used the following code to grab
-them:
-#+BEGIN_SRC ipython :session :exports code
-def check_ascii(post):
-    """
-    Determines whether a title is encodable as ascii
-    """
-    try:
-        post.encode('ascii')
-        return True
-    except UnicodeError:
-        return False
-ascii_posts = usa[usa.title.apply(check_ascii)]
-nonascii_posts = usa[~usa.title.apply(check_ascii)]
-distinct_states = nonascii_posts["state"].unique()
-#+END_SRC
-#+RESULTS:
-The number of posts containing non-ascii characters was surprisingly small:
-#+BEGIN_SRC ipython :session   :exports results :results output org :noweb yes
-print ("{0:,} of {1:,} total posts were non-ascii ({2:.2f}%), confined to {3} "
-       + "states.").format(len(nonascii_posts),
-                       len(usa),
-                       len(nonascii_posts)/float(len(usa)) * 100,
-                       len(distinct_states))
-#+END_SRC
-#+RESULTS:
-#+BEGIN_SRC org
-219 of 38,324 total posts were non-ascii (0.57%), confined to 22 states.
-#+END_SRC
-We can look at the main outlier for the posts by checking out Pennsylvania:
-#+BEGIN_SRC ipython :session  :exports code :tangle ./politics.py
-  pennsylvania = nonascii_posts[nonascii_posts["state"] == "Pennsylvania"]
-  pennsylvania.groupby("region").count()
-  penn_lenn = float(len(pennsylvania.title))
-  post_uniqueness = (penn_lenn-pennsylvania.title.nunique())/penn_lenn * 100
-#+END_SRC
-#+RESULTS:
-We can use a SequenceMatcher to test the similarity of the strings in the pool:
-#+BEGIN_SRC ipython :session  :exports code
-  import itertools
-  from difflib import SequenceMatcher
-  def avg_similarity(posts):
-    def similarity(a, b):
-      return SequenceMatcher(None, a, b).ratio()
-    sim_sum = 0
-    title_product = itertools.product(posts.title, posts.title)
-    for title_pair in title_product:
-      sim_sum += similarity(*title_pair)
-    avg_sim = sim_sum/(len(posts)**2)
-    return avg_sim
-#+END_SRC
-#+RESULTS:
-Running this over all non-ascii posts to get an idea of how much silliness is
-going on with these posts:
-#+BEGIN_SRC ipython :session :exports results :results output org :noweb yes 
-    print(("The average similarity of all non-ascii posts is " +
-           "{:.2f}, while that \nof only those in Pennsylvania is " +
-           "{:.2f}. The average for all posts in\nall regions is " +
-           "{:.2f}.")).format(avg_similarity(nonascii_posts),
-                              avg_similarity(pennsylvania),
-                              avg_similarity(usa.sample(200)))
-#+END_SRC
-#+RESULTS[2f3dffa2f757c0a80e292c245bfdb5a8afb660a0]:
-#+BEGIN_SRC org
-The average similarity of all non-ascii posts is 0.19 while that 
-of only those in Pennsylvania is 0.38. The average for all posts in
-all regions is 0.19.
-#+END_SRC
-It would therefore seem that a single Trump memester, making use of a
-handful of unicode symbols, is responsible for this chaos in
-Pennsylvania. I suspect that these crazy unicode posts are mostly
-done by a very small set of people in general, though there is no
-good way to tell, as CL is completely anonymous.
 *** "trumps"
-**** intro                                                           :ignore:
+**** intro :ignore:
 #+BEGIN_SRC ipython :session :exports none :tangle ./politics.py :results none
 trumps = eval_strs("trump").join(usa.state, how="inner")
 trumps_by_state = trumps.groupby("state").count().join(states).drop(["clinton", "trump"], axis=1)
@@ -1148,7 +1148,7 @@ trumps_over_pat = (trumps_by_state["*trump*"]/trumps_by_state.patronage).rename(
 trumps_by_state = trumps_by_state.join([prop_over_trumps, up_over_trumps, trumps_over_pat], how="outer")
 #+END_SRC
 
-**** Politics                                                        :ignore:
+**** Politics :ignore:
 The more pro-Trump your state, the less likely you are to use "TRUMP" over
 "Trump". Below is a visual depicting this ratio, by states in order of
 trumpism. We can see that states on the right of the graph tend to have a low
@@ -1214,7 +1214,6 @@ much the same as the distribution of all posts across trumpism:
 #+RESULTS:
 [[file:.img/py268781zz.png]]
 
-
 However, Democratic states seem to have relatively strong preferance
 for using "TRUMP" versus "Trump". Below's graph depicts this skew,
 which is made more noticible by the considerable left-shift of the
@@ -1247,10 +1246,10 @@ mean:
 #+RESULTS:
 [[file:./img/py26878b0D.png]]
 
-It isn't clear why there seems to be preference for capitalization of
-"TRUMP" among Dem states; are they mostly angry and disparaging,
-supportive, or a bit of both? Some random sampling of particularly
-liberal states might provide some clues:
+It isn't clear why there seems to be preference for capitalization of "TRUMP"
+among Dem states; are they mostly angry and disparaging, supportive, or a bit of
+both? Some random sampling of particularly liberal states might provide some
+clues:
 #+BEGIN_SRC ipython :session :exports code
   liberal_sample = trumps_trumpism[trumps_trumpism.trumpism < .45].sample(5)
 #+END_SRC  
@@ -1271,15 +1270,15 @@ liberal states might provide some clues:
 :RESULTS:
 Selecting states that are espectially anti-trump:
 
-|       | *trump*                                             |
-|-------+-----------------------------------------------------|
-|  9530 | Trump appoints a plumber!                           |
-| 31698 | TRUMP thuglife hip hop edition featuring snoop dog. |
-|  9986 | RE:  I love Donald Trump and I voted for HIM!       |
-|  2392 | Trump Will Start..                                  |
-|  9555 | RE:  I love Donald Trump and I voted for HIM!       |
+|       | *trump*                                                                |
+|-------+------------------------------------------------------------------------|
+| 13713 | OBAMA vs. TRUMP                                                        |
+| 13314 | I'm Canadian & I Don't Want Donald Trump as President of the USA       |
+| 13083 | Trumps approach is actually more honest                                |
+|  3966 | The Global Corporations say "Trump can't Stop Us From Outsourcing Jobs |
+|  2389 | It's The Funny Trumpany                                                |
 Politically liberal states composing the above sampling:
-Oregonh, New Jerseyh, Illinoish.
+California, Maryland, Illinois.
 :END:
 
 *** "liberal" vs "conservative"
@@ -1333,7 +1332,7 @@ than twice as much as the pluralization:
 We here see that there is a great preference for capitalization of "liberal"
 vs. "conservative". "'liberal' preference" refers to the capitalization rates of
 "liberal"/"conservative".
-#+BEGIN_SRC ipython :session :exports code
+#+BEGIN_SRC ipython :session :exports code :results none
   libs = eval_strs("liberal").sum(numeric_only=True)
   conservs = eval_strs("conservative").sum(numeric_only=True)
 
@@ -1343,8 +1342,6 @@ vs. "conservative". "'liberal' preference" refers to the capitalization rates of
   lib_con_cap_rat = pd.DataFrame([(libs/conserv).rename(
       "# 'liberal' per 'trump'"), lib_con_rates])
 #+END_SRC
- 
-#+RESULTS:
 
 #+BEGIN_SRC ipython :session :exports results :results output raw drawer :noweb yes
 print_df(pd.DataFrame(lib_con_cap_rat))
@@ -1357,7 +1354,7 @@ print_df(pd.DataFrame(lib_con_cap_rat))
 | 'liberal' preference    | 0.703212 |  0.594209 | 4.32924 |
 :END:
 
-*** Semantics
+** Semantics
 I figured that a natural way to go about investigating sentiment would be
 semantic analysis. I quickly decided that this was, with it's present
 implementation at least, not the way to go about it. The following code will run
@@ -1398,13 +1395,14 @@ Number of posts with 0 sentiment: 25,632 (66.88%).
 #+END_SRC
 
 * Conclusion
-The distribution posts and the favor of those posts across the politics sections
-is somewhat surprising. Denver, Colorado, was a perplexing result. I suspect that this is evidence of cultural
-normalization in the face of resistance+anonimity: faceless, nameless
-interaction coupled with outspokenness against relatively strict local social
-norms. This has proven more difficult to prove than I initially suspected. While
-any amount of ransom sampling of the posts allows me to be confident in this
-theory, convincing proof would most likely involve a tedious, exhausive effort.
+The distribution of posts and the favor of those posts across the politics
+sections is somewhat surprising. Denver, Colorado, was a perplexing result. I
+suspect that this is evidence of cultural normalization in the face of
+resistance+anonimity: faceless, nameless interaction coupled with outspokenness
+against relatively strict local social norms. This has proven more difficult to
+prove than I initially suspected. While any amount of ransom sampling of the
+posts allows me to be confident in this theory, convincing proof would most
+likely involve a tedious, exhausive effort.
 
 * Notes about this document
 This document is, in its original form, an emacs org-mode
