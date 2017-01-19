@@ -70,48 +70,44 @@ General settings, packages and functions.
 #+RESULTS:
 
 * Introduction
-For my web scraping project, I've chosen to extract some of the
-politics data from craigslist.org. My original ambition, though it
-proved difficult to affirm, was to prove a small, non-existant, or
-negative correllation of pro-trump chatter to expected
-conservatism. That is, I suspected that, somewhat counter-intuitively,
-the politics sections of more conservative states would a
-disproportionately less likely source of pro-trump posts. My basis for
-this suspicion was my general observation that less regulated areas
-for discussion on the internet tend to be very attractive to those
-members of a publically socially disparaged minority. Recognizing
-that, among other clues, Trump supporters in largely pro-Clinton
-geographic areas are disparaged for their support in amounts
-disproportionate to their surprisingly high representation, it
-followed that I could expect a surprising amount of pro-Trump (mostly
-trollish) chatter in mostly liberal places (e.g., New York City). The
-positive sentiment aspect of that hypothesis proved to be difficult to
-convincingly affirm. More generally, also I sought to analyze the
-trends of politcs discussion of craiglist, mostly in the area of text
-usage (capitalization, word frequency, etc) vs political leaning.
+For my web scraping project, I've chosen to extract some of the politics data
+from craigslist.org. My original ambition, though it proved difficult to affirm,
+was to prove a small, non-existant, or negative correllation of pro-trump
+chatter to expected conservatism. That is, I suspected that, somewhat
+counter-intuitively, the politics sections of more conservative states would a
+disproportionately less likely source of pro-trump posts. My basis for this
+suspicion was my general observation that less regulated areas for discussion on
+the internet tend to be very attractive to those members of a publically
+socially disparaged minority. Recognizing that, among other clues, Trump
+supporters in largely pro-Clinton geographic areas are disparaged for their
+support in amounts disproportionate to their surprisingly high representation,
+it followed that I could expect a surprising amount of pro-Trump (mostly
+trollish) chatter in mostly liberal places (e.g., New York City). The positive
+sentiment aspect of that hypothesis proved to be difficult to convincingly
+affirm. More generally, also I sought to analyze the trends of politcs
+discussion of craiglist, mostly in the area of text usage (capitalization, word
+frequency, etc) vs political leaning.
 
 [[./img/Trump_cloud_proper.png]]
 
 * Methodology
-To extract data from craigslist, I used the Python Scrapy package,
-which was probably overkill. Originally, I intended to collect post
-bodies as well as the titles, however this would require about 100
-times as many request, too many for me to reponsibly exectute in a
-reasonable amount of time. I resigned to limiting myself to titles,
-which involved about 500 requests, spread over 5 hours, to obtain
-roughly 40,000 posts titles/times. For each of these titles, there is
-a corresponding state and region, with some regions additionally
-divided into subregions (the New York City region, for example,
-consists of Brooklyn, Queens, Manhattan, etc). Each post, its time and
-its geographical origin are represented with a single row in a 40k row
-Pandas DataFrame, ~usa~. Data corruption was not an issue, as the CL
-layout is quite uniform, though I did need to take into account data
-redundancy (e.g., occaisionally "regions" are also "subregions" of
-sibling regions). To make use of the extracted post title data, I
-employed the 2010 U.S. census, which is available from
-http://www.census.gov, as well as the 2016 election results data,
-which I scraped from http://uselectionatlas.org/ using a BeautifulSoup
-extraction script.
+To extract data from craigslist, I used the Python Scrapy package, which was
+probably overkill. Originally, I intended to collect post bodies as well as the
+titles, however this would require about 100 times as many request, too many for
+me to reponsibly execute in a reasonable amount of time. Therefore, I limited
+the extractor to titles, which involved about 500 requests, spread over 5 hours,
+to obtain roughly 40,000 posts titles/times. For each of these titles, there is
+a corresponding state and region, with some regions additionally divided into
+subregions (the New York City region, for example, consists of Brooklyn, Queens,
+Manhattan, etc). Each post, its time and its geographical origin are represented
+with a single row in a 40k row Pandas ~DataFrame~ (DF), ~usa~. Data corruption was
+not an issue, as the CL layout is quite uniform, though I did need to take into
+account data redundancy (e.g., occaisionally "regions" are also "subregions" of
+sibling regions), and was able to handle this by ensuring links were travelled
+to only once. To make use of the extracted post title data, I employed the 2010
+U.S. census, which is available from http://www.census.gov, as well as the 2016
+election results data, which I scraped from http://uselectionatlas.org/ using a
+BeautifulSoup extraction script.
 
 * Preparing data
 ** TODO Craigcrawler :ignore:
@@ -133,6 +129,8 @@ post_count_by_state_raw = usa_raw.groupby("state").count()["title"].sort_values(
 post_count_by_region_raw = usa_raw.groupby("region").count()["title"].sort_values(ascending=False)
 #+END_SRC
 
+#+RESULTS:
+
 #+BEGIN_SRC ipython :session :file  :results output org :noweb yes :exports results  :tangle ./politics.py
   print ("{0:,} total posts exctracted from {1:} regions over {2} "+
          "states. The most \nfrequented state was '{3}', and the most " +
@@ -144,12 +142,12 @@ post_count_by_region_raw = usa_raw.groupby("region").count()["title"].sort_value
 #+END_SRC
 #+RESULTS:
 #+BEGIN_SRC org
-38,692 total posts exctracted from 416 regions over 52 state. The most 
+38,692 total posts exctracted from 416 regions over 52 states. The most 
 frequented state was 'California', and the most frequented region was,
 surprisingly, 'denver, CO'.
 #+END_SRC
 *** ~usa~ Sample
-Sample of posts in the ~usa~ DataFrame before preprocessing, which is the DF for storing all CL politics posts:
+Sample of posts in the ~usa~ DF before preprocessing, which is the DF for storing all CL politics posts:
 #+BEGIN_SRC ipython :session :exports results :results output raw drawer :noweb yes
 # This can fail because tabulate can't handle unicode.
 # There's only about a 2.5% chance if fails on a given execution, though.
@@ -157,11 +155,11 @@ print_df(usa_raw.sample(3), rnd=3)
 #+END_SRC
 #+RESULTS:
 :RESULTS:
-|       | title                                                                  | date             | state        | region              | subregion |
-|-------+------------------------------------------------------------------------+------------------+--------------+---------------------+-----------|
-| 20168 | THA WEB VILLAIN: DEAD FAT GUY WHO GOT ROBBED                           | 2016-12-05 11:42 | Pennsylvania | meadville, PA       |       nan |
-| 36833 | re,  Electoral voter death threats backfire: Hillary Clinton loses (fo | 2016-12-21 16:39 | Texas        | dallas / fort worth |    dallas |
-|   699 | Great news for the country                                             | 2016-12-19 10:42 | Minnesota    | st cloud, MN        |       nan |
+|       | title                                                    | date             | state    | region           |  subregion |
+|-------+----------------------------------------------------------+------------------+----------+------------------+------------|
+| 27640 | Senator Elizabeth Warren is NOT a                        | 2016-12-09 11:45 | New York | finger lakes, NY |        nan |
+| 30962 | When did all the Liberals blah blah blah                 | 2016-12-11 21:12 | Colorado | denver, CO       |        nan |
+| 24471 | VIDEO: THIS WHAT THE DEMOCRATIC PARTY WILL DO TO AMERICA | 2016-12-04 14:53 | Hawaii   | hawaii           | big island |
 :END:
 
 ** U.S. Census 2010
@@ -181,59 +179,59 @@ state_keys = state_keys[state_keys[GEO_NAME]!= "Puerto Rico"]
 #+RESULTS:
 
 *** Census Data
-#+BEGIN_SRC ipython :session :exports none :tangle ./politics.py
+#+BEGIN_SRC ipython :session :exports none :tangle ./politics.py :results none
   # keys for the census data. Only really care about two of them (there are hundreds):
   TOT_NUM_ID = "HD01_S001" # total number key
   TOT_PER_ID = "HD02_S001" # total percent key
 #+end_src
 
-#+RESULTS:
-
-
-#+begin_src ipython :session  :exports none :tangle ./politics.py
-  census_all = pd.read_csv("data/census/DEC_10_DP_DPDP1_with_ann.csv")[1:].set_index(GEO_KEY)
+#+begin_src ipython :session  :exports none :tangle ./politics.py :results none
+  cd_file = "data/census/DEC_10_DP_DPDP1_with_ann.csv"
+  census_all = pd.read_csv(cd_file)[1:].set_index(GEO_KEY)
 #+end_src
 
 #+RESULTS:
 
 #+begin_src ipython :session  :exports none :tangle ./politics.py
-  census_all = census_all.filter([TOT_NUM_ID])
-  census_all = census_all.join(state_keys, how="right")
-  census_all.columns = ["population", "state"]
-  census_all.set_index("state", inplace=True)
+  census_states = census_all.filter([TOT_NUM_ID]).join(state_keys, how="right")
+  census_states.columns = ["population", "state"]
+  census_states.set_index("state", inplace=True)
 
   def correct_stat(s):
       """
       Some states have extra information for population.
-      Example: 25145561(r48514)
+      Example: 25145561(r48514), should be 25145561.
       """
       loc = s.find("(")
       return int(s[:loc] if loc > 0 else s)
 
-  census_all.population = census_all.population.apply(correct_stat)
+  census_states.population = census_states.population.apply(correct_stat)
 
-  census = census_all.drop("District of Columbia")
+  census = census_states.drop("District of Columbia")
 #+end_src
 
 #+RESULTS:
 
-Census data is collected from U.S. Census Bureau for [[http://www.census.gov/2010census/][2010
-census]]. Here's a sample:
+Census data is collected from U.S. Census Bureau for [[http://www.census.gov/2010census/][2010 census]]. This will be
+used mostly to guage the CL usage of individual states, which can then be
+compared against political orientation, etc. Here's a sample:
 #+begin_src ipython :session :results output raw drawer :noweb yes :exports results :tangle ./politics.py
 print_df(census.sample(4), rnd=3)
 #+END_SRC
 
 #+RESULTS:
 :RESULTS:
-| state       |  population |
-|-------------+-------------|
-| Hawaii      |  1.3603e+06 |
-| Indiana     |  6.4838e+06 |
-| Texas       | 2.51456e+07 |
-| Mississippi |  2.9673e+06 |
+| state      |  population |
+|------------+-------------|
+| Kentucky   | 4.33937e+06 |
+| Colorado   |  5.0292e+06 |
+| Oregon     | 3.83107e+06 |
+| New Jersey | 8.79189e+06 |
 :END:
 ** U.S. 2016 Election
-The 2016 Election results will be useful. They are grabbed from a really nice site, [[http://uselectionatlas.org/RESULTS/data.php?year%3D2016&datatype%3Dnational&def%3D1&f%3D1&off%3D0&elect%3D0][uselectionsatlas.org]]:
+The 2016 Election results will be useful for comparing expected political
+orientation to CL usage trends. They are grabbed from a really nice site,
+[[http://uselectionatlas.org/RESULTS/data.php?year%3D2016&datatype%3Dnational&def%3D1&f%3D1&off%3D0&elect%3D0][uselectionsatlas.org]] using the following script:
 #+BEGIN_SRC ipython :session :exports code :tangle ./politics.py
   import requests
   from scrapy import Selector
@@ -263,7 +261,7 @@ The 2016 Election results will be useful. They are grabbed from a really nice si
 
 #+RESULTS:
 
-Sample of voting table:
+Sample of ~voting~ DataFrame:
 #+begin_src ipython :session :results output raw drawer :noweb yes :exports results :tangle ./politics.py
   # for pretty printing
   voting_space = pd.DataFrame([["------", "------", "------"]],index=["*SPACE*"],
@@ -286,14 +284,13 @@ Sample of voting table:
 :END:
 
 ** Preprocess Data
-A small bit of preprocessing to check data for corruption and
-unexpected results was necessary. There was no missing data, and no
-corruption. I suspected that I might encounter some amount of
-redundancy, but the extractor was written to exclude duplicated links,
-and it happened to be the case that CL keys areas unique across highly
-related (sub)regions (e.g., "long island" subregion and "long island,
-NY" region seem like they might be the same, but are actually
-completely distinct).
+A small bit of preprocessing to check data for corruption and unexpected results
+was necessary. There was no missing data, and no corruption. I suspected that I
+might encounter some amount of redundancy, but the extractor was written to
+exclude duplicated links, and it happened to be the case that CL keys areas
+uniquely across highly related (sub)regions. For example, the "long island"
+/region/ and "long island, NY" /subregion/ (subregion of "new york city" region)
+seem like they might be the same, but are actually completely distinct.
 #+BEGIN_SRC ipython :session :exports none :tangle ./politics.py
   print "Data tests... \n\nAssertions Passed\n\n"
 
@@ -359,18 +356,17 @@ print "Voting data complete"
 * State Usage
 ** intro :ignore:
 Although the post data has attached a fairly fine-grain geographical
-description, I found the CL regions in general to not line up well
-with any census bureau categories. Moreover, even in the lucky event
-of such name correspondence, the division of regions was at least
-questionable. For example, by far the datasets most prominent "state"
-outliers, District of Columbia, has a census population of about 600k,
-yet a practical metropolitan area population in the several millions,
-a disparity that gross skews its contributions to state-wide
-statistics. Therefore, regions and subregions were largely found to be
-unmanageably tedious to consider seriously in any analysis. States,
-however, having relatively little variation between practical
-occupancy and census population, and have indisputable borders,
-barring District of Columbia, are ideal for inspection.
+description, I found the CL regions in general to not line up well with any
+census bureau categories. Moreover, even in the lucky event of such name
+correspondence, the division of regions was at least questionable. For example,
+by far the dataset's most prominent "state" outliers, District of Columbia, has
+a census population of about 600k, yet a practical metropolitan area population
+in the several millions, a disparity that grossly skews its contributions to
+state-wide political statistics. For this reason, regions and subregions were
+largely found to be unmanageably tedious to consider seriously in any
+analysis. States, however, having relatively little variation between practical
+occupancy and census population, and having indisputable borders, barring District
+of Columbia, are ideal for inspection.
 ** Terms
 1. *Patronage*
    Patronage is the raw number of posts on a politics board.
@@ -379,9 +375,9 @@ barring District of Columbia, are ideal for inspection.
    politics board. It is simply the normalized ratio of patronage and
    state population.
 3. *Trumpism*
-   Trumpism is the name for a states republican vote percentage in the
-   general election. It is used as a rough measure of how pro-Trump
-   rate of a given state, and is a column in the ~voting~ DataFrame,
+   Trumpism is the name for a state's Republican vote percentage in the
+   General Election. It is used as a rough measure of how pro-Trump
+   a given stat is, and is a column in the ~voting~ DataFrame,
    which is comprised of scraped data on the 2016 General Election
    results.
 ** Organize Data :ignore:
@@ -439,37 +435,39 @@ The ~state_usage~ table is the census table concatenated with patronage usage.
 #+END_SRC
 #+RESULTS:
 :RESULTS:
-| state        | patronage |  population |    usage |
-|--------------+-----------+-------------+----------|
-| Virginia     |       555 | 8.00102e+06 | 0.112388 |
-| Pennsylvania |      1918 | 1.27024e+07 |  0.33551 |
-| Washington   |      1378 | 6.72454e+06 | 0.482909 |
+| state     | patronage |  population |    usage |
+|-----------+-----------+-------------+----------|
+| Nevada    |       770 | 2.70055e+06 | 0.702141 |
+| Minnesota |       999 | 5.30392e+06 | 0.437617 |
+| Georgia   |      1017 | 9.68765e+06 | 0.209731 |
 :END:
 
 *** ~states~ Sample
 
-Joining ~state_usage~ with ~voting~ gives us a decent top down view of
-state political tendencies on CL.
+Joining ~state_usage~ with ~voting~ gives us a decent top-down view of state
+political tendencies on CL:
 #+BEGIN_SRC ipython :session :exports code
   states = state_usage.join(voting, how="left").sort_values("usage")
 #+END_SRC
 
 #+RESULTS:
 
+
+
 #+BEGIN_SRC ipython :session :exports results :results output raw drawer :noweb yes
   print(tabulate(states.sample(3), tablefmt="orgtbl", headers="keys"))
 #+END_SRC
 #+RESULTS:
 :RESULTS:
-| state      | patronage |  population |     usage |     clinton |       trump | trumpism |
-|------------+-----------+-------------+-----------+-------------+-------------+----------|
-| New Jersey |       400 | 8.79189e+06 | 0.0471436 | 2.14828e+06 | 1.60193e+06 | 0.427158 |
-| Nevada     |       770 | 2.70055e+06 |  0.702141 |      539260 |      512058 | 0.487063 |
-| Idaho      |       179 | 1.56758e+06 |  0.234904 |      189765 |      409055 | 0.683102 |
+| state       | patronage |  population |    usage | clinton |  trump | trumpism |
+|-------------+-----------+-------------+----------+---------+--------+----------|
+| Alaska      |        61 |      710231 | 0.157547 |  116454 | 163387 | 0.583857 |
+| Utah        |       225 | 2.76388e+06 | 0.145301 |  310676 | 515231 | 0.623837 |
+| Connecticut |       272 |  3.5741e+06 | 0.130803 |  897572 | 673215 | 0.428585 |
 :END:
 ** Outliers
-There are two major outlying states in the dataset: Colorodo and
-District of Columbia.
+There are two major outlying states in the dataset: /Colorodo/ and
+/District of Columbia/.
 *** Colorodo
 We can see from the following that Colorado is an extreme outlier,
 being the fifth most popular state, yet the 23rd most populous.
@@ -494,35 +492,57 @@ plt.show()
 #+RESULTS:
 [[file:./img/py6320WCb.png]]
 
-Denver, as a region, is also especially large. Despite having a
-population of 650,000 people (and a metropolitcan area of 3 million),
-Denver sees a patronage of 1187.
+With the normalized population/patronage ratio depicted above, we derive the
+/usage/ metric, for which the median is 0.203, and for which the state with the
+next highest popularity, Hawaii, is rated 0.816.
+
+Usage in the Denver region is also especially large. Despite having a population
+of 650,000 people (and a metropolitcan area of 3 million), Denver sees a
+large patronage:
 #+BEGIN_SRC ipython :session :results output raw drawer :noweb yes  :exports none
-print(len(usa[usa.region == "denver, CO"]))
+print("Patronage of Denver, Colorado: {}".format(len(usa[usa.region == "denver, CO"])))
 #+END_SRC
 
 #+RESULTS:
 :RESULTS:
-1187
+Patronage of Denver, Colorado: 1187
 :END:
 
-By comparison, the "new york city" region, which is expansive enough
-as to include metropolitan area subregions like "new jersey", "long island",
-"fairfield", etc, has fewer posts, at 1006.
-#+BEGIN_SRC ipython :session :noweb yes :exports none
+For the reasons mentioned before, deriving state usage measurements for regions
+and subregions is too difficult to bother with. However, we can get a feeling
+for this anomoly by comparing it to another region, "new york city". The "new
+york city" region, which is expansive enough as to include metropolitan areas
+like "new jersey", "long island", "fairfield", etc, has /significantly/ /fewer/
+posts for the week of data extracted, at 1006 posts:
+#+BEGIN_SRC ipython :session :noweb yes :exports code :results code
+  # From census bureau, to the nearest 1000 people
+  pop_denver_proper = 649000.0 
+  pop_denver_metro = 2814000.0 
+  pop_nyc_proper = 8550000.0  
+  pop_nyc_metro = 20200000.0
+
+  # Enumerate the NYC subregions. More than you might think.
   nyc_subregions = usa.groupby("region").get_group(
       "new york city").subregion.unique().tolist()
   num_nyc_posts = len(usa[usa.region == "new york city"])
-  den_nyc_rat = (num_nyc_posts/8406000.0)/(len(usa[usa.region == "denver, CO"])/649495.0)
+  num_denver_posts = len(usa[usa.region == "denver, CO"])
+
+  den_nyc_rat_prop =  (num_denver_posts/pop_denver_proper) /     \
+                      (num_nyc_posts/pop_nyc_proper)
+
+  den_nyc_rat_metro =  (num_denver_posts/pop_denver_metro)/     \
+                       (num_nyc_posts/pop_nyc_metro)
 #+END_SRC
 
-#+RESULTS:
-
 #+BEGIN_SRC ipython :session :results output org :noweb yes :exports results
-  print("{} posts in NYC spread over:\n".format(num_nyc_posts) +
-        ',\n'.join('{}'.format(r) for r in nyc_subregions[:-1]) +
-        (",\nand {}.\n\nThis is ~{:.1f}% the usage rate of " +
-         "Denver").format(nyc_subregions[-1], den_nyc_rat*100))
+  print(("{0} posts in NYC spread over:\n{1}" + 
+        ",\nand {2}.").format(num_nyc_posts, 
+                              ',\n'.join('{}'.format(r) for r in nyc_subregions[:-1]), 
+                              nyc_subregions[-1]))
+  print(("\nConsidering city propers, we can say that Denver has ~{0:.1f}x the usage rate\nof " +
+           "New York City. Adjusting for census estimates for metropolitan areas, it\nwould " + 
+           "seem that Denver's usage is ~{1:.1f}x that of NYC's.").format(den_nyc_rat_prop, 
+                                                                          den_nyc_rat_metro))
 #+END_SRC
 #+RESULTS:
 #+BEGIN_SRC org
@@ -537,20 +557,24 @@ long island,
 westchester,
 and fairfield.
 
-This is ~6.5% the usage rate of Denver
+Considering city propers, we can say that Denver has ~15.5x the usage rate of 
+New York City. Adjusting for census estimates for metropolitan areas, it would 
+seem that Denver's usage is ~8.5x that of NYC's.
 #+END_SRC
 
-This is a remarkably popular region, clearly. I suspect that it has to
-do with the state granularity CL most likely arbitrarily assigned
-to the Colorado. They might want to consider providing mode regions to
-the state of Colorado.
+This is a remarkably popular region, clearly. I suspect that this extreme usage
+rate has to do with the state granularity CL assigned to the state of
+Colorado. They might want to consider providing more regions. However, we also
+see that the usage of the Denver metropolitan area is proportionally less
+extreme compared to NYC's metropolitan area usage, which might cast some doubt
+on how much Denver needs more division among it's subregions. Suffice it to say,
+Denver is wildly popular for CL politics.
 *** District of Columbia
-While I found Colorado to be an inexplicable anamoly, it was also
-justifiably accurate. District of Columbia, having a Republican voting
-rate of ~4% and the usage similar to that of Colorado, coupled with
-it's unclear geographic distinction and population, meant its results
-were too extreme and variable to consider in analysis. Besides, it's
-not even a real state...
+While I found Colorado to be an inexplicable anamoly, it was also justifiably
+accurate. District of Columbia, having an incredibly low Republican voting rate
+of ~4%, and the usage similar to Colorado's, coupled with it's unclear
+geographic distinction and population, meant its results were too extreme and
+variable to consider in analysis. Besides, it's not even a real state...
 
 ** Patronage
 #+BEGIN_SRC ipython :session :exports none :tangle ./politics.py
@@ -604,16 +628,14 @@ following sample from the ~state_usage~ table:
 :END:
 
 Seemingly some correlation between low population and low usage is
-evident from this table. However, the states for which the politics
-board is most popular are also fairly small. It may be that the
-popularity doesn't relate to state size, directly, but to political
-orientation, which itself correlated with state population. I suspect
-that political discussion is most charged currently in Democratic
-states, where discenting opinion is the that held by the triumphant
-party. It may also be that board popularity relation to patronage is
-non-linear. This correlation is explored more by some political
-investigation. However, first outliers must be determined and possibly
-removed from the data.
+evident. However, the states for which the politics board is most popular are
+also fairly small. It may be that the popularity doesn't relate to state size,
+directly, but to political orientation, which itself correlates with state
+population (states are smaller in Middle America). I suspect that political
+discussion is most charged currently in Democratic states, where discenting
+opinion is that which is held by the triumphant party. It may also be that the board
+popularity relationship to patronage is non-linear. This correlation is explored
+more by some political investigation.
 ** Usage
 #+BEGIN_SRC ipython :session :file ./img/py6320LXp.png :exports results :tangle ./politics.py
 ax = plt.subplot(111)
@@ -635,19 +657,20 @@ plt.hist(state_usage.usage,
 #+RESULTS:
 [[file:./img/py6320LXp.png]]
 
-These are the PDF estimations for normalized patronage, population,
-usage. They are estimations, so they extend beyond 0 and 1 on the
-graph. Usage distribution is the ratio distribution of patronage and
-population. 
+These are the PDF estimations for normalized patronage, population, usage. They
+are estimations, so they extend beyond 0 and 1 on the graph. Usage distribution
+is the ratio distribution of patronage and population.
 #+BEGIN_SRC ipython :session :file ./img/py6320jfT.png :exports both :tangle ./politics.py
-  min_norm = state_usage - state_usage.min()
-  range_norm = state_usage.max() - state_usage.min()
-  norm_usage = min_norm / range_norm
+  # Plot normalized state usage measures
+  state_usage_min_zero = state_usage - state_usage.min()
+  state_usage_range = state_usage.max() - state_usage.min()
+  norm_usage = state_usage_min_zero / state_usage_range
 
   norm_usage.plot(kind="density", 
                   title="Normalized PDF estimations",
                   sharey=True)
 #+END_SRC
+
 #+RESULTS:
 [[file:./img/py6320jfT.png]]
 
@@ -678,14 +701,12 @@ however.
 | usage      | 0.264764 |   0.20374 |
 :END:
 
-
-Here we can see illustrated what's been already hinted at: the states
-with the most and least usage are generally less populated and less
-patronaged, and, of course, there is a tight correlation between
-patronage and population. In the graph, redness relates to usage
-positively. The most red and most yellow dots are all in the least
-populated states/least patroned boards.
-
+Here we can see illustrated what's been already hinted at: the states with the
+most and least usage are generally less populated and less patronaged, and, of
+course, there is a tight correlation between patronage and population. In the
+graph, redness relates to usage positively. The most red and most yellow dots
+are all in the least populated states/least patroned boards. We also see that
+generally, states that see more posts also tend to have higher usage. 
 
 #+BEGIN_SRC ipython :session :file ./img/py6320Yhv.png :exports results :tangle ./politics.py
 colors = cm.YlOrRd(state_usage.usage)
@@ -706,6 +727,16 @@ plt.scatter(state_usage.population, state_usage.patronage, color=colors)
 #+END_SRC
 #+RESULTS:
 [[file:./img/py6320Yhv.png]]
+
+My speculation is that activity on a social board, to a point,
+disproportionately encourages more activity. That is, if having more posts to
+look at means also a greater liklihood that a viewer will be inspired to make a
+post of their own, then the relationship between the raw number of posts on a
+message board and the number of prospective posters (which I'm supposing is
+proportional to state population) is greater than linear. That is, fewer posts
+means you, as a spectator, will be less likely to feel a desire to post, and
+therefore, a message board with few posts will see fewer new posts than a
+message board with many posts.
 ** Politics
 *** Posts over Trumpism  :ignore:
 It seems that the distribution of posts is weighted on the Democrat's
@@ -722,25 +753,20 @@ However, Democratic registration outweighs Rebpublican voting rates
 slightly. We can visualize this preference a bit differently by
 finding the average post trumpism, and comparing it to national voting
 trends:
-#+BEGIN_SRC ipython :session :exports code
+#+BEGIN_SRC ipython :session :exports code :results none
   avg_post_trumpism = post_politics.trumpism.mean()
-  trump_votes = voting.sum().trump
-  clinton_votes = voting.sum().clinton
-  national_trumpism = trump_votes/(trump_votes + clinton_votes)
+  trump_votes = voting.trump.sum()
+  clinton_votes = voting.clinton.sum()
+  national_trumpism = trump_votes/float((trump_votes + clinton_votes))
 #+END_SRC
 
-#+RESULTS:
-
-It's a bit more clear here that the skew of trumpism distribution is
-weighted a bit on the left, though the mean is quite close to what's
-expected, at about 48% of Trump+Clinton votes. The skewness of
-distribution is expected, and in line with my original hypothesis;
-more liberal states can expect more discent from the socially charged
-Republican minority, while very Trump states have little inspiration
-for outcry. In general, it would seem the most divided states see the
-most traffic, with less divided having Democratic prominance. The mean
-in preserved by what seems to be in states that Trump won by a
-relatively small margin.
+It's a bit more clear here that the skew of trumpism distribution is weighted a
+bit on the left, though the mean is quite close to what's expected, at about 48%
+of Trump+Clinton votes. The skewness of distribution is expected, and in line
+with my original hypothesis. In general, it would seem the most divided states
+see the most traffic, with less divided states being prominently Democratic. The
+mean in preserved by what seems to be in states that Trump won by a relatively
+small margin.
 #+BEGIN_SRC ipython :session :exports results :results org output 
   # Some printing
   print(("Mean trumpism: {:.2f} Trump voters seem to show " + 
@@ -802,6 +828,7 @@ print_df(corr, rnd=3)
 | trumpism   |    -0.363 | -0.302 |        1 |     -0.344 |
 | population |     0.895 | -0.008 |   -0.344 |          1 |
 :END:
+
 * Text Qualities
 Text usage is interesting to consider, but difficult to evaluate
 semantically. While sampling encourages some compelling thoughts about
@@ -828,7 +855,7 @@ and a couple were added as needed (e.g., "re" appears all the time).
                        "up", "use", "word", "how",
                        "said", "an", "each", "she",
                        "which", "do", "their", "time",
-                       "if", "will", "way", "about",
+                       "if", "will", "way", "about", "thought"
                        "many", "fuck", "then", "them",
                        "would", "write", "like", "so",
                        "these", "her", "long", "make",
@@ -844,7 +871,7 @@ and a couple were added as needed (e.g., "re" appears all the time).
 
 #+RESULTS:
 
-#+BEGIN_SRC ipython :session :exports none :tangle ./politics.py
+#+BEGIN_SRC ipython :session :exports none :tangle ./politics.py :results none
   from collections import Counter
 
   def post_words(df, no_pop=False):
@@ -865,9 +892,7 @@ and a couple were added as needed (e.g., "re" appears all the time).
       return corpus.sort_values(ascending=False)
 #+END_SRC
 
-#+RESULTS:
-
-#+BEGIN_SRC ipython :session :exports none :tangle ./politics.py 
+#+BEGIN_SRC ipython :session :exports none :tangle ./politics.py :results none
 # Probably don't care about stupid common words.
 # `words' function grabs all the words from df, with option to exclude popular words
 posts_corpus = words(df=usa, no_pop=True)
@@ -878,10 +903,8 @@ usa_words = post_words(df=usa, no_pop=True)
 posts_sum = " ".join(usa_words) # good estimate of sum of all posts, minus popular words
 #+END_SRC
 
-#+RESULTS[cfb64136326e6b4244cf3b97af2d79fb3dc7001d]:
-
 ** Substrings :ignore:
-#+BEGIN_SRC ipython :session :exports none :tangle ./politics.py
+#+BEGIN_SRC ipython :session :exports none :tangle ./politics.py :results none
   #
   # Find substrings in posts
   #
@@ -913,22 +936,19 @@ posts_sum = " ".join(usa_words) # good estimate of sum of all posts, minus popul
       return categ_strs(findings).join(findings)
 #+END_SRC
 
-#+RESULTS:
-
 ** Liberals vs Conservatives
 *** intro :ignore:
-Investigating the discrepency between democrat/republican word usage,
-we see the some discrepencies in the most used common words. Grab some words
-#+BEGIN_SRC ipython :session :exports code
+Investigating the discrepency between democrat/republican word usage, we see
+some discrepencies in the most used common words.
+#+BEGIN_SRC ipython :session :exports code :results none
+  # Grab some words
   lib_words = words(df=post_politics[post_politics.trumpism < .45],
                     no_pop=True).rename("libs")
   conserv_words = words(df=post_politics[post_politics.trumpism > .55],
                         no_pop=True).rename("conservs")
 #+end_src
 
-#+RESULTS:
-
-#+begin_src ipython :session :exports none
+#+begin_src ipython :session :exports none :results none
   # THIS IS BROKEN AND BAD. Placeholder code
   rat = lambda df: df.libs/df.conservs
   ratio = pd.DataFrame().join([lib_words[lib_words >= 10],
@@ -940,217 +960,6 @@ we see the some discrepencies in the most used common words. Grab some words
                                                   how="inner")
 #+end_src
 
-#+RESULTS:
-#+RESULTS:
-:RESULTS:
-|         | counts | dem/rep ratio |
-|---------+--------+---------------|
-| thought |    393 |         22.27 |
-| 2017    |    230 |             9 |
-| must    |    142 |             8 |
-| 11      |    128 |          7.45 |
-| usa     |    276 |          6.81 |
-:END:
-*** Words                                                            :ignore:
-    :PROPERTIES:
-    :ATTACH_DIR_INHERIT: t
-    :END:
-We find that "against", "how", and "won" have extreme preference for
-"liberal" states. The reasons are in fact not obvious. Some random
-sampling of such posts reveals possibly surprisingly pro-Trump
-sentiment:
-#+BEGIN_SRC ipython :session :results output raw drawer :noweb yes  :exports results
-  print_df(pd.DataFrame(pd.concat([find_strs("thought"),
-                                   find_strs("usa"),
-                                   find_strs("won")]).rename(
-                                       "title")).sample(5), 
-           rnd=3)
-#+END_SRC
-#+RESULTS:
-:RESULTS:
-|       | title                                                |
-|-------+------------------------------------------------------|
-| 14376 | usa run by Mr. Smithers Ivy League Execs Run NWO Gov |
-| 27831 | Thought for the Day                                  |
-| 12925 | usa run by Mr. Smithers Ivy League Execs Run NWO Gov |
-| 27666 | Thought for the Day                                  |
-| 27258 | Thought for the Day                                  |
-:END:
-
-Looking at the general word sentiment, we see clearly that
-disproportionately Trump and Obama are discussed. Note that "hillary"
-and "clinton" are surprisingly not mentioned as much as you might
-think. "Clinton", in fact, is mentioned less freqeuntly than
-"Donald". It may be that a month after the election, "hillary" talk
-has already begun to significantly subside. It's impossible to know
-for sure, as CL does not hold on to their posts for longer than a
-week.
-#+BEGIN_SRC ipython :session :file ./img/py31406ImT.png :exports results 
-p = posts_corpus[:25].sort_values(ascending=True)
-
-ax = p.plot(kind="bar", color="#662200", grid=True)
-
-ax.spines["top"].set_visible(False)
-ax.spines["right"].set_visible(False)
-
-ax.get_xaxis().tick_bottom()
-ax.get_yaxis().tick_left()
-
-plt.ylabel("Occurences", fontsize=12)
-
-plt.suptitle('Word usages', fontsize=14)
-
-ax.spines["top"].set_visible(False)
-ax.spines["right"].set_visible(False)
-
-ax.get_xaxis().tick_bottom()
-ax.get_yaxis().tick_left()
-#+END_SRC
-
-#+RESULTS[4cfeb62c1d4cb9d2e0ccc865f9f60fd806d810e9]:
-[[file:./img/py31406ImT.png]]
-
-
-#+BEGIN_SRC ipython :session :exports results   
-  # Splitting a series into chunks such that values.sum() = val (or as close
-  # as possible, greedily) so we can wee how the diversity of words is
-  # distributed:
-  def splicer(ss, val):
-    indices = ss.index.tolist()
-    if len(indices) <= 1:
-      return pd.Series(ss[index[0]], index=[[indices[0]]])
-
-    left = [ss.index[0]]
-    right = ss.index[1:].tolist()
-
-    s = ss[left[0]]
-    while s < val and len(right) > 0:
-      i = right.pop(0)
-      left.append(i)
-      s += ss[i]
-    return [ss.filter(left)] + (splicer(ss.filter(right), val) if len(right) > 0 else [])
-#+END_SRC
-
-#+RESULTS[44365645107e2b7164001f81c43a81afbf66cd00]:
-
-**** TODO Correct bad graph :noexport:
-#+BEGIN_SRC ipython :session :file ./img/pyF7JjmI.png :exports results
-  chunks = splicer(posts_corpus, posts_corpus.iloc[0])
-
-  ax = plt.subplot()
-  
-  ax.spines["top"].set_visible(False)
-  ax.spines["right"].set_visible(False)
-
-  ax.get_xaxis().tick_bottom()
-  ax.get_yaxis().tick_left()
-
-  plt.ylabel("", fontsize=12)
-
-  plt.suptitle('', fontsize=14)
-
-  ax.spines["top"].set_visible(False)
-  ax.spines["right"].set_visible(False)
-
-  ax.get_xaxis().tick_bottom()
-  ax.get_yaxis().tick_left()
-
-  plt.bar(np.arange(0, len(chunks)), np.array([len(c) for c in chunks]))
-
-  
-#+END_SRC
-
-#+RESULTS:
-[[file:./img/pyF7JjmI.png]]
-
-**** TODO Diversity of words vs trumpism :noexport:
-**** Unicode
- I was curious about non-ascii usage, and so I used to following code
- to catch them.
- #+BEGIN_SRC ipython :session :exports code
- def check_ascii(post):
-     """
-     Determines whether a title is encodable as ascii
-     """
-     try:
-         post.encode('ascii')
-         return True
-     except UnicodeError:
-         return False
-
- ascii_posts = usa[usa.title.apply(check_ascii)]
- nonascii_posts = usa[~usa.title.apply(check_ascii)]
- distinct_states = nonascii_posts["state"].unique()
- #+END_SRC
-
- #+RESULTS:
-
- The number of posts containing non-ascii characters was surprisingly small:
- #+BEGIN_SRC ipython :session   :exports results :results output org :noweb yes
- print ("{0:,} of {1:,} total posts were non-ascii ({2:.2f}%), confined to {3} "
-        + "states.").format(len(nonascii_posts),
-                        len(usa),
-                        len(nonascii_posts)/float(len(usa)) * 100,
-                        len(distinct_states))
- #+END_SRC
- #+RESULTS:
- #+BEGIN_SRC org
- 219 of 38,324 total posts were non-ascii (0.57%), confined to 22 states.
- #+END_SRC
- However, influence for these posts can be seen by looking at the main
- outlier, Pennsylvania:
- #+BEGIN_SRC ipython :session  :exports code :tangle ./politics.py
-   pennsylvania = nonascii_posts[nonascii_posts["state"] == "Pennsylvania"]
-   pennsylvania.groupby("region").count()
-   penn_lenn = float(len(pennsylvania.title))
-
-   post_uniqueness = (penn_lenn-pennsylvania.title.nunique())/penn_lenn * 100
-#+END_SRC
-
-#+RESULTS:
-
- We can use a SequenceMatcher to test the similarity of the strings in
- the pool:
- #+BEGIN_SRC ipython :session  :exports code
-   import itertools
-   from difflib import SequenceMatcher
-
-   def avg_similarity(posts):
-     def similarity(a, b):
-       return SequenceMatcher(None, a, b).ratio()
-
-     sim_sum = 0
-     title_product = itertools.product(posts.title, posts.title)
-     for title_pair in title_product:
-       sim_sum += similarity(*title_pair)
-
-     avg_sim = sim_sum/(len(posts)**2)
-     return avg_sim
- #+END_SRC
-
- #+RESULTS:
-
- We then can run this over all non-ascii posts to get an idea of how
- much silliness is going on with these posts:
- #+BEGIN_SRC ipython :session :exports results :results output org :noweb yes 
-     print(("The average similarity of all non-ascii posts is " +
-            "{:.2f}, while that \nof only those in Pennsylvania is " +
-            "{:.2f}. The average for all posts in\nall regions is " +
-            "{:.2f}.")).format(avg_similarity(nonascii_posts),
-                               avg_similarity(pennsylvania),
-                               avg_similarity(usa.sample(200)))
- #+END_SRC
- #+RESULTS[2f3dffa2f757c0a80e292c245bfdb5a8afb660a0]:
- #+BEGIN_SRC org
- The average similarity of all non-ascii posts is 0.19 while that 
- of only those in Pennsylvania is 0.38. The average for all posts in
- all regions is 0.19.
- #+END_SRC
- It would therefore seem that a single Trump memester, making use of a
- handful of unicode symbols, is responsible for this chaos in
- Pennsylvania. I suspect that these crazy unicode posts are mostly
- done by a very small set of people in general, though there is no
- good way to tell, as CL remains completely anonymous.
 *** "trumps"
 **** intro                                                           :ignore:
 #+BEGIN_SRC ipython :session :exports none :tangle ./politics.py
@@ -1290,15 +1099,15 @@ liberal states might provide some clues:
 :RESULTS:
 Selecting states that are espectially anti-trump:
 
-|       | *trump*                                                 |
-|-------+---------------------------------------------------------|
-| 33194 | Trump win shatters Obama legacy                         |
-| 32723 | Trump win shatters Obama legacy                         |
-|   522 | Every knee shall bow, even Obama,Trump, and Hillary     |
-|  9986 | RE:  I love Donald Trump and I voted for HIM!           |
-| 29457 | Prseident Trump can also send deblazio bills 4 his crap |
+|       | *trump*                                             |
+|-------+-----------------------------------------------------|
+|  9530 | Trump appoints a plumber!                           |
+| 31698 | TRUMP thuglife hip hop edition featuring snoop dog. |
+|  9986 | RE:  I love Donald Trump and I voted for HIM!       |
+|  2392 | Trump Will Start..                                  |
+|  9555 | RE:  I love Donald Trump and I voted for HIM!       |
 Politically liberal states composing the above sampling:
-Washington, Delaware, Oregon, New York.
+Oregonh, New Jerseyh, Illinoish.
 :END:
 
 *** "liberals" vs "conservatives"
@@ -1478,4 +1287,4 @@ python programming in emacs org-mode]].
 
 #+END_SRC
 #+RESULTS[36252510400e47ae15b37acc15a3f03f4ef80328]:
-: <matplotlib.figure.Figure at 0x7ffad96f9e90>
+: <matplotlib.figure.Figure at 0x7f0ce974bf10>
