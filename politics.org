@@ -147,19 +147,20 @@ frequented state was 'California', and the most frequented region was,
 surprisingly, 'denver, CO'.
 #+END_SRC
 *** ~usa~ Sample
-Sample of posts in the ~usa~ DF before preprocessing, which is the DF for storing all CL politics posts:
-#+BEGIN_SRC ipython :session :exports results :results output raw drawer :noweb yes
+Sample of posts in the ~usa~ DF before preprocessing, which is the DF for
+storing all CL politics posts:
+#+BEGIN_SRC ipython :session :exports results :results output raw drawer :noweb yes :cache yes
 # This can fail because tabulate can't handle unicode.
 # There's only about a 2.5% chance if fails on a given execution, though.
 print_df(usa_raw.sample(3), rnd=3)
 #+END_SRC
-#+RESULTS:
+#+RESULTS[2f9367e196039daffc8d58d19706fae447697466]:
 :RESULTS:
-|       | title                                                    | date             | state    | region           |  subregion |
-|-------+----------------------------------------------------------+------------------+----------+------------------+------------|
-| 27640 | Senator Elizabeth Warren is NOT a                        | 2016-12-09 11:45 | New York | finger lakes, NY |        nan |
-| 30962 | When did all the Liberals blah blah blah                 | 2016-12-11 21:12 | Colorado | denver, CO       |        nan |
-| 24471 | VIDEO: THIS WHAT THE DEMOCRATIC PARTY WILL DO TO AMERICA | 2016-12-04 14:53 | Hawaii   | hawaii           | big island |
+|       | title                                          | date             | state      | region         | subregion   |
+|-------+------------------------------------------------+------------------+------------+----------------+-------------|
+| 12390 | Movie - Factories moved overseas = Ghost Malls | 2016-12-27 20:33 | California | SF bay area    | peninsula   |
+| 28800 | Many, many DEMS voted for TRUMP!               | 2016-12-27 20:29 | New York   | new york city  | bronx       |
+| 20782 | Citizens insurance rip offs continue           | 2016-12-28 11:46 | Florida    | tampa bay area | pinellas co |
 :END:
 
 ** U.S. Census 2010
@@ -1256,7 +1257,7 @@ clues:
 
   #+RESULTS:
 
-#+BEGIN_SRC ipython :session :exports results :results output org drawer :noweb yes
+#+BEGIN_SRC ipython :session :exports results :results output org drawer :noweb yes :cache yes
   print("Selecting states that are espectially " \
         "anti-trump:\n")
   print_df(pd.DataFrame(liberal_sample["*trump*"]))
