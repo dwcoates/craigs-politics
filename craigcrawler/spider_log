@@ -1,0 +1,105 @@
+INFO:scrapy.utils.log:Scrapy 1.2.2 started (bot: craigcrawler)
+INFO:scrapy.utils.log:Overridden settings: {'NEWSPIDER_MODULE': 'craigcrawler.spiders', 'SPIDER_MODULES': ['craigcrawler.spiders'], 'ROBOTSTXT_OBEY': True, 'BOT_NAME': 'craigcrawler'}
+INFO:scrapy.middleware:Enabled extensions:
+['scrapy.extensions.logstats.LogStats',
+ 'scrapy.extensions.telnet.TelnetConsole',
+ 'scrapy.extensions.corestats.CoreStats']
+INFO:scrapy.middleware:Enabled downloader middlewares:
+['scrapy.downloadermiddlewares.robotstxt.RobotsTxtMiddleware',
+ 'scrapy.downloadermiddlewares.httpauth.HttpAuthMiddleware',
+ 'scrapy.downloadermiddlewares.downloadtimeout.DownloadTimeoutMiddleware',
+ 'scrapy.downloadermiddlewares.defaultheaders.DefaultHeadersMiddleware',
+ 'scrapy.downloadermiddlewares.useragent.UserAgentMiddleware',
+ 'scrapy.downloadermiddlewares.retry.RetryMiddleware',
+ 'scrapy.downloadermiddlewares.redirect.MetaRefreshMiddleware',
+ 'scrapy.downloadermiddlewares.httpcompression.HttpCompressionMiddleware',
+ 'scrapy.downloadermiddlewares.redirect.RedirectMiddleware',
+ 'scrapy.downloadermiddlewares.cookies.CookiesMiddleware',
+ 'scrapy.downloadermiddlewares.chunked.ChunkedTransferMiddleware',
+ 'scrapy.downloadermiddlewares.stats.DownloaderStats']
+INFO:scrapy.middleware:Enabled spider middlewares:
+['scrapy.spidermiddlewares.httperror.HttpErrorMiddleware',
+ 'scrapy.spidermiddlewares.offsite.OffsiteMiddleware',
+ 'scrapy.spidermiddlewares.referer.RefererMiddleware',
+ 'scrapy.spidermiddlewares.urllength.UrlLengthMiddleware',
+ 'scrapy.spidermiddlewares.depth.DepthMiddleware']
+INFO:scrapy.middleware:Enabled item pipelines:
+['craigcrawler.pipelines.PickledPandaPipeline']
+INFO:scrapy.core.engine:Spider opened
+INFO:scrapy.extensions.logstats:Crawled 0 pages (at 0 pages/min), scraped 0 items (at 0 items/min)
+DEBUG:scrapy.extensions.telnet:Telnet console listening on 127.0.0.1:6023
+DEBUG:scrapy.core.engine:Crawled (200) <GET http://craigslist.org/robots.txt> (referer: None)
+DEBUG:scrapy.downloadermiddlewares.redirect:Redirecting (302) to <GET http://www.craigslist.org/about/sites> from <GET http://craigslist.org/about/sites>
+DEBUG:scrapy.downloadermiddlewares.redirect:Redirecting (301) to <GET https://www.craigslist.org/robots.txt> from <GET http://www.craigslist.org/robots.txt>
+DEBUG:scrapy.core.engine:Crawled (200) <GET https://www.craigslist.org/robots.txt> (referer: None)
+DEBUG:scrapy.downloadermiddlewares.redirect:Redirecting (301) to <GET https://www.craigslist.org/about/sites> from <GET http://www.craigslist.org/about/sites>
+DEBUG:scrapy.core.engine:Crawled (200) <GET https://www.craigslist.org/about/sites> (referer: None)
+ERROR:scrapy.core.scraper:Spider error processing <GET https://www.craigslist.org/about/sites> (referer: None)
+Traceback (most recent call last):
+  File "/home/dodge/.local/lib/python2.7/site-packages/scrapy/utils/defer.py", line 102, in iter_errback
+    yield next(it)
+  File "/home/dodge/.local/lib/python2.7/site-packages/scrapy/spidermiddlewares/offsite.py", line 29, in process_spider_output
+    for x in result:
+  File "/home/dodge/.local/lib/python2.7/site-packages/scrapy/spidermiddlewares/referer.py", line 22, in <genexpr>
+    return (_set_referer(r) for r in result or ())
+  File "/home/dodge/.local/lib/python2.7/site-packages/scrapy/spidermiddlewares/urllength.py", line 37, in <genexpr>
+    return (r for r in result or () if _filter(r))
+  File "/home/dodge/.local/lib/python2.7/site-packages/scrapy/spidermiddlewares/depth.py", line 58, in <genexpr>
+    return (r for r in result or () if _filter(r))
+  File "/home/dodge/workspace/craigs-politics/craigcrawler/spiders/region_spider.py", line 42, in parse
+    region = RegionSpider._get_posts(link)
+  File "/home/dodge/workspace/craigs-politics/craigcrawler/spiders/region_spider.py", line 75, in _get_posts
+    region_banner = Selector(text=RegionSpider._get_content(link)).xpath(
+  File "/home/dodge/workspace/craigs-politics/craigcrawler/spiders/region_spider.py", line 143, in _get_content
+    content = requests.get(link).text
+  File "/home/dodge/.local/lib/python2.7/site-packages/requests/api.py", line 70, in get
+    return request('get', url, params=params, **kwargs)
+  File "/home/dodge/.local/lib/python2.7/site-packages/requests/api.py", line 56, in request
+    return session.request(method=method, url=url, **kwargs)
+  File "/home/dodge/.local/lib/python2.7/site-packages/requests/sessions.py", line 488, in request
+    resp = self.send(prep, **send_kwargs)
+  File "/home/dodge/.local/lib/python2.7/site-packages/requests/sessions.py", line 603, in send
+    adapter = self.get_adapter(url=request.url)
+  File "/home/dodge/.local/lib/python2.7/site-packages/requests/sessions.py", line 685, in get_adapter
+    raise InvalidSchema("No connection adapters were found for '%s'" % url)
+InvalidSchema: No connection adapters were found for 'http:https://tuscaloosa.craigslist.org/'
+INFO:scrapy.core.engine:Closing spider (finished)
+ERROR:scrapy.core.engine:Scraper close failure
+Traceback (most recent call last):
+  File "/home/dodge/.local/lib/python2.7/site-packages/twisted/internet/defer.py", line 651, in _runCallbacks
+    current.result = callback(current.result, *args, **kw)
+  File "/home/dodge/workspace/craigs-politics/craigcrawler/pipelines.py", line 88, in close_spider
+    PickledPandaPipeline.save(self.usa_dict)
+  File "/home/dodge/workspace/craigs-politics/craigcrawler/pipelines.py", line 54, in save
+    columns=["title", "date", "state", "region", "subregion"])
+  File "/home/dodge/.local/lib/python2.7/site-packages/pandas/core/frame.py", line 297, in __init__
+    copy=copy)
+  File "/home/dodge/.local/lib/python2.7/site-packages/pandas/core/frame.py", line 474, in _init_ndarray
+    return create_block_manager_from_blocks([values], [columns, index])
+  File "/home/dodge/.local/lib/python2.7/site-packages/pandas/core/internals.py", line 4256, in create_block_manager_from_blocks
+    construction_error(tot_items, blocks[0].shape[1:], axes, e)
+  File "/home/dodge/.local/lib/python2.7/site-packages/pandas/core/internals.py", line 4231, in construction_error
+    raise ValueError("Empty data passed with indices specified.")
+ValueError: Empty data passed with indices specified.
+INFO:scrapy.statscollectors:Dumping Scrapy stats:
+{'downloader/request_bytes': 1561,
+ 'downloader/request_count': 6,
+ 'downloader/request_method_count/GET': 6,
+ 'downloader/response_bytes': 13672,
+ 'downloader/response_count': 6,
+ 'downloader/response_status_count/200': 3,
+ 'downloader/response_status_count/301': 2,
+ 'downloader/response_status_count/302': 1,
+ 'finish_reason': 'finished',
+ 'finish_time': datetime.datetime(2017, 2, 12, 7, 50, 41, 685206),
+ 'log_count/DEBUG': 7,
+ 'log_count/ERROR': 2,
+ 'log_count/INFO': 7,
+ 'response_received_count': 3,
+ 'scheduler/dequeued': 3,
+ 'scheduler/dequeued/memory': 3,
+ 'scheduler/enqueued': 3,
+ 'scheduler/enqueued/memory': 3,
+ 'spider_exceptions/InvalidSchema': 1,
+ 'start_time': datetime.datetime(2017, 2, 12, 7, 50, 38, 173311)}
+INFO:scrapy.core.engine:Spider closed (finished)

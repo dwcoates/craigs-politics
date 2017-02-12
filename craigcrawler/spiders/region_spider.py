@@ -169,7 +169,7 @@ class RegionSpider(Spider):
             in the sites page.
             """
             regions_selector = territory.xpath('child::*/a')
-            region_links = map(lambda l: "http:" + l[:l.rfind(".org") + 4],
+            region_links = map(lambda l: l[:l.rfind(".org") + 4],
                                regions_selector.xpath('@href').extract())
 
             return list(set(region_links))
