@@ -1,6 +1,3 @@
-# Dodge W. Coates
-# Raw source extracted from ./politics.org
-
 %matplotlib inline
 import numpy as np
 import scipy
@@ -469,7 +466,13 @@ ratio = ratio.rename("dem/rep ratio")
 lib_con_ratio = pd.DataFrame(posts_corpus).join(ratio.sort_values(ascending=False),
                                                 how="inner")
 
-lib_con_ratio
+lib_con_ratio[:10]
+
+print_df(pd.DataFrame(pd.concat([find_strs("tax"),
+                                 find_strs("speech"),
+                                 find_strs("russian")]).rename(
+                                     "title")).sample(5), 
+         rnd=3)
 
 p = posts_corpus[:25].sort_values(ascending=True)
 

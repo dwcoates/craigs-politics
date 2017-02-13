@@ -1133,7 +1133,7 @@ york           166       8.250000
     We find that "tax", "speech", and "russian" among those words with large
     preference in "liberal" states. Some random sampling of such posts:
 
-#+BEGIN_SRC ipython :session :results output raw drawer :noweb yes  :exports results :cache yes
+#+BEGIN_SRC ipython :session :results output raw drawer :noweb yes  :exports results :cache yes :tangle ./politics.py
   print_df(pd.DataFrame(pd.concat([find_strs("tax"),
                                    find_strs("speech"),
                                    find_strs("russian")]).rename(
