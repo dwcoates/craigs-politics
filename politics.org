@@ -1,5 +1,5 @@
 #+HTML_HEAD: <link href="/home/dodge/.emacs.d/leuven-theme.css" rel="stylesheet">
-#+TITLE: *@@html:<font color = "C2492F">@@Scraping the Bottom of the Barrel@@html:</font>@@*
+#+TITLE: Scraping the Bottom of the Barrel
 
 #+OPTIONS: toc:2 num:nil
 #+TABLFM: $0;%0.3f
