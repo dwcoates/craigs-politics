@@ -233,7 +233,7 @@ state_keys = state_keys[state_keys[GEO_NAME]!= "Puerto Rico"]
 Census data is collected from U.S. Census Bureau for [[http://www.census.gov/2010census/][2010 census]]. This will be
 used mostly to guage the CL usage of individual states, which can then be
 compared against political orientation, etc. Here's a sample:
-#+begin_src ipython :session :results output raw org :noweb yes :exports results :tangle ./politics.py
+#+begin_src ipython :session :results output raw drawer :noweb yes :exports results :tangle ./politics.py
 print_df(census.sample(4), rnd=3)
 #+END_SRC
 
@@ -283,7 +283,7 @@ print_df(census.sample(4), rnd=3)
 
    Sample of ~voting~ DataFrame:
 
-#+begin_src ipython :session :results output raw org :noweb yes :exports results :tangle ./politics.py
+#+begin_src ipython :session :results output raw drawer :noweb yes :exports results :tangle ./politics.py
   # for pretty printing
   voting_space = pd.DataFrame([["------", "------", "------"]],index=["*SPACE*"],
                               columns=voting.columns)
@@ -408,7 +408,7 @@ print "Voting data complete"
 
 ** Organize Data :ignore:
 
-#+BEGIN_SRC ipython :session :results output raw org :noweb yes :exports none :tangle ./politics.py
+#+BEGIN_SRC ipython :session :results output raw drawer :noweb yes :exports none :tangle ./politics.py
   patronage = pd.DataFrame(usa.groupby('state').size(), columns=["patronage"]).sort_values(
       "patronage",ascending=False)
 
@@ -452,7 +452,7 @@ The ~state_usage~ table is the census table concatenated with patronage usage.
 
 #+RESULTS:
 
-#+BEGIN_SRC ipython :session :results output raw org :noweb yes :exports none :tangle ./politics.py
+#+BEGIN_SRC ipython :session :results output raw drawer :noweb yes :exports none :tangle ./politics.py
   # Just some printing
 
   # Useful for displaying several splices of a dataframe as a concatenation
@@ -482,7 +482,7 @@ political tendencies on CL:
 
 
 
-#+BEGIN_SRC ipython :session :exports results :results output raw org :noweb yes :tangle ./politics.py
+#+BEGIN_SRC ipython :session :exports results :results output raw drawer :noweb yes :tangle ./politics.py
   print(tabulate(states.sample(3), tablefmt="orgtbl", headers="keys"))
 #+END_SRC
 #+RESULTS:
@@ -643,14 +643,14 @@ plt.bar(x, state_usage.sort("population").patronage, color="#550000")
    We can get a feel for the usage distribution by taking a look at the
    following sample from the ~state_usage~ table:
 
-#+BEGIN_SRC ipython :session :results output raw org :noweb yes :exports results :tangle ./politics.py
+#+BEGIN_SRC ipython :session :results output raw drawer :noweb yes :exports results :tangle ./politics.py
   print_df(pd.concat([state_usage[:5].round(3),
                        state_usage_space,
                        state_usage[-5:].sort_values("usage").round(3)]))
 #+END_SRC
 
 #+RESULTS:
-#+BEGIN_SRC org
+:RESULTS:
 |              | patronage | population |  usage |
 |--------------+-----------+------------+--------|
 | Nevada       |      2067 |    2700551 |    1.0 |
@@ -664,7 +664,7 @@ plt.bar(x, state_usage.sort("population").patronage, color="#550000")
 | North Dakota |        60 |     672591 |  0.049 |
 | New Jersey   |       800 |    8791894 |  0.052 |
 | Wyoming      |        52 |     563626 |  0.053 |
-#+END_SRC
+:END:
 
    Seemingly some correlation between low population and low usage is
    evident. However, the states for which the politics board is most popular are
@@ -946,7 +946,7 @@ print_df(corr, rnd=3)
       return corpus.sort_values(ascending=False)
 #+END_SRC
 
-#+BEGIN_SRC ipython :session :exports none :tangle ./politics.py :results none
+#+BEGIN_SRC ipython :session :exports none :tangle ./politics.py :results none :cache yes
 # Probably don't care about stupid common words.
 # `words' function grabs all the words from df, with option to exclude popular words
 posts_corpus = words(df=usa, no_pop=True)
@@ -1057,7 +1057,7 @@ print ("{0:,} of {1:,} total posts were non-ascii ({2:.2f}%), confined to {3} "
    Running this over all non-ascii posts to get an idea of how much silliness is
    going on with these posts:
 
-#+BEGIN_SRC ipython :session :exports results :results output org :noweb yes  :tangle ./politics.py
+#+BEGIN_SRC ipython :session :exports results :results output org :noweb yes :tangle ./politics.py :cache yes
     print(("The average similarity of all non-ascii posts is " +
            "{:.2f}, while that \nof only those in Pennsylvania is " +
            "{:.2f}. The average for all posts in\nall regions is " +
@@ -1230,7 +1230,7 @@ ax.get_yaxis().tick_left()
 *** "trumps"
 **** intro :ignore:
 
-#+BEGIN_SRC ipython :session :exports none :tangle ./politics.py :results none
+#+BEGIN_SRC ipython :session :exports none :tangle ./politics.py :results none :cache yes
 trumps = eval_strs("trump").join(usa.state, how="inner")
 trumps_by_state = trumps.groupby("state").count().join(states).drop(["clinton", "trump"], axis=1)
 up_over_trumps = (trumps_by_state.uppercase/trumps_by_state["*trump*"]).rename("uppercase usage")
@@ -1352,7 +1352,7 @@ clues:
 
   #+RESULTS:
 
-#+BEGIN_SRC ipython :session :exports results :results output org :noweb yes :cache yes :tangle ./politics.py
+#+BEGIN_SRC ipython :session :exports results :results output drawer :noweb yes :cache yes :tangle ./politics.py
   print("Selecting states that are espectially " \
         "anti-trump:\n")
   print_df(pd.DataFrame(liberal_sample["*trump*"]))
@@ -1362,20 +1362,20 @@ clues:
              ", ".join("{}".format(r) for r in liberal_sample.state.unique())))
 #+END_SRC
 
-#+RESULTS[d546f02cb55d304d357a9cd7dd9145ab37b60310]:
-#+BEGIN_SRC org
+#+RESULTS[4d43db8a66ff42fe03b7b14043e725beb92bfb7e]:
+:RESULTS:
 Selecting states that are espectially anti-trump:
 
-|       | *trump*                                                    |
-|-------+------------------------------------------------------------|
-|  9745 | Donald Trumpet                                             |
-| 69805 | Anti-trump tee!                                            |
-| 51230 | 3re:Trump's inner circle won't constrain him               |
-|  1780 | Liar Liar Pants on Fire,trump                              |
-| 53246 | Learn how to stop funding the Trump agenda with your taxes |
+|       | *trump*                                                                |
+|-------+------------------------------------------------------------------------|
+| 51300 | VLADIMIR PUTIN HAS AN AMAZING VALENTINE'S DAY PRESENT FOR DONALD TRUMP |
+| 31818 | RE,RE Why trump doesn't beleive CIA                                    |
+| 54689 | Trump is my President                                                  |
+| 31645 | Wheat and Tares Prophecy Dream- Trump/Clinton God/Satan                |
+| 52482 | HOW LONG WILL tRump LAST ???                                           |
 Politically liberal states composing the above sampling:
-Oregon, New York, California, Illinois.
-#+END_SRC
+California, New Jersey, Massachusetts.
+:END:
 
 *** "hillary"
 *** "liberal" vs "conservative"
